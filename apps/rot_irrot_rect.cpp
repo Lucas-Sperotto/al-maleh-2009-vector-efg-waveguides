@@ -92,6 +92,32 @@ int main(int argc,char** argv) {
           matrices<<i<<','<<j<<','<<form.stiffness(i,j)<<','
                   <<form.mass(i,j)<<'\n';
     }
+    // Original Chapter 6 Figs. 16–17: two vector shape functions from the
+    // central scalar MLS basis function (5 rows × 9 columns of nodes).
+    // Export our own field, never reuse the source author's image.
+    if(nx==9 && ny==5) {
+      const auto center=static_cast<std::size_t>((ny/2)*nx+nx/2);
+      const char* names[]={"irrotational_shape_central.csv",
+                           "rotational_shape_central.csv"};
+      for(int kind=0;kind<2;++kind) {
+        std::ofstream shapeout(outdir/names[kind]);
+        if(!shapeout)throw std::runtime_error("Cannot export M5 central MLS shape");
+        shapeout<<std::setprecision(17)
+                <<"sample_x,sample_y,hx,hy,selected_index,selected_lambda,shape_overlap\n";
+        for(int j=0;j<=12;++j)for(int i=0;i<=24;++i) {
+          const Point2 p{2.0*i/24.0,j/12.0};
+          const auto sh=mls.evaluate(p);
+          double x=0,y=0;
+          for(std::size_t k=0;k<sh.active_nodes.size();++k) {
+            if(sh.active_nodes[k]!=center)continue;
+            if(kind==0){x=sh.dx[k];y=sh.dy[k];}
+            else{x=-sh.dy[k];y=sh.dx[k];}
+          }
+          shapeout<<p.x<<','<<p.y<<','<<x<<','<<y<<","
+                  <<center<<",0,0\n";
+        }
+      }
+    }
     const double pi=std::acos(-1.0);
     const double analytic[]={1.25*pi*pi,2*pi*pi};
     const int mm[]={1,2};
