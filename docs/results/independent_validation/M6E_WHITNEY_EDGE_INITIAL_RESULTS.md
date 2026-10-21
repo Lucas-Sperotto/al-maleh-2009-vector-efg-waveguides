@@ -86,6 +86,25 @@ O programa guardou os CSVs nativos completos do FEM de aresta,
 incluindo S/T, todos os autovetores, logs, modos TE/TM e campos
 exportados, mais o espectro EFG arquivado e hashes de proveniência.
 
+## Auditoria independente das matrizes nativas FEM
+
+A campanha posterior incluiu uma segunda verificação matemática,
+executada no [GitHub Actions run 39623940672](https://github.com/Lucas-Sperotto/al-maleh-2009-vector-efg-waveguides/actions/runs/39623940672).
+O script scripts/verify_m6e_edge.py reabriu TODOS os coeficientes
+de autovetores TM da rotina LAPACK, reconstruindo S/T dos arquivos
+CRS nativos, e verificou simultaneamente a forma generalizada
+S v = lambda T v e o produto V^T T V.
+
+| Malha FEM Whitney | Autovetores TM | Erro máximo V^T T V-I | Resíduo EVP relativo máximo |
+|---|---:|---:|---:|
+| 8×4 | 108 | 1,9317881e-14 | 5,9739309e-16 |
+| 12×6 | 234 | 2,5091040e-14 | 1,1387772e-15 |
+| 16×8 | 408 | 6,5725203e-14 | 1,1071835e-15 |
+
+Todos os três casos passaram. Isso elimina como explicação óbvia
+da diferença de espectros um problema de diagonalização ou
+reconstrução dos coeficientes do FEM edge no arquivo publicado.
+
 ## Etapa seguinte
 
 Comparar campos H em um grid de quadratura **comum** usando os
