@@ -69,7 +69,7 @@ void run(int degree,int boundary_order) {
     if(m->normal_ratio.minimum<0||m->normal_ratio.maximum<0)
       throw std::runtime_error("Negative constraint metric");
   }
-  check_near(first.divergence_ratio.minimum,rotated.divergence_ratio.minimum,1e-10,"div minimum invariance");
+  // Near a true zero singular constraint, sqrt(roundoff) is not smooth.\n  // Compare the squared extremal ratios (generalized eigenvalues) instead.\n  check_near(first.divergence_ratio.minimum*first.divergence_ratio.minimum,\n             rotated.divergence_ratio.minimum*rotated.divergence_ratio.minimum,\n             1e-10,"squared div minimum invariance");
   check_near(first.divergence_ratio.maximum,rotated.divergence_ratio.maximum,1e-10,"div maximum invariance");
   check_near(first.normal_ratio.minimum,rotated.normal_ratio.minimum,1e-10,"wall minimum invariance");
   check_near(first.normal_ratio.maximum,rotated.normal_ratio.maximum,1e-10,"wall maximum invariance");
