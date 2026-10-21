@@ -94,6 +94,38 @@ int main(int argc,char** argv) {
   export_options.support_factor=factor;
   export_options.origin="tm_validation_M4";
   export_spectrum(dir,mls,quadrature,matrices,s,export_options);
+  // Chapter 5 Figs. 10-13: record reconstructed transverse H vector
+  // fields of the *shape-supported* numerical candidates. These are
+  // original samples, NOT copies of figures from the dissertation.
+  // The author and M2 reference data retain individual source provenance.
+  const Eigen::Index scalar_nodes=static_cast<Eigen::Index>(mls.nodes().size());
+  for(const auto& target:reference){
+    const bool fundamental=(target.reference.m==1&&target.reference.n==1);
+    const bool second=(target.reference.m==2&&target.reference.n==1);
+    if(!fundamental&&!second)continue;
+    if(target.strongest_index<0)continue;
+    const auto fieldfile=dir/(fundamental?"tm11_vector_field.csv":"tm21_vector_field.csv");
+    std::ofstream vector_output(fieldfile);
+    if(!vector_output)throw std::runtime_error("Cannot create Chapter5 H-field samples");
+    vector_output<<std::setprecision(17)
+        <<"sample_x,sample_y,hx,hy,selected_index,selected_lambda,shape_overlap\n";
+    for(int j=0;j<=12;++j)for(int i=0;i<=24;++i){
+      const Point2 p{2.0*i/24.0,j/12.0};
+      const MLSResult shape=mls.evaluate(p);
+      double hx_field=0,hy_field=0;
+      for(std::size_t a=0;a<shape.active_nodes.size();++a){
+        const auto k=static_cast<Eigen::Index>(shape.active_nodes[a]);
+        hx_field+=shape.phi[a]*s.eigenvectors(k,target.strongest_index);
+        hy_field+=shape.phi[a]*s.eigenvectors(scalar_nodes+k,target.strongest_index);
+      }
+      if(!std::isfinite(hx_field)||!std::isfinite(hy_field))
+        throw std::runtime_error("Nonfinite Chapter5 vector-field sample");
+      vector_output<<p.x<<','<<p.y<<','<<hx_field<<','<<hy_field<<','
+          <<target.strongest_index<<','<<target.strongest_lambda<<','
+          <<target.strongest_overlap<<'\n';
+    }
+    if(!vector_output)throw std::runtime_error("Chapter5 field CSV write failed");
+  }
   const auto& tm11=reference.front();
   std::cout<<std::setprecision(10)
       <<"M4 nx="<<nx<<" ny="<<ny<<" degree="<<degree
