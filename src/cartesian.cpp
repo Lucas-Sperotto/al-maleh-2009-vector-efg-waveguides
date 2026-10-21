@@ -92,13 +92,22 @@ std::vector<Node> make_regular_cloud(Rectangle domain, int nx, int ny,
 
 CartesianAssembly assemble_cartesian(const MLSEvaluator& mls,
                                       const BackgroundQuadrature& rule) {
-  // This is an intentionally straightforward *prototype* assembled with
-  // sparse triplets. Later phases may introduce streaming sparse assembly.
+  // M2/M4 reference prototype: accumulate directly into compact dense arrays.
+  // The previous code emitted SIX sparse triplets for each active-node pair
+  // at EVERY quadrature point. At a 17x15 cloud, this can allocate many
+  // millions of temporary triplets even though the final K/M fit in MB.
+  //
+  // This is NOT yet a scalable sparse assembler; it is a memory-conscious
+  // assembly path for small-to-medium clouds and a dense reference solver.
   const std::size_t n = mls.nodes().size();
+  if (n > 600)
+    throw std::invalid_argument(
+        "Dense assembly workspace supports at most 600 nodes");
   if (n > static_cast<std::size_t>(std::numeric_limits<int>::max()/2))
     throw std::invalid_argument("Too many nodes for current DOF indexing");
   const int ndof = static_cast<int>(2*n);
-  std::vector<Eigen::Triplet<double>> kentries, mentries;
+  Eigen::MatrixXd denseK = Eigen::MatrixXd::Zero(ndof, ndof);
+  Eigen::MatrixXd denseM = Eigen::MatrixXd::Zero(ndof, ndof);
   CartesianAssembly result;
 
   for_each_quadrature_point(rule, [&](Point2 p, double w) {
@@ -116,27 +125,23 @@ CartesianAssembly assemble_cartesian(const MLSEvaluator& mls,
     // M_ij = integral N_i dot N_j.
     for (std::size_t a = 0; a < m; ++a) {
       const int i = static_cast<int>(v.active_nodes[a]);
+      const double phi_i = v.phi[a], dx_i = v.dx[a], dy_i = v.dy[a];
       for (std::size_t b = 0; b < m; ++b) {
         const int j = static_cast<int>(v.active_nodes[b]);
-        kentries.emplace_back(i,   j,   w * v.dy[a] * v.dy[b]);
-        kentries.emplace_back(i,   j+static_cast<int>(n),
-                              -w * v.dy[a] * v.dx[b]);
-        kentries.emplace_back(i+static_cast<int>(n), j,
-                              -w * v.dx[a] * v.dy[b]);
-        kentries.emplace_back(i+static_cast<int>(n),
-                              j+static_cast<int>(n), w*v.dx[a]*v.dx[b]);
-        const double mass = w * v.phi[a] * v.phi[b];
-        mentries.emplace_back(i, j, mass);
-        mentries.emplace_back(i+static_cast<int>(n),
-                              j+static_cast<int>(n), mass);
+        denseK(i,   j)   += w * dy_i * v.dy[b];
+        denseK(i,   j+static_cast<int>(n)) += -w * dy_i * v.dx[b];
+        denseK(i+static_cast<int>(n), j)   += -w * dx_i * v.dy[b];
+        denseK(i+static_cast<int>(n),
+               j+static_cast<int>(n)) += w * dx_i * v.dx[b];
+        const double mass = w * phi_i * v.phi[b];
+        denseM(i,j) += mass;
+        denseM(i+static_cast<int>(n),j+static_cast<int>(n)) += mass;
       }
     }
   });
 
-  result.stiffness.resize(ndof, ndof);
-  result.mass.resize(ndof, ndof);
-  result.stiffness.setFromTriplets(kentries.begin(), kentries.end());
-  result.mass.setFromTriplets(mentries.begin(), mentries.end());
+  result.stiffness = denseK.sparseView(0.0, 0.0);
+  result.mass = denseM.sparseView(0.0, 0.0);
   result.stiffness.makeCompressed();
   result.mass.makeCompressed();
   return result;
