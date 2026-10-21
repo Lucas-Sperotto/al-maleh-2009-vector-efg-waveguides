@@ -53,6 +53,45 @@ void test_quadrature() {
     for_each_quadrature_point(bad, [](Point2,double){}); },"invalid domain");
 }
 
+// Original Chapter 5 of Al Maleh (2009) uses 1x1 through 5x5 Gauss
+// points and four background cells for each nodal rectangle (Fig. 9).
+// Verify physical weights and Gauss exactness independently of MLS.
+void test_author_ch5_quadrature() {
+  const Rectangle rect{0,2,0,1};
+  for(int order=1;order<=5;++order) {
+    BackgroundQuadrature rule{rect,2*(5-1),2*(3-1),order};
+    int count=0;
+    double area=0,integral_x=0,integral_y=0;
+    for_each_quadrature_point(rule,[&](Point2 p,double w){
+      ++count;
+      area+=w;integral_x+=w*p.x;integral_y+=w*p.y;
+      if(!(p.x>=0&&p.x<=2&&p.y>=0&&p.y<=1&&w>0))
+        throw std::runtime_error("Outside quadrature cell");
+    });
+    if(count!=8*4*order*order)
+      throw std::runtime_error("Wrong Ch5 quadrature points per integration cell");
+    near(area,2,1e-13,"Ch5 2x1 area");
+    near(integral_x,2,1e-13,"Ch5 x first moment");
+    near(integral_y,1,1e-13,"Ch5 y first moment");
+  }
+  // Five-point Gauss-Legendre in each integration axis is exact up to
+  // degree nine for polynomials on each individual background cell.
+  double high_order=0;
+  for_each_quadrature_point({rect,8,4,5},[&](Point2 p,double w){
+    high_order+=w*std::pow(p.x,8)*std::pow(p.y,8);
+  });
+  near(high_order,(std::pow(2.0,9)/9.0)/9.0,3e-12,
+       "Ch5 Gauss5 polynomial degree 8 integral");
+  // The 1x1 rule intentionally cannot integrate even a quadratic
+  // on a cell exactly, so this MUST be tested as a different rule.
+  double midpoint_x2=0;
+  for_each_quadrature_point({rect,8,4,1},[&](Point2 p,double w){
+    midpoint_x2+=w*p.x*p.x;
+  });
+  if(std::abs(midpoint_x2-8.0/3.0)<1e-4)
+    throw std::runtime_error("One-point Gauss unexpectedly exact on x²");
+}
+
 void test_cartesian_assembly(int degree) {
   const Rectangle rect{0,2,0,1};
   const auto nodes=make_regular_cloud(rect,5,5,3.0);
@@ -109,9 +148,10 @@ void test_cartesian_assembly(int degree) {
 int main() {
   try {
     test_quadrature();
+    test_author_ch5_quadrature();
     test_cartesian_assembly(1);
     test_cartesian_assembly(2);
-    std::cout<<"PASS: rectangle quadrature, Cartesian K/M symmetry, constant and rotation patches, curl-grad kernel (degree 1/2)\n";
+    std::cout<<"PASS: rectangle quadrature, Cartesian K/M symmetry, constant and rotation patches, curl-grad kernel (degree 1/2), Ch5 1..5 Gauss and four subcells\n";
   }catch(const std::exception& e) {
     std::cerr<<"FAIL: "<<e.what()<<"\n";
     return 1;
