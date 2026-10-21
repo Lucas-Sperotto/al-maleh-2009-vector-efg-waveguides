@@ -59,6 +59,8 @@ A implementação diagonaliza T, retém autovetores de massa com autovalores pos
 
 A Tabela 4 confronta o espectro cartesiano e o rotacional/irrotacional numa grade 3×5, com Gauss 2×2, 3×3 e 4×4. Muitos autovalores rotacionais tornam-se nulos; o autor informa autovalores negativos em 2×2, que desaparecem ou se aproximam de zero com quadraturas maiores. O autovalor físico TM11 destacado fica **aproximadamente 16,8, 15,8 e 15,5** nas três quadraturas, respectivamente.
 
+**Nota sobre a contagem:** a Tabela 4 abrevia os primeiros autovalores com a indicação “14 zeros”, mas a prosa do capítulo menciona quinze zeros exatos. Não devemos resolver essa diferença por suposição; além disso, a contagem de autovalores curl-curl nulos no espaço de massa reduzido difere da nulidade da própria matriz de massa. Nosso experimento 3×5 reproduz 14 raízes curl-curl próximas de zero no espaço reduzido de rank 26, mas a correspondência linha a linha com os modos do autor ainda deve ser investigada.
+
 Os erros percentuais **assinados** das Tabelas 5 e 6 são:
 
 | Modo | Grade | Gauss 1×1 | 2×2 | 3×3 | 4×4 |
