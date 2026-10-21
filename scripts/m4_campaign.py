@@ -22,6 +22,12 @@ CASES = (
     ("gauss2_7x7", 7, 7, 1, 3.3, 2),
     ("gauss4_7x7", 7, 7, 1, 3.3, 4),
 )
+LOCAL_CASES = (
+    ("local_9x7", 9, 7, 1, 3.3, 3),
+    ("local_13x11", 13, 11, 1, 3.3, 3),
+    ("local_17x15", 17, 15, 1, 3.3, 3),
+)
+STARGATE_CASES = LOCAL_CASES[:2]
 MATCH_FIELDS = (
     "m", "n", "lambda_exact", "kc_exact",
     "nearest_index", "nearest_lambda", "nearest_relative_error",
@@ -41,7 +47,7 @@ def main():
     parser.add_argument("--binary", type=Path, required=True)
     parser.add_argument("--out", type=Path, default=Path("out/m4"))
     parser.add_argument("--timeout", type=int, default=240)
-    parser.add_argument("--profile", choices=("ci", "smoke"), default="ci")
+    parser.add_argument("--profile", choices=("ci", "smoke", "local", "stargate"), default="ci")
     args = parser.parse_args()
     if args.timeout <= 0:
         parser.error("timeout must be positive")
@@ -50,7 +56,7 @@ def main():
         parser.error("compiled executable not found: " + str(binary))
     output = args.out.resolve()
     output.mkdir(parents=True, exist_ok=True)
-    cases = CASES if args.profile == "ci" else CASES[:1]
+    cases = {"ci": CASES, "smoke": CASES[:1], "local": LOCAL_CASES, "stargate": STARGATE_CASES}[args.profile]
     run_rows = []
     match_rows = []
     for label, nx, ny, degree, radius, gauss in cases:
@@ -183,7 +189,7 @@ def main():
     ]
     (output / "REPORT.md").write_text("\n".join(report), encoding="utf-8")
     succeeded = sum(r["status"] == "success" for r in run_rows)
-    required = 3 if args.profile == "ci" else 1
+    required = {"ci": 3, "smoke": 1, "local": 3, "stargate": 2}[args.profile]
     success_refinements = sum(r["status"] == "success" for r in run_rows[:3])
     print("\n".join(report), flush=True)
     print("M4:", succeeded, "of", len(run_rows),
@@ -191,7 +197,7 @@ def main():
     # The sweep records sensitivity failures without hiding them. The
     # three baseline refinements must complete for CI to pass.
     if succeeded < required or (
-        args.profile == "ci" and success_refinements < 3
+        args.profile in ("ci", "local", "stargate") and success_refinements < required
     ):
         return 1
     return 0
