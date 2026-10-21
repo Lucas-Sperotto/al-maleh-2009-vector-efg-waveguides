@@ -249,3 +249,13 @@ if(BUILD_TESTING AND Python3_Interpreter_FOUND)
   set_tests_properties(m6f_centroid_geometry_and_subspaces PROPERTIES
     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
 endif()
+
+# Post-merge independent scientific audit of original Ch5/Ch6 tables
+# and observed rank/nullity patterns. Uses only Python stdlib.
+if(BUILD_TESTING AND Python3_Interpreter_FOUND)
+  add_test(NAME original_ch5_ch6_comparative_audit
+    COMMAND ${Python3_EXECUTABLE} -m unittest discover
+      -s tests -p test_m2_m5_reproduction_audit.py -v)
+  set_tests_properties(original_ch5_ch6_comparative_audit PROPERTIES
+    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
+endif()
