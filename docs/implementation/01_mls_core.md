@@ -48,3 +48,12 @@ O teste local de 20/10/2026 foi compilado com g++ e Eigen headers e retornou PAS
 ## Limitações e próximo bloqueio
 
 A reprodução polinomial MLS *não* valida o autoproblema vetorial de Maxwell. Faltam quadratura em domínio, discretização cartesiana de `H_t`, fronteira PEC, montagem K/M e solução espectral. Aumentar o suporte para garantir unisolvência não substitui análise de condicionamento. Antes de atribuir essas escolhas à dissertação, conferir texto original e registrar diferenças.
+
+
+## Auditoria pós-integração — identificação bibliográfica pendente
+
+A implementação e os testes do M1 são numericamente consistentes, mas o peso Wendland C², a base polinomial e o fator de suporte usados **não foram ainda atribuídos à dissertação de Al Maleh (2009)**. As imagens verificadas pelo projeto cobrem os capítulos 5 e 6; o capítulo 4 original, com os parâmetros da construção MLS, ainda não foi cotejado na íntegra. A [auditoria científica pós-merges](../results/POST_MERGE_SCIENTIFIC_AUDIT_2026-10-21.md) distingue explicitamente implementação atual e valores publicados. A [issue #17](https://github.com/Lucas-Sperotto/al-maleh-2009-vector-efg-waveguides/issues/17) especifica como comparar peso, suporte, derivadas e solver sem mudar silenciosamente os experimentos M2–M6.
+
+A [primeira varredura controlada de suporte](../results/MLS_SUPPORT_SENSITIVITY_MEASURED_2026-10-21.md) utilizou os fatores 3,0/3,3/3,6, mantendo MLS linear e Wendland C², e demonstrou estabilidade parcial do M2, mas possível troca de modo no M5. **É um estudo da nossa implementação, não um ajuste dos parâmetros da tese.**
+
+Reprodução no MyHoneyBee: use /usr/bin/ctest caso um lançador Python em ~/.local/bin/ctest apresente erro do módulo cmake.
