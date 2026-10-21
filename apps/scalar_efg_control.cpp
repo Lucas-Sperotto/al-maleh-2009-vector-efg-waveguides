@@ -44,6 +44,18 @@ int main(int argc,char** argv){
     save_mtx(out/"boundary_collocation.mtx",matrices.boundary);
     save_mtx(out/"boundary_nullspace.mtx",matrices.nullspace);
     save_mtx(out/"eigenvectors.mtx",solution.coefficients);
+    // Original scalar coefficients follow make_regular_cloud node order.
+    std::ofstream dof(out/"dof_map.csv");
+    if(!dof)throw std::runtime_error("Cannot open scalar DOF map");
+    dof<<std::setprecision(17)<<"node_index,x,y,is_boundary_collocation_point\n";
+    for(std::size_t k=0;k<mls.nodes().size();++k){
+      const auto p=mls.nodes()[k].position;
+      const bool boundary=(k%static_cast<std::size_t>(nx)==0)||
+          (k%static_cast<std::size_t>(nx)==static_cast<std::size_t>(nx-1))||
+          (k<static_cast<std::size_t>(nx))||
+          (k>=static_cast<std::size_t>(nx)*static_cast<std::size_t>(ny-1));
+      dof<<k<<','<<p.x<<','<<p.y<<','<<(boundary?"true":"false")<<'\n';
+    }
     std::ofstream vals(out/"eigenvalues.csv");
     if(!vals)throw std::runtime_error("Cannot open scalar eigenvalue CSV");
     vals<<std::setprecision(17)
