@@ -89,6 +89,10 @@ def run(binary,out,tol,support,timeout):
                         "tm11_irrot_field","tm11_rot_field"):
                 render_field(svg_tool,path/(key+".csv"),path/(key+".svg"),
                              f"M5 {key} {name}")
+            if nx==9 and ny==5:
+                for key in ("irrotational_shape_central","rotational_shape_central"):
+                    render_field(svg_tool,path/(key+".csv"),path/(key+".svg"),
+                                 f"M5 Ch6 central MLS shape {key} {name}")
     rows=[]
     for r in ref:
         nx,ny,g=[int(r[n]) for n in ("nodes_x","nodes_y","gauss_points_per_axis")]
