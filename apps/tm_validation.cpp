@@ -12,23 +12,24 @@
 using namespace al_maleh;
 int main(int argc,char** argv) {
  try {
-  // tm_validation [nx ny degree support_factor gauss_order output_directory]
-  if(argc!=7)throw std::invalid_argument(
-    "Usage: tm_validation nx ny degree support_factor gauss_order output_dir");
+  // tm_validation nx ny degree support_factor gauss_order output_directory [integration_subdivision=1]
+  if(argc!=7&&argc!=8)throw std::invalid_argument(
+    "Usage: tm_validation nx ny degree support_factor gauss_order output_dir [integration_subdivision=1]");
   const int nx=std::stoi(argv[1]),ny=std::stoi(argv[2]);
   const int degree=std::stoi(argv[3]);
   const double factor=std::stod(argv[4]);
   const int gauss=std::stoi(argv[5]);
   const std::filesystem::path dir=argv[6];
+  const int subdivision=argc==8?std::stoi(argv[7]):1;
   if(nx<3||ny<3||nx>17||ny>17||(degree!=1&&degree!=2)||
      !std::isfinite(factor)||factor<=0||
-     (gauss!=2&&gauss!=3&&gauss!=4))
+     gauss<1||gauss>5||subdivision<1||subdivision>4)
     throw std::invalid_argument("Invalid M4 run parameters");
   const Rectangle r{0,2,0,1};
   const double hx=2.0/(nx-1),hy=1.0/(ny-1);
   const double radius=factor*std::max(hx,hy);
   const MLSEvaluator mls(make_regular_cloud(r,nx,ny,radius),degree);
-  const BackgroundQuadrature quadrature{r,nx-1,ny-1,gauss};
+  const BackgroundQuadrature quadrature{r,(nx-1)*subdivision,(ny-1)*subdivision,gauss};
   const auto matrices=assemble_cartesian(mls,quadrature);
   const auto s=solve_generalized_symmetric(matrices.stiffness,matrices.mass);
   const auto reference=validate_tm_modes(mls,quadrature,matrices,s,4,3);
@@ -94,7 +95,7 @@ int main(int argc,char** argv) {
   const auto& tm11=reference.front();
   std::cout<<std::setprecision(10)
       <<"M4 nx="<<nx<<" ny="<<ny<<" degree="<<degree
-      <<" support="<<factor<<" gauss="<<gauss
+      <<" support="<<factor<<" gauss="<<gauss<<" subdivision="<<subdivision
       <<" nullity="<<s.numerical_kernel_dimension
       <<" mass_condition="<<s.mass_condition
       <<" TM11_nearest_relative_error="<<tm11.nearest_relative_error
