@@ -53,3 +53,13 @@ jobs:
           path: build/m6b_diagnostics/
           if-no-files-found: warn
           retention-days: 30
+      - name: M6c independent scalar MLS-EFG reference (9x7,13x11,17x15)
+        run: python3 scripts/m6c_scalar_campaign.py --binary build/scalar_efg_control --out build/m6c_scalar --timeout 600
+      - name: Publish M6c full scalar eigenspectra
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: m6c-scalar-efg-control
+          path: build/m6c_scalar/
+          if-no-files-found: warn
+          retention-days: 30
