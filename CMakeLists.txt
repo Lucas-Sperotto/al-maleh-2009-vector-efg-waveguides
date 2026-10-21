@@ -167,3 +167,20 @@ if(BUILD_TESTING)
   add_test(NAME m6c_scalar_efg_smoke
     COMMAND scalar_efg_control 5 5 "${CMAKE_CURRENT_BINARY_DIR}/m6c_smoke")
 endif()
+
+# M6d: diagnostic gradient projections only; never modify vector EVP.
+add_library(al_maleh_gradient_audit STATIC src/gradient_audit.cpp)
+target_include_directories(al_maleh_gradient_audit PUBLIC include)
+target_link_libraries(al_maleh_gradient_audit PUBLIC al_maleh_spectral Eigen3::Eigen)
+if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
+  target_compile_options(al_maleh_gradient_audit PRIVATE -Wall -Wextra -Wpedantic)
+endif()
+add_executable(gradient_kernel_audit apps/gradient_kernel_audit.cpp)
+target_link_libraries(gradient_kernel_audit PRIVATE al_maleh_gradient_audit)
+if(BUILD_TESTING)
+  add_executable(test_gradient_audit tests/test_gradient_audit.cpp)
+  target_link_libraries(test_gradient_audit PRIVATE al_maleh_gradient_audit)
+  add_test(NAME m6d_gradient_projection COMMAND test_gradient_audit)
+  add_test(NAME m6d_gradient_smoke
+    COMMAND gradient_kernel_audit 9 7 "${CMAKE_CURRENT_BINARY_DIR}/m6d_smoke")
+endif()
