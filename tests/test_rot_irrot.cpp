@@ -76,6 +76,17 @@ void patch(int degree) {
   const auto s=solve_rot_irrot_rank_reduced(a);
   demand(s.removed_mass_nullity>=2,
          "M5 exact partition-of-unity mass nullity not detected");
+  if(degree==1){
+    // Baseline of source Fig. 9/Ch6 Table 4 with our declared MLS:
+    // four exactly dependent directions plus fourteen curl-null
+    // eigenvectors in the retained 26-dimensional mass space.
+    demand(s.removed_mass_nullity==4,
+           "M5 affine MLS should expose four mass dependencies");
+    demand(s.retained_rank==26,
+           "M5 3x5 original Ch6 rank changed");
+    demand(s.numerical_curl_kernel==14,
+           "M5 3x5 fourteen curl-zero eigenmodes changed");
+  }
   demand(s.retained_rank+s.removed_mass_nullity==2*n,
          "Missing mass ranks");
   demand(s.eigenvalues.size()==s.retained_rank,
