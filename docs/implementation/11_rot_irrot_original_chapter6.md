@@ -92,7 +92,11 @@ python3 scripts/m5_ch6_campaign.py \
   --binary build/rot_irrot_rect --out out/m5
 ~~~
 
-Saídas por caso: spectrum completo eigenvalues.csv, eigenvectors.csv, matrix_elements.csv, tm_matches.csv (candidato por lambda e por correlação de curl separados), run_metadata.txt, campos originais TM11/TM21, e parcelas irrotacional/rotacional de TM11 em CSV e SVG. No diretório geral: REPORT.md, comparison.csv, spectrum_summary.csv, metadata.json.
+Saídas por caso: spectrum completo eigenvalues.csv, eigenvectors.csv, matrix_elements.csv, tm_matches.csv (candidato por lambda e por correlação de curl separados), run_metadata.txt, campos originais TM11/TM21, e parcelas irrotacional/rotacional de TM11 em CSV e SVG. No diretório geral: REPORT.md, comparison.csv, spectrum_summary.csv, metadata.json e manifest_sha256.csv.
+
+**Validação independente:** `python3 scripts/verify_m5_ch6.py --campaign out/m5` verifica 12 espectros completos, a quantidade de autovetores/DOFs, resíduos algébricos, nulidade de massa, os 14 autovalores de curl quase nulos no caso 3×5, coordenadas e campos exportados e todos os hashes SHA256. Os diagramas radiais/circulares do nó central da grade 5×9 correspondentes às Figuras 16–17 são gerados como `irrotational_shape_central.svg` e `rotational_shape_central.svg`, a partir da nossa própria MLS.
+
+**Resultados efetivamente calculados:** [relatório das 24 comparações e posto do operador](../results/M5_CH6_MEASURED_2026-10-21.md), [artefato GitHub Actions com todos os autovetores e matrizes](https://github.com/Lucas-Sperotto/al-maleh-2009-vector-efg-waveguides/actions/runs/39636814699/artifacts/12360864291). O método foi executado com os parâmetros declarados, não com os parâmetros da dissertação ainda não cotejados.
 
 O fator de suporte 3,3, peso Wendland C² e redução de posto são escolhas experimentais declaradas desta implementação. Não houve ajuste artificial dos autovalores à dissertação; campos próximos da forma analítica não ficam automaticamente certificados como físicos. Não modificar dados M6a–M6f.
 
