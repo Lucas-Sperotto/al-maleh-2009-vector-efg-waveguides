@@ -112,20 +112,33 @@ FieldMetrics modal_diagnostics(const MLSEvaluator& mls,
     throw std::runtime_error("Nonpositive modal field norm");
   const auto r=rule.domain;
   const double a=r.xmax-r.xmin,b=r.ymax-r.ymin;
+  // Integrate n.H on each background-cell edge, rather than only
+  // three points across the entire wall (which under-resolves high modes).
   const double points[3]={-0.7745966692414834,0,0.7745966692414834};
   const double weights[3]={5.0/9.0,8.0/9.0,5.0/9.0};
   double boundary2=0;
-  for(int q=0;q<3;++q){
-    const double t=0.5*(1+points[q]);
-    for(double x:{r.xmin,r.xmax}){
-      const auto s=mls.evaluate({x,r.ymin+t*b});
-      double hx,hy,div,curl;field(s,v,n,hx,hy,div,curl);
-      boundary2+=0.5*b*weights[q]*hx*hx;
+  for(int cell=0;cell<rule.cells_y;++cell){
+    const double step=b/rule.cells_y;
+    const double y0=r.ymin+cell*step;
+    for(int q=0;q<3;++q){
+      const double y=y0+0.5*step*(1+points[q]);
+      for(double x:{r.xmin,r.xmax}){
+        const auto s=mls.evaluate({x,y});
+        double hx,hy,div,curl;field(s,v,n,hx,hy,div,curl);
+        boundary2+=0.5*step*weights[q]*hx*hx;
+      }
     }
-    for(double y:{r.ymin,r.ymax}){
-      const auto s=mls.evaluate({r.xmin+t*a,y});
-      double hx,hy,div,curl;field(s,v,n,hx,hy,div,curl);
-      boundary2+=0.5*a*weights[q]*hy*hy;
+  }
+  for(int cell=0;cell<rule.cells_x;++cell){
+    const double step=a/rule.cells_x;
+    const double x0=r.xmin+cell*step;
+    for(int q=0;q<3;++q){
+      const double x=x0+0.5*step*(1+points[q]);
+      for(double y:{r.ymin,r.ymax}){
+        const auto s=mls.evaluate({x,y});
+        double hx,hy,div,curl;field(s,v,n,hx,hy,div,curl);
+        boundary2+=0.5*step*weights[q]*hy*hy;
+      }
     }
   }
   FieldMetrics d;
