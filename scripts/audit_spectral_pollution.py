@@ -68,7 +68,9 @@ def audit_efg_case(directory):
     }
 
 
-def audit_degenerate_pair(directory, indices=(192, 193)):
+def audit_degenerate_pair(directory, indices):
+    if len(indices) != 2 or len(set(indices)) != 2 or min(indices) < 0:
+        raise ValueError('The selected degenerate subspace needs two distinct valid indices')
     directory = Path(directory)
     diagnostics = read_rows(directory / "mode_diagnostics.csv")
     if max(indices) >= len(diagnostics):
@@ -98,7 +100,7 @@ def audit_degenerate_pair(directory, indices=(192, 193)):
         "pair": "TM22/TM41",
         "reference_lambda": TM_DEGENERATE,
         "directions": directions,
-        "basis_invariant_worst_case_lower_bound": bound,
+        "lower_bound_on_basis_invariant_worst_case_divergence": bound,
         "threshold": BOUND,
         "subspace_cannot_pass_divergence_threshold": bound > BOUND,
         "exact_subspace_operator_norm_not_computed": True,
@@ -112,7 +114,12 @@ def main():
     args = parser.parse_args()
     root = args.campaign
     cases = [audit_efg_case(root / "efg" / key) for key in ("9x7", "13x11", "17x15")]
-    pair = audit_degenerate_pair(root / "efg" / "17x15")
+    cross = read_rows(root / "comparison.csv")
+    pair_rows = [row for row in cross if row["mode"] in ("TM22", "TM41")]
+    if len(pair_rows) != 2 or pair_rows[0]["efg_indices"] != pair_rows[1]["efg_indices"]:
+        raise ValueError("Published degenerate pair assignments are inconsistent")
+    indices = tuple(int(x) for x in pair_rows[0]["efg_indices"].split(";"))
+    pair = audit_degenerate_pair(root / "efg" / "17x15", indices)
     results = {
         "purpose": "physical TM lower-spectrum and degenerate-subspace evidence, not a physical-mode certification",
         "case_audits": cases, "degenerate_pair": pair,
