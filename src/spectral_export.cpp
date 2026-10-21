@@ -175,7 +175,7 @@ void export_spectrum(const std::filesystem::path& directory,
      options.grid_nx<1||options.grid_ny<1||options.grid_nx>1000||options.grid_ny>1000||
      !std::isfinite(r.xmin)||!std::isfinite(r.xmax)||!std::isfinite(r.ymin)||
      !std::isfinite(r.ymax)||a<=0||b<=0||rule.cells_x<1||rule.cells_y<1||
-     (rule.gauss_order!=2&&rule.gauss_order!=3&&rule.gauss_order!=4)||
+     (rule.gauss_order<1||rule.gauss_order>5)||
      s.eigenvalues.size()!=ndof||s.eigenvectors.rows()!=ndof||s.eigenvectors.cols()!=ndof||
      matrices.mass.rows()!=ndof||matrices.mass.cols()!=ndof||
      matrices.stiffness.rows()!=ndof||matrices.stiffness.cols()!=ndof||

@@ -106,6 +106,28 @@ jobs:
           path: build/m6e_edge/
           if-no-files-found: warn
           retention-days: 30
+      - name: M2 original Chapter 5 Al Maleh grids and Gauss quadrature
+        run: PYTHONNOUSERSITE=1 OPENBLAS_NUM_THREADS=1 python3 scripts/m2_ch5_benchmark.py --binary build/tm_validation --out build/m2_ch5 --timeout 600
+      - name: Publish M2 source-anchored original Table 2 and 3 comparison
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: m2-al-maleh-2009-chapter5
+          path: build/m2_ch5/
+          if-no-files-found: warn
+          retention-days: 30
+      - name: M5 original Chapter 6 rotational irrotational campaign
+        run: PYTHONNOUSERSITE=1 OPENBLAS_NUM_THREADS=1 python3 scripts/m5_ch6_campaign.py --binary build/rot_irrot_rect --out build/m5_ch6 --timeout 600
+      - name: Independently verify M5 rank, signed spectrum, fields and SHA256
+        run: PYTHONNOUSERSITE=1 OPENBLAS_NUM_THREADS=1 python3 scripts/verify_m5_ch6.py --campaign build/m5_ch6
+      - name: Publish M5 Al Maleh Chapter 6 gradient and rotational vectors
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: m5-al-maleh-2009-chapter6
+          path: build/m5_ch6/
+          if-no-files-found: warn
+          retention-days: 30
       - name: M6f exploratory common-centroid TM-H field overlaps
         run: PYTHONNOUSERSITE=1 OPENBLAS_NUM_THREADS=1 python3 scripts/m6f_centroid_overlap.py --efg-binary build/efg_sample_vector_fields --m6e-campaign build/m6e_edge --out build/m6f_centroids
       - name: Publish M6f raw common-centroid vector fields and principal angles

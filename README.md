@@ -9,11 +9,11 @@ Reprodução crítica da dissertação de **Hussam Al Maleh (2009)**, *A Vector 
 | Etapa | Estado |
 |---|---|
 | M1 — MLS linear/quadrático, gradientes e Hessianas | **Implementado e testado** (CTest e GitHub Actions) |
-| M2 — Formulação cartesiana, quadratura, matrizes de massa e curl-curl | **Implementado e testado** (protótipo de montagem) |
+| M2 — Formulação cartesiana, quadratura, matrizes de massa e curl-curl | **Implementado e confrontado com o capítulo 5 da dissertação**; referências numéricas originais transcritas, reprodução quantitativa em avaliação |
 | M3 — Solucionador generalizado, referências TM e exportação de campos | **Protótipo implementado e testado**; convergência física ainda pendente |
 | M4 — Comparação modal, núcleo curl-curl e campanha de refinamento | **Implementado e testado**; classificação física ainda exploratória |
-| M5 — Formulação rotacional/irrotacional | Pendente de verificação bibliográfica |
-| M6 — Comparação independente com NASA TP-3485 e EFGMI-H(curl) | Pendente |
+| M5 — Formulação rotacional/irrotacional | **Equações (6-1)–(6-6) verificadas contra o Cap. 6 e protótipo implementado**; singularidade de massa e resultados quantitativos em investigação |
+| M6a–M6e — Validação FEM independente, restrições e núcleo gradiente | **Implementados e validados**; M6f (campos vetoriais Whitney) em PR experimental separada |
 
 O M1 usa C++17, Eigen3, bases de grau 1 e 2 e peso Wendland C² como decisões próprias de engenharia. Veja [implementação e resultados dos testes](docs/implementation/01_mls_core.md), [proveniência](docs/implementation/CODE_PROVENANCE.md), [API](include/al_maleh/mls.hpp), [código](src/mls.cpp) e [testes](tests/test_mls.cpp).
 
@@ -26,7 +26,7 @@ sudo apt-get update
 sudo apt-get install -y build-essential cmake libeigen3-dev
 cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
 cmake --build build --parallel
-ctest --test-dir build --output-on-failure
+/usr/bin/ctest --test-dir build --output-on-failure
 ./build/mls_probe > mls_probe.csv
 ```
 
@@ -38,6 +38,56 @@ ctest --test-dir build --output-on-failure
 
 **A identificação física e a convergência dos modos TM ainda não foram estabelecidas.** Veja [implementação M3](docs/implementation/03_generalized_eigenproblem.md), [solucionador](src/spectral.cpp), [testes](tests/test_spectral.cpp) e [exemplos CSV no GitHub Actions](https://github.com/Lucas-Sperotto/al-maleh-2009-vector-efg-waveguides/actions).
 
+## M2 — Capítulo 5 original: equações e Tabelas 2–3
+
+As imagens da dissertação de Al Maleh (2009) permitiram confrontar
+as **equações (5-1) a (5-11)** com nossa montagem curl-curl/massa,
+e transcrever os erros publicados para TM11 e TM21 nas grades
+3×5, 4×7, 5×9 e 6×11. O autor usa **quatro células de integração
+por retângulo entre nós** e quadratura Gauss de 1×1 até 5×5.
+O programa agora suporta essas opções **sem modificar o padrão anterior**.
+Os parâmetros MLS específicos da tese não foram integralmente
+verificados, portanto esta é uma **comparação experimental**:
+não afirmamos igualdade numérica com as tabelas sem medi-la.
+
+```bash
+python3 scripts/m2_ch5_benchmark.py --binary build/tm_validation --out out/m2_ch5
+```
+
+O relatório compara os valores originais e os nossos erros
+de autovalores, preserva o espectro completo e gera campos
+vetoriais próprios TM11 e TM21 em CSV/SVG (sem copiar
+as figuras originais).
+
+- [Equações originais, Tabelas 2/3 e procedimentos M2](docs/implementation/02_cartesian_assembly.md)
+- [Tabela numérica transcrita do capítulo 5](docs/results/m2_author_ch5_tables_2_3.csv)
+- [Resultados numéricos efetivamente executados em 14 casos](docs/results/M2_CH5_MEASURED_2026-10-21.md)
+- [Artefatos completos M2: matrizes, espectros e SVGs](https://github.com/Lucas-Sperotto/al-maleh-2009-vector-efg-waveguides/actions/runs/39630223717/artifacts/12358927216)
+
+**Ambiente MyHoneyBee:** caso um `ctest` de `~/.local/bin`
+produza `ModuleNotFoundError: No module named 'cmake'`,
+use `/usr/bin/ctest` (o executável oficial CMake/CTest).
+## M5 — Formulação rotacional/irrotacional original (Capítulo 6)
+
+Com as imagens do capítulo 6 foi possível verificar que Al Maleh usa
+**grad(N_i)** e **z×grad(N_i)** para cada nó, exatamente como mostram
+as equações (6-1)–(6-6). A rigidez envolve o Laplaciano das MLS;
+a massa pode ser singular por dependências entre bases, e por isso
+o solver M5 faz redução explícita de posto, preservando e documentando
+o espectro no subespaço reduzido (inclusive autovalores negativos).
+
+Os **24 erros numéricos originais** das Tabelas 5 e 6 foram
+transcritos. As nossas simulações são publicadas separadamente,
+sem afirmar coincidência com os parâmetros MLS exatos do autor.
+
+```bash
+python3 scripts/m5_ch6_campaign.py --binary build/rot_irrot_rect --out out/m5
+```
+
+Os CSV e SVG produzidos incluem TM11, TM21 e os campos irrotacional
+e rotacional de TM11, além de espectros completos e relatórios de posto.
+Veja [implementação e limitações M5](docs/implementation/11_rot_irrot_original_chapter6.md)
+e [dados originais do autor](docs/results/m5_author_ch6_tables_5_6.csv). Veja ainda [os 24 resultados realmente calculados, postos e divergências](docs/results/M5_CH6_MEASURED_2026-10-21.md) e [o pacote integral CI de matrizes, espectros e campos](https://github.com/Lucas-Sperotto/al-maleh-2009-vector-efg-waveguides/actions/runs/39636316113/artifacts/12363260079).
 ## Validacao espectral M4
 
 O executavel `tm_validation` compara formas de campo (`curl(H)`) e autovalores com os modos analiticos TM do guia retangular. A campanha reproduz tres refinamentos nodais e variacoes de raio de suporte, grau MLS e quadratura:
@@ -166,6 +216,7 @@ e ângulos principais invariantes do dubleto TM22/TM41.
 com convergência nem certificação física de divergência e contorno.
 Para reproduzir, execute M6e antes e siga
 [o protocolo de comparação dos campos](docs/implementation/10_whitney_efg_vector_overlap.md).
+
 ## Documentação
 
 O README serve como índice. As deduções detalhadas, equações, critérios de validação e discussões de arquitetura estão organizados nos arquivos Markdown:

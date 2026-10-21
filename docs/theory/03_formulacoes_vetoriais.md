@@ -7,7 +7,7 @@ lang: pt-BR
 
 # Nota de rastreabilidade
 
-O resumo de Al Maleh (2009) afirma que foram exploradas duas representações: (A) componentes cartesianas; (B) decomposição rotacional e irrotacional. **A formulação (A) apresentada aqui é uma derivação Galerkin convencional em base MLS escalar** e deve ser confrontada com as equações específicas da tese. **A formulação (B) abaixo é uma hipótese matemática de implementação via potenciais de Helmholtz, não uma afirmação de que o autor empregou exatamente essas funções.** Antes da reprodução literal, ler o capítulo correspondente, transcrever sua notação e registrar eventuais diferenças.
+O resumo de Al Maleh (2009) afirma que foram exploradas duas representações: (A) componentes cartesianas; (B) decomposição rotacional e irrotacional. **A formulação (A), cartesiana, foi agora conferida com as imagens do capítulo 5 da dissertação, em particular (5-1), (5-2), (5-7)–(5-10): a estrutura de funções vetoriais e das formas bilineares coincide com o que foi montado.** Uma possível diferença de sinal na equação (5-6) e os parâmetros originais de MLS são registrados em [M2, conferência do capítulo 5](../implementation/02_cartesian_assembly.md). Os valores percentuais efetivamente medidos pelo nosso código **não coincidem integralmente** com as Tabelas 2/3 (veja [campanha calculada](../results/M2_CH5_MEASURED_2026-10-21.md)). **A formulação (B) foi agora conferida diretamente com as imagens do Capítulo 6, Eqs. (6-1)–(6-6): o autor usa exatamente grad(N_i) e z×grad(N_i) como funções de forma independentes por nó.** A implementação M5 segue essas funções e as formas de massa/rigidez do capítulo 5; o tratamento original de degenerescências de massa, o peso MLS e parâmetros ainda exigem cotejo, de modo que não alegamos igualdade experimental sem medição. Ver [M5 Capítulo 6](../implementation/11_rot_irrot_original_chapter6.md).
 
 ## 1. Formulação A: base cartesiana
 
@@ -150,4 +150,4 @@ Funções MLS não possuem, em geral, $\phi_i(\mathbf x_j)=\delta_{ij}$, portant
 
 ## Referência primária
 
-Al Maleh, H. 2009, *A Vector Element-Free Galerkin Method for Waveguide Eigenvalue Problems*. A confirmação de quais funções rotacionais/irrotacionais, bases polinomiais e estratégias de contorno foram usadas requer a íntegra da dissertação.
+Al Maleh, H. 2009, *A Vector Element-Free Galerkin Method for Waveguide Eigenvalue Problems*. As formulações de funções de forma foram verificadas contra os capítulos 5 e 6, incluindo (6-1)–(6-6). Ainda faltam o cotejo dos pesos/raios MLS e a abordagem original para a matriz de massa singular. As Tabelas 5/6 originais estão transcritas, mas os resultados numéricos precisam ser confrontados separadamente.
