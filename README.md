@@ -2,8 +2,10 @@
 
 Reprodução crítica da dissertação de **Hussam Al Maleh (2009)**, *A Vector Element-Free Galerkin Method for Waveguide Eigenvalue Problems* (McGill University). O projeto estuda aproximações vetoriais sem malha para modos **TM** de guias PEC, modos próprios espúrios e comparação com soluções analíticas e FEM.
 
-> **Rigor científico:** a documentação inclui reconstruções matemáticas voltadas à implementação, não uma transcrição integral verificada da dissertação. A identificação exata da segunda formulação rotacional/irrotacional depende de cotejo com o PDF. Testes MLS aprovados não validam ainda autovalores eletromagnéticos.
+> **Rigor científico:** a documentação inclui reconstruções matemáticas voltadas à implementação, não uma transcrição integral verificada da dissertação. As funções vetoriais rotacional/irrotacional foram cotejadas com as equações (6-1)–(6-6) das imagens da dissertação. Os parâmetros MLS do Capítulo 4 e a reprodução numérica quantitativa ainda estão pendentes; testes algébricos não certificam ausência de modos espúrios.
 
+**Auditoria científica pós-merges:** [relatório integral M2/M5/M6, discrepâncias frente à dissertação e plano de reprodução](docs/results/POST_MERGE_SCIENTIFIC_AUDIT_2026-10-21.md).
+A reprodução das bases dos Capítulos 5 e 6 foi verificada, mas **os parâmetros MLS do Capítulo 4 não foram validados**. A CI [39641176860](https://github.com/Lucas-Sperotto/al-maleh-2009-vector-efg-waveguides/actions/runs/39641176860) passou sobre a main pós-merges. Novos ensaios de suporte MLS ficam em PR específica, sem reescrever as campanhas históricas.
 ## Estado do desenvolvimento
 
 | Etapa | Estado |
@@ -13,7 +15,7 @@ Reprodução crítica da dissertação de **Hussam Al Maleh (2009)**, *A Vector 
 | M3 — Solucionador generalizado, referências TM e exportação de campos | **Protótipo implementado e testado**; convergência física ainda pendente |
 | M4 — Comparação modal, núcleo curl-curl e campanha de refinamento | **Implementado e testado**; classificação física ainda exploratória |
 | M5 — Formulação rotacional/irrotacional | **Equações (6-1)–(6-6) verificadas contra o Cap. 6 e protótipo implementado**; singularidade de massa e resultados quantitativos em investigação |
-| M6a–M6e — Validação FEM independente, restrições e núcleo gradiente | **Implementados e validados**; M6f (campos vetoriais Whitney) em PR experimental separada |
+| M6a–M6f — Validação FEM independente, núcleo gradiente e campos Whitney | **Integrados à main**; M6f por centroides é exploratório, faltam quadratura comum convergida e verificação física do dubleto |
 
 O M1 usa C++17, Eigen3, bases de grau 1 e 2 e peso Wendland C² como decisões próprias de engenharia. Veja [implementação e resultados dos testes](docs/implementation/01_mls_core.md), [proveniência](docs/implementation/CODE_PROVENANCE.md), [API](include/al_maleh/mls.hpp), [código](src/mls.cpp) e [testes](tests/test_mls.cpp).
 
@@ -36,7 +38,7 @@ cmake --build build --parallel
 ./build/cartesian_spectrum 5 5 1 3.3 out/m3/rect
 ```
 
-**A identificação física e a convergência dos modos TM ainda não foram estabelecidas.** Veja [implementação M3](docs/implementation/03_generalized_eigenproblem.md), [solucionador](src/spectral.cpp), [testes](tests/test_spectral.cpp) e [exemplos CSV no GitHub Actions](https://github.com/Lucas-Sperotto/al-maleh-2009-vector-efg-waveguides/actions).
+**Alguns modos TM simples foram identificados e validados por comparação independente, mas o espectro completo contém poluição numérica e a condição física do dubleto TM22/TM41 continua reprovada em divergência.** Veja [implementação M3](docs/implementation/03_generalized_eigenproblem.md), [solucionador](src/spectral.cpp), [testes](tests/test_spectral.cpp) e [exemplos CSV no GitHub Actions](https://github.com/Lucas-Sperotto/al-maleh-2009-vector-efg-waveguides/actions).
 
 ## M2 — Capítulo 5 original: equações e Tabelas 2–3
 

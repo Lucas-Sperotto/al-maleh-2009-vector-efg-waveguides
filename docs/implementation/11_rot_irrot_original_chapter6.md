@@ -103,3 +103,14 @@ Saídas por caso: spectrum completo eigenvalues.csv, eigenvectors.csv, matrix_el
 O fator de suporte 3,3, peso Wendland C² e redução de posto são escolhas experimentais declaradas desta implementação. Não houve ajuste artificial dos autovalores à dissertação; campos próximos da forma analítica não ficam automaticamente certificados como físicos. Não modificar dados M6a–M6f.
 
 **Dependência de branches:** esta etapa M5 depende dos novos pontos de Gauss e subcélulas incorporados à PR #15 do M2. O merge da PR M5 deverá ocorrer depois da PR M2.
+
+
+## Auditoria M5 pós-merges: nulidades, reprodução e rastreamento
+
+A auditoria das 24 medições frente às Tabelas 5/6 identificou desvio médio absoluto de **20,762 pp** por autovalor mais próximo e **18,139 pp** por melhor correlação de curl(H). O critério de campo ainda difere da fonte em mais de 1 pp em todas as 24 linhas. Isto é uma divergência de **reprodução experimental**: as Eqs. (6-1)–(6-6) foram implementadas, mas o perfil MLS do Capítulo 4 e a estratégia de redução original ainda não foram confirmados.
+
+Nas cinco nuvens do ensaio, com n nós, verificou-se empiricamente rank(M)=2n−4, nulidade de massa 4 e n−1 raízes curl-curl próximas de zero no problema reduzido. Duas dependências surgem da partição de unidade em cada família de gradientes; duas adicionais surgem porque campos vetoriais constantes podem ser gerados por ambas as famílias graças à reprodução afim. **São pelo menos quatro dependências teóricas; igualdade de rank é um resultado observado para estas configurações, não um teorema genérico.** O número de zeros de massa não se confunde com o número de autovalores nulos de rigidez, e os restantes n−3 não são todos automaticamente físicos.
+
+Na [campanha de suporte MLS](../results/MLS_SUPPORT_SENSITIVITY_MEASURED_2026-10-21.md), TM21 M5 3×5 com Gauss 2×2 apresentou erros de +30,566%, +31,465% e −8,503% ao variar o suporte 3,0/3,3/3,6, mesmo com correlação de curl crescente. Esse resultado é um **alerta de possível troca de ramo modal**. A [issue #18](https://github.com/Lucas-Sperotto/al-maleh-2009-vector-efg-waveguides/issues/18) exige continuidade de autovetores por produto interno em grade comum, estudo das tolerâncias de posto e comparação de resíduos completos de K h−lambda M h, que são atualmente exportados, mas não bloqueados por todos os testes.
+
+Matrizes K/M montadas por quadratura positiva são semidefinidas positivas; negativos de grande magnitude não são esperados na nossa formulação. Não alterar sinais/penalizações para reproduzir os pequenos negativos do autor. Veja o [relatório científico completo](../results/POST_MERGE_SCIENTIFIC_AUDIT_2026-10-21.md) e a [issue #17](https://github.com/Lucas-Sperotto/al-maleh-2009-vector-efg-waveguides/issues/17) sobre os dados primários ausentes do capítulo 4.
