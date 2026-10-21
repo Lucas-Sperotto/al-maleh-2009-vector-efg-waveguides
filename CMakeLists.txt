@@ -1,0 +1,23 @@
+cmake_minimum_required(VERSION 3.16)
+project(al_maleh_vector_efg LANGUAGES CXX)
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
+
+find_package(Eigen3 3.3 REQUIRED NO_MODULE)
+add_library(al_maleh_mls STATIC src/mls.cpp)
+target_include_directories(al_maleh_mls PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
+target_link_libraries(al_maleh_mls PUBLIC Eigen3::Eigen)
+if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
+  target_compile_options(al_maleh_mls PRIVATE -Wall -Wextra -Wpedantic)
+endif()
+
+add_executable(mls_probe apps/mls_probe.cpp)
+target_link_libraries(mls_probe PRIVATE al_maleh_mls)
+
+include(CTest)
+if(BUILD_TESTING)
+  add_executable(test_mls tests/test_mls.cpp)
+  target_link_libraries(test_mls PRIVATE al_maleh_mls)
+  add_test(NAME mls_consistency COMMAND test_mls)
+endif()
