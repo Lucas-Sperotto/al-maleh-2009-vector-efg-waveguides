@@ -34,6 +34,30 @@ int main(int argc,char** argv){
     const auto metrics=evaluate_subspace_constraints(
        constraint,assembly.mass,V,lambda_ref,r);
 
+    // Verify basis invariance on the actual computed doublet, not merely
+    // in a synthetic patch-test: rotations may mix nonidentical eigenvalues.
+    Eigen::Matrix2d rotation;
+    const double theta=0.713;
+    rotation<<std::cos(theta),-std::sin(theta),
+              std::sin(theta), std::cos(theta);
+    const auto rotated=evaluate_subspace_constraints(
+        constraint,assembly.mass,(V*rotation).eval(),lambda_ref,r);
+    auto agrees=[](double x,double y){return std::abs(x-y)<1e-8;};
+    if(!agrees(metrics.divergence_ratio.minimum,rotated.divergence_ratio.minimum)||
+       !agrees(metrics.divergence_ratio.maximum,rotated.divergence_ratio.maximum)||
+       !agrees(metrics.normal_ratio.minimum,rotated.normal_ratio.minimum)||
+       !agrees(metrics.normal_ratio.maximum,rotated.normal_ratio.maximum))
+      throw std::runtime_error("Measured doublet constraint extrema change under basis rotation");
+    // A known physical direction is a rigorous lower bound on the
+    // supremum of the constraint over the entire subspace.
+    for(int k=0;k<2;++k){
+      const Eigen::VectorXd v=V.col(k);
+      const double norm=v.dot(assembly.mass*v);
+      const double d=std::sqrt(std::max(0.0,v.dot(constraint.divergence*v))
+                               /(lambda_ref*norm));
+      if(d>metrics.divergence_ratio.maximum+1e-10)
+        throw std::runtime_error("Invariant subspace maximum violates Rayleigh lower bound");
+    }
     std::filesystem::create_directories(out);
     std::ofstream csv(out/"subspace_constraints.csv");
     if(!csv)throw std::runtime_error("Cannot write subspace_constraints.csv");
