@@ -23,3 +23,13 @@ jobs:
           path: build/m3_ci/
           if-no-files-found: error
           retention-days: 30
+      - name: M4 refinement and sensitivity campaign
+        run: python3 scripts/m4_campaign.py --binary build/tm_validation --out build/m4_campaign --profile ci
+      - name: Publish M4 validation artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: m4-tm-validation
+          path: build/m4_campaign/
+          if-no-files-found: warn
+          retention-days: 30
