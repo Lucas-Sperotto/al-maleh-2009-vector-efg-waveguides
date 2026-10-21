@@ -180,11 +180,33 @@ def export_csv(path,rows):
         writer=csv.DictWriter(stream,fieldnames=list(rows[0]))
         writer.writeheader();writer.writerows(rows)
 
-def execute(edge_binary,out,baseline,timeout,edge_sha):
+def verify_external_source(directory, claimed_sha):
+    directory=Path(directory).resolve()
+    if not (directory/".git").exists():
+        raise RuntimeError("FEM source must be an actual Git checkout/worktree")
+    result=subprocess.run(["git","-C",str(directory),"rev-parse","HEAD"],
+                          capture_output=True,text=True,check=True)
+    actual=result.stdout.strip()
+    if actual!=claimed_sha:
+        raise RuntimeError(
+            "FEM source revision mismatch: expected "+claimed_sha+", got "+actual)
+    changes=subprocess.run(
+        ["git","-C",str(directory),"status","--porcelain","--",
+         "src/edge","src/helmvec","src/core","src/article",
+         "src/meshfree","CMakeLists.txt"],
+        capture_output=True,text=True,check=True)
+    if changes.stdout.strip():
+        raise RuntimeError(
+            "FEM edge implementation contains local changes; use a clean pinned checkout")
+    return directory
+
+
+def execute(edge_binary,out,baseline,timeout,edge_sha,edge_source_dir):
     if len(edge_sha)!=40 or not all(ch in "0123456789abcdef" for ch in edge_sha.lower()):
         raise ValueError("Full 40-character FEM edge source SHA is required")
     if edge_sha!=PINNED_FEM_SHA:
         raise ValueError("M6e protocol pins FEM edge at "+PINNED_FEM_SHA)
+    edge_source_dir=verify_external_source(edge_source_dir,edge_sha)
     out.mkdir(parents=True,exist_ok=True)
     summary,comparisons=[],[]
     for label,nx,ny,indices,expected in EFG_CASES:
@@ -204,6 +226,7 @@ def execute(edge_binary,out,baseline,timeout,edge_sha):
                   comparison_category="TM_transverse_H_only",
                   note="Eigenvalue-only assignment; vector fields NOT independently cross-correlated.",
                   edge_source_binary=str(edge_binary),
+                  edge_source_dir=str(edge_source_dir),
                   efg_original_case=str((baseline/label)),
                   edge_input_sha256={str(p.relative_to(case)):sha256(p) for p in
                       sorted(edge_dir.rglob("*.csv"))},
@@ -272,6 +295,7 @@ def execute(edge_binary,out,baseline,timeout,edge_sha):
 def main():
     parser=argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--edge-binary",type=Path,required=True)
+    parser.add_argument("--edge-source-dir",type=Path,required=True)
     parser.add_argument("--out",type=Path,required=True)
     parser.add_argument("--efg-baseline",type=Path,default=Path(
         "docs/results/independent_validation/2026-10-21_dc1d98b/efg"))
@@ -283,7 +307,8 @@ def main():
     if not binary.is_file():parser.error("Edge FEM binary not found: "+str(binary))
     baseline=args.efg_baseline.resolve()
     if not baseline.is_dir():parser.error("EFG M6a baseline not found: "+str(baseline))
-    execute(binary,args.out.resolve(),baseline,args.timeout,args.edge_source_sha)
+    execute(binary,args.out.resolve(),baseline,args.timeout,args.edge_source_sha,
+            args.edge_source_dir)
 
 if __name__=="__main__":
     main()
