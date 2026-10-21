@@ -53,6 +53,26 @@ Na primeira campanha de oito casos, **todos foram executados**. O modo TM11 apre
 - [Codigo e correspondencia modal](src/tm_validation.cpp)
 - [Artefatos reproduziveis no GitHub Actions](https://github.com/Lucas-Sperotto/al-maleh-2009-vector-efg-waveguides/actions)
 
+## Teste local com refinamento elevado
+
+Para comparar o espectro e as formas TM do guia retangular PEC 2×1 em três
+refinamentos (9×7, 13×11, 17×15 nós), com CMake Release e CTest:
+
+```bash
+JOBS=2 PROFILE=local bash scripts/run_local_reference.sh
+```
+
+Para o master antigo do Stargate, inicie com as nuvens menores (9×7 e 13×11):
+
+```bash
+JOBS=1 PROFILE=stargate bash scripts/run_local_reference.sh
+```
+
+Resultados em `out/m4/local/REPORT.md` ou `out/m4/stargate/REPORT.md`,
+além de tabelas CSV detalhadas por modo e indicadores de divergência/contorno.
+**A comparação é feita com soluções TM analíticas e ainda não equivale à
+reprodução numérica de uma tabela específica da dissertação.**
+Consulte [o guia completo de execução](docs/implementation/05_local_refinement.md).
 ## Documentação
 
 O README serve como índice. As deduções detalhadas, equações, critérios de validação e discussões de arquitetura estão organizados nos arquivos Markdown:
