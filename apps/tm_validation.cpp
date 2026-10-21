@@ -86,6 +86,11 @@ int main(int argc,char** argv) {
       <<"\nmass_min_eigenvalue="<<s.min_mass_eigenvalue
       <<"\nmls_max_condition="<<matrices.max_moment_condition
       <<"\ncandidates_checked="<<candidates<<'\n';
+  SpectralExportOptions export_options;
+  export_options.nx=nx;export_options.ny=ny;
+  export_options.support_factor=factor;
+  export_options.origin="tm_validation_M4";
+  export_spectrum(dir,mls,quadrature,matrices,s,export_options);
   const auto& tm11=reference.front();
   std::cout<<std::setprecision(10)
       <<"M4 nx="<<nx<<" ny="<<ny<<" degree="<<degree
