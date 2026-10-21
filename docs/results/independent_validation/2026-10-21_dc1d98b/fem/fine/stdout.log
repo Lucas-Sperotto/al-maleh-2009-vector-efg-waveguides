@@ -1,0 +1,98 @@
+Log file: /tmp/m6a-fem.CsJ2cS/fine/raw/helm10/rect/run.log
+Output dir: "/tmp/m6a-fem.CsJ2cS/fine/raw/helm10/rect"
+VTK dir: "/tmp/m6a-fem.CsJ2cS/fine/raw/helm10/rect/vtk"
+CSV dir: "/tmp/m6a-fem.CsJ2cS/fine/raw/helm10/rect/csv"
+LinOp dir: "/tmp/m6a-fem.CsJ2cS/fine/raw/helm10/rect/linop"
+Backend escalar: closed-form
+Rect mesh: nodes=861 tris=1600
+ar=2 m, b=1 m, nx=40 ny=20 nmodos=12
+
+[TE scalar (Neumann)]
+ 1  kc=1.571199
+ 2  kc=3.144813
+ 3  kc=3.144817
+ 4  kc=3.518348
+ 5  kc=4.456518
+ 6  kc=4.723278
+ 7  kc=5.690381
+ 8  kc=6.308971
+ 9  kc=6.309003
+10  kc=6.507869
+11  kc=7.071916
+12  kc=7.072313
+
+Tabela 1 (TE): FEM vs Analitico (match por correlacao com T)
+i  (m,n)   kc_ana      kc_fem      kcAr_fem    err(%)    |rho|
+1  (1,0)   1.570796   1.571199    3.142398    0.026  1.0000
+2  (2,0)   3.141593   3.144813    6.289627    0.103  1.0000
+3  (0,1)   3.141593   3.144817    6.289633    0.103  1.0000
+4  (1,1)   3.512407   3.518348    7.036696    0.169  1.0000
+5  (2,1)   4.442883   4.456518    8.913036    0.307  1.0000
+6  (3,0)   4.712389   4.723278    9.446557    0.231  1.0000
+7  (3,1)   5.663587   5.690381   11.380761    0.473  0.9999
+8  (4,0)   6.283185   6.308971   12.617942    0.410  0.8157
+
+[TM scalar (Dirichlet)]
+ 1  kc=3.518365
+ 2  kc=4.456574
+ 3  kc=5.690509
+ 4  kc=6.508010
+ 5  kc=7.072224
+ 6  kc=7.072477
+ 7  kc=7.927679
+ 8  kc=8.535978
+ 9  kc=8.995594
+10  kc=9.650663
+11  kc=10.048856
+12  kc=10.055105
+Saved: "/tmp/m6a-fem.CsJ2cS/fine/raw/helm10/rect/linop/helm10_rect_te_S_crs.csv"
+Saved: "/tmp/m6a-fem.CsJ2cS/fine/raw/helm10/rect/linop/helm10_rect_te_T_crs.csv"
+Saved: "/tmp/m6a-fem.CsJ2cS/fine/raw/helm10/rect/linop/helm10_rect_te_eigenvalues.csv"
+Saved: "/tmp/m6a-fem.CsJ2cS/fine/raw/helm10/rect/linop/helm10_rect_te_eigenvectors.csv"
+Saved: "/tmp/m6a-fem.CsJ2cS/fine/raw/helm10/rect/linop/helm10_rect_tm_S_crs.csv"
+Saved: "/tmp/m6a-fem.CsJ2cS/fine/raw/helm10/rect/linop/helm10_rect_tm_T_crs.csv"
+Saved: "/tmp/m6a-fem.CsJ2cS/fine/raw/helm10/rect/linop/helm10_rect_tm_eigenvalues.csv"
+Saved: "/tmp/m6a-fem.CsJ2cS/fine/raw/helm10/rect/linop/helm10_rect_tm_eigenvectors.csv"
+Reconstrucao de campos: freq=479765476.869169 Hz, eps_r=1.000000, mu_r=1.000000, k=10.055141 rad/m, politica=automatica_tm_referencia_ztm1
+Referencia automatica TM: kc_ref=10.055105, Ztm_ref_real=1.000000
+Aviso didatico: os campos TM exportados usam gradiente+sinal como saida principal, sem multiplicacao por Ztm; beta e Ztm ficam apenas no modes.csv.
+
+Tabela 1 (TM): FEM vs Analitico (match por correlacao com T)
+i  (m,n)   kc_ana      kc_fem      kcAr_fem    err(%)    |rho|
+1  (1,1)   3.512407   3.518365    7.036730    0.170  1.0000
+2  (2,1)   4.442883   4.456574    8.913148    0.308  1.0000
+3  (3,1)   5.663587   5.690509   11.381019    0.475  1.0000
+4  (1,2)   6.476559   6.508010   13.016019    0.486  1.0000
+5  (4,1)   7.024815   7.072224   14.144448    0.675  0.9999
+6  (2,2)   7.024815   7.072477   14.144954    0.678  1.0000
+7  (3,2)   7.853982   7.927679   15.855359    0.938  0.9998
+8  (5,1)   8.458997   8.535978   17.071957    0.910  0.9990
+Saved: te_rect_m1_n0_rank01_sv.vtk (psi + Et)
+Saved: te10_rect_sv.vtk (psi + Et)
+Saved: te_rect_m2_n0_rank02_sv.vtk (psi + Et)
+Saved: te_rect_m0_n1_rank03_sv.vtk (psi + Et)
+Saved: te_rect_m1_n1_rank04_sv.vtk (psi + Et)
+Saved: te_rect_m2_n1_rank05_sv.vtk (psi + Et)
+Saved: te_rect_m3_n0_rank06_sv.vtk (psi + Et)
+Saved: te_rect_m3_n1_rank07_sv.vtk (psi + Et)
+Saved: te_rect_m4_n0_rank08_sv.vtk (psi + Et)
+Saved: te_rect_m0_n2_rank09_sv.vtk (psi + Et)
+Saved: te_rect_m1_n2_rank10_sv.vtk (psi + Et)
+Saved: te_rect_m4_n1_rank11_sv.vtk (psi + Et)
+Saved: te_rect_m2_n2_rank12_sv.vtk (psi + Et)
+Saved: tm_rect_m1_n1_rank01_sv.vtk (psi + Et)
+Saved: tm11_rect_sv.vtk (psi + Et)
+Saved: tm_rect_m2_n1_rank02_sv.vtk (psi + Et)
+Saved: tm_rect_m3_n1_rank03_sv.vtk (psi + Et)
+Saved: tm_rect_m1_n2_rank04_sv.vtk (psi + Et)
+Saved: tm_rect_m4_n1_rank05_sv.vtk (psi + Et)
+Saved: tm_rect_m2_n2_rank06_sv.vtk (psi + Et)
+Saved: tm_rect_m3_n2_rank07_sv.vtk (psi + Et)
+Saved: tm_rect_m5_n1_rank08_sv.vtk (psi + Et)
+Saved: tm_rect_m4_n2_rank09_sv.vtk (psi + Et)
+Saved: tm_rect_m1_n3_rank10_sv.vtk (psi + Et)
+Saved: tm_rect_m6_n1_rank11_sv.vtk (psi + Et)
+Saved: tm_rect_m2_n3_rank12_sv.vtk (psi + Et)
+Saved: /tmp/m6a-fem.CsJ2cS/fine/raw/helm10/rect/csv/helm10_rect_modes.csv
+Saved: /tmp/m6a-fem.CsJ2cS/fine/raw/helm10/rect/run_timing.csv
+[timing] label=helm10_rect assembly_ms=15.069 solve_ms=2158.794 post_ms=4357.137 total_ms=10256.587

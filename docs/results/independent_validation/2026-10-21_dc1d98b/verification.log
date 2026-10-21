@@ -1,0 +1,7 @@
+Reopening efg 9x7
+Reopening efg 13x11
+Reopening efg 17x15
+Reopening fem coarse
+Reopening fem medium
+Reopening fem fine
+PASS: 6 complete exports, 3 independent LAPACKE solves, field reconstruction, assignment, and 1896 published rows

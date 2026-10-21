@@ -1,0 +1,15 @@
+{
+  "schema_version": 1,
+  "origin": "tm_validation_M4",
+  "created_utc": "2026-10-21T12:06:22Z",
+  "source_commit": "dc1d98b53753ecf00573117d954c0a837dab9d49",
+  "geometry": {"xmin": 0, "xmax": 2, "ymin": 0, "ymax": 1, "a": 2, "b": 1, "area": 2},
+  "cloud": {"nx": 9, "ny": 7, "nodes": 63, "degree": 1, "support_factor": 3.2999999999999998, "support_radius": 0.82499999999999996, "basis": "centered scaled polynomial", "weight": "Wendland C2"},
+  "quadrature": {"cells_x": 8, "cells_y": 6, "gauss_order": 3, "points": 432, "boundary_gauss_order": 3, "max_moment_condition": 265.598156747654},
+  "spectrum": {"dofs": 126, "modes": 126, "zero_cutoff": 6.3272347281334741e-07, "numerical_kernel_dimension": 5, "mass_condition": 72373.616629218581, "min_mass_eigenvalue": 4.546061276277448e-07, "max_relative_residual": 2.4846270060480321e-15, "max_abs_M_orthogonality_error": 4.1866510258614653e-13, "K_symmetry_frobenius": 1.7875567003342138e-16, "M_symmetry_frobenius": 7.1813802167802709e-18},
+  "solver": {"library": "Eigen", "method": "GeneralizedSelfAdjointEigenSolver", "arithmetic": "IEEE 754 binary64", "normalization": "original columns V; V^T M V = I; no rescaling", "residual_definition": "||Kv-lambda Mv||_2 / ((||K||_F+|lambda| ||M||_F)||v||_2)"},
+  "conventions": {"dof_order": "Hx_0..Hx_(N-1),Hy_0..Hy_(N-1)", "csv_index_base": 0, "matrix_market_index_base": 1, "matrix_market_column": "eigenvalue index + 1", "kc": "sqrt(max(0,lambda)); signed lambda retained", "text_significant_digits": 17, "near_zero": "lambda <= zero_cutoff; all columns retained", "divergence_ratio": "||div H||/(sqrt(lambda)||H||); blank for near_zero", "normal_ratio": "sqrt(integral_boundary((H.n)^2) * area/perimeter / field_energy)"},
+  "physics": {"mu": 1, "epsilon": 1, "coordinate_scale": "domain dimensions in geometry; no automatic rescaling; lambda has inverse length squared units", "boundary": "natural curl(H)=0; gradient kernel unfiltered", "classification": "experimental candidates; eigenvalue proximity alone does not establish physical identity"},
+  "common_grid": {"nx": 80, "ny": 40, "rows": 3200, "ordering": "j-major, i-fast", "location": "cell centers", "field": "curl(H)=dHy/dx-dHx/dy; every spectral column", "weights": "grid.csv weight column"},
+  "environment": {"compiler": "GNU-13.3.0", "compiler_version": "13.3.0", "build_type": "Release", "cplusplus": 201703, "Eigen": "3.4.0", "zlib": "1.3", "OMP_NUM_THREADS": "1"}
+}

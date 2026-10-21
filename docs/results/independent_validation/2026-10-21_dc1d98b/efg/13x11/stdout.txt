@@ -1,0 +1,1 @@
+M4 nx=13 ny=11 degree=1 support=3.3 gauss=3 nullity=6 mass_condition=285083.8564 TM11_nearest_relative_error=3.145631764e-06 TM11_shape_overlap=0.9999937723 TM11_status=shape_supported output=/home/sperotto/al-maleh-2009-vector-efg-waveguides/docs/results/independent_validation/2026-10-21_dc1d98b/m4/local_13x11

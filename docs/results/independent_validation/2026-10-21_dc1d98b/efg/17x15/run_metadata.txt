@@ -1,0 +1,17 @@
+model=M4_cartesian_EFG_validation
+domain=rectangle_2x1
+status=experimental_unverified_physics
+nx=17
+ny=15
+degree=1
+support_factor=3.2999999999999998
+support_radius=0.41249999999999998
+gauss_order=3
+dofs=510
+quadrature_points=2016
+numerical_kernel=9
+zero_cutoff=3.2832518615946808e-06
+mass_condition=443914.0966216285
+mass_min_eigenvalue=1.8410359674251887e-08
+mls_max_condition=1148.8765492014861
+candidates_checked=16

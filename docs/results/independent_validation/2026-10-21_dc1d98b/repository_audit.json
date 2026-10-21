@@ -1,0 +1,33 @@
+{
+  "audited_at": "2026-10-21T11:59:52.110420+00:00",
+  "initial_efg_worktree_clean": true,
+  "initial_efg_head": "33fbf75acab8b7244052eb304d74396dda2fd881",
+  "repositories": {
+    "efg": {
+      "local_path": "/home/sperotto/al-maleh-2009-vector-efg-waveguides",
+      "remote": "https://github.com/Lucas-Sperotto/al-maleh-2009-vector-efg-waveguides.git",
+      "branch": "feat/m6a-independent-fem-validation",
+      "head": "33fbf75acab8b7244052eb304d74396dda2fd881",
+      "worktrees": "worktree /home/sperotto/al-maleh-2009-vector-efg-waveguides\nHEAD 33fbf75acab8b7244052eb304d74396dda2fd881\nbranch refs/heads/feat/m6a-independent-fem-validation",
+      "status_at_audit": "M .github/workflows/ci.yml\n M CMakeLists.txt\n M include/al_maleh/spectral.hpp\n?? requirements-validation.txt\n?? scripts/fem_dsygv_capture.c\n?? scripts/validation_manifest.py\n?? tests/test_validation_manifest.py"
+    },
+    "fem": {
+      "local_path": "/home/sperotto/fem-eigen-em-2d3d-whitney",
+      "remote": "https://github.com/Lucas-Sperotto/fem-eigen-em-2d3d-whitney.git",
+      "branch": "main",
+      "head": "4c56a526b1a308edd2e17e3beec306f76dd5dce5",
+      "worktrees": "worktree /home/sperotto/fem-eigen-em-2d3d-whitney\nHEAD 4c56a526b1a308edd2e17e3beec306f76dd5dce5\nbranch refs/heads/main",
+      "status_at_audit": "?? out/2d/\n?? out/RESULTS_REPORT.md\n?? out/img_all/\n?? out/run_all.log\n?? out/validation/"
+    }
+  },
+  "initial_efg_branch": "main",
+  "initial_efg_status": "",
+  "updated_main": "33fbf75acab8b7244052eb304d74396dda2fd881",
+  "program_source_efg": "dc1d98b53753ecf00573117d954c0a837dab9d49",
+  "program_source_fem": "4c56a526b1a308edd2e17e3beec306f76dd5dce5",
+  "execution_command": "JOBS=2 bash scripts/run_independent_validation.sh",
+  "original_native_staging": "/tmp/m6a-fem.CsJ2cS",
+  "initial_native_staging": "/tmp/m6a-fem",
+  "python_user_site_issue": "User NumPy2.4.6 incompatible with system scipy/matplotlib, isolated with PYTHONNOUSERSITE=1. System NumPy1.26.4 SciPy1.11.4 Matplotlib3.6.3.",
+  "ctest_path_issue": "~/.local/bin/ctest broken Python wrapper; /usr/bin/ctest passed. Wrapper selects ctest adjacent to selected cmake."
+}

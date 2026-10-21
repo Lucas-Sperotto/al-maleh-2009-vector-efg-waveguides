@@ -1,0 +1,4 @@
+case,nx,ny,degree,support,gauss,status,message,numerical_kernel,mass_condition,max_mls_condition
+local_9x7,9,7,1,3.3,3,success,,5,72373.616629218581,265.598156747654
+local_13x11,13,11,1,3.3,3,success,,6,285083.85639685922,629.26316659947258
+local_17x15,17,15,1,3.3,3,success,,9,443914.0966216285,1148.8765492014861

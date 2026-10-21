@@ -1,0 +1,85 @@
+{
+  "source_commit_efg": "dc1d98b53753ecf00573117d954c0a837dab9d49",
+  "source_commit_fem": "4c56a526b1a308edd2e17e3beec306f76dd5dce5",
+  "cases": {
+    "9x7": {
+      "near_zero_count": 5,
+      "positive_below_analytic_TM11": 49,
+      "positive_unassigned_in_six_mode_study": 115,
+      "assigned_columns": [
+        54,
+        60,
+        63,
+        66,
+        70,
+        71
+      ]
+    },
+    "13x11": {
+      "near_zero_count": 6,
+      "positive_below_analytic_TM11": 94,
+      "positive_unassigned_in_six_mode_study": 274,
+      "assigned_columns": [
+        100,
+        108,
+        117,
+        123,
+        127,
+        128
+      ]
+    },
+    "17x15": {
+      "near_zero_count": 9,
+      "positive_below_analytic_TM11": 144,
+      "positive_unassigned_in_six_mode_study": 495,
+      "assigned_columns": [
+        153,
+        163,
+        178,
+        185,
+        192,
+        193
+      ]
+    }
+  },
+  "automation_ctest_initial": {
+    "passed": 7,
+    "failed": 0
+  },
+  "automation_ctest_before_campaign": {
+    "passed": 10,
+    "failed": 0
+  },
+  "python_unit_assertion_tests": {
+    "passed": 15,
+    "failed": 0
+  },
+  "fem_preparation_checks": {
+    "passed": 42,
+    "failed": 0
+  },
+  "scientific_fine_modes": {
+    "supported_simple_modes": [
+      "TM11",
+      "TM21",
+      "TM31",
+      "TM12"
+    ],
+    "failed_group": [
+      "TM22",
+      "TM41"
+    ],
+    "failure": "EFG divergence ratio 0.4152847439356625 exceeds unchanged 0.25 criterion"
+  },
+  "all_eigenvectors_retained": 2174,
+  "derived_table_rows_verified": 1896,
+  "automation_ctest_final": {
+    "passed": 12,
+    "failed": 0
+  },
+  "intermediate_inventory_failure": {
+    "failed_test": "independent_published_hashes",
+    "reason": "manifest stale after adding execution_summary.json and repository_audit.json",
+    "resolved": "manifest regenerated; rerun passed; full final suite12/12 passed"
+  }
+}

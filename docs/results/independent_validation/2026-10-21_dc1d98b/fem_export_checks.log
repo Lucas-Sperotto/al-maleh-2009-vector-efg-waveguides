@@ -1,0 +1,3 @@
+coarse: n=105, residual=4.333e-14, orthogonality=4.441e-15, checks=14/14
+medium: n=406, residual=3.348e-13, orthogonality=7.994e-15, checks=14/14
+fine: n=741, residual=6.453e-13, orthogonality=1.066e-14, checks=14/14
