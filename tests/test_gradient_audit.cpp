@@ -93,7 +93,7 @@ void patch(int degree) {
   });
   invalid([&] {
     (void)scalar_gradient_fit_relative_error(
-        pair,projection,Eigen::VectorXd::Ones(n));
+        pair,projection,Eigen::VectorXd::Ones(n-1));
   });
 }
 void spectral() {
