@@ -18,7 +18,7 @@ struct BackgroundQuadrature {
   Rectangle domain;
   int cells_x = 8;
   int cells_y = 4;
-  int gauss_order = 3; // 2, 3, or 4 points per dimension
+  int gauss_order = 3; // 1..5 Gauss points per dimension (Al Maleh Ch. 5)
 };
 
 using QuadratureVisitor = std::function<void(Point2, double)>;
