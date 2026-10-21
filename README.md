@@ -61,6 +61,8 @@ as figuras originais).
 
 - [Equações originais, Tabelas 2/3 e procedimentos M2](docs/implementation/02_cartesian_assembly.md)
 - [Tabela numérica transcrita do capítulo 5](docs/results/m2_author_ch5_tables_2_3.csv)
+- [Resultados numéricos efetivamente executados em 14 casos](docs/results/M2_CH5_MEASURED_2026-10-21.md)
+- [Artefatos completos M2: matrizes, espectros e SVGs](https://github.com/Lucas-Sperotto/al-maleh-2009-vector-efg-waveguides/actions/runs/39630223717/artifacts/12358927216)
 
 **Ambiente MyHoneyBee:** caso um `ctest` de `~/.local/bin`
 produza `ModuleNotFoundError: No module named 'cmake'`,
