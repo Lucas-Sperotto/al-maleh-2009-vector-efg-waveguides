@@ -149,3 +149,21 @@ if(BUILD_TESTING)
   add_test(NAME m6b_subspace_smoke COMMAND constraint_subspace 9 7 70 71
       "${CMAKE_CURRENT_BINARY_DIR}/m6b_smoke")
 endif()
+
+# M6c: independent SCALAR EFG control for Ez with PEC nodal collocation.
+# This is a separate experimental formulation, not a modification to vector K/M.
+add_library(al_maleh_scalar_control STATIC src/scalar_control.cpp)
+target_include_directories(al_maleh_scalar_control PUBLIC include)
+target_link_libraries(al_maleh_scalar_control PUBLIC al_maleh_cartesian Eigen3::Eigen)
+if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
+  target_compile_options(al_maleh_scalar_control PRIVATE -Wall -Wextra -Wpedantic)
+endif()
+add_executable(scalar_efg_control apps/scalar_efg_control.cpp)
+target_link_libraries(scalar_efg_control PRIVATE al_maleh_scalar_control)
+if(BUILD_TESTING)
+  add_executable(test_scalar_control tests/test_scalar_control.cpp)
+  target_link_libraries(test_scalar_control PRIVATE al_maleh_scalar_control)
+  add_test(NAME m6c_scalar_efg_forms COMMAND test_scalar_control)
+  add_test(NAME m6c_scalar_efg_smoke
+    COMMAND scalar_efg_control 5 5 "${CMAKE_CURRENT_BINARY_DIR}/m6c_smoke")
+endif()

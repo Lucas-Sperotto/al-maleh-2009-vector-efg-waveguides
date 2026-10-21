@@ -101,6 +101,28 @@ e registra também os candidatos espectrais positivos abaixo de TM11.
 Consulte [M6b — método, testes e limites](docs/implementation/06_constraint_subspaces.md).
 
 [Resultados medidos dos três refinamentos do M6b](docs/results/independent_validation/M6B_INITIAL_RESULTS.md).
+## M6c — Controle escalar MLS/EFG para modos TM
+
+Uma terceira formulação, **escalar e independente da discretização vetorial**,
+aproxima `Ez` com MLS, impõe `Ez=0` por colocalização em nós de contorno
+e diagonaliza o problema generalizado reduzido à base de núcleo dessa
+restrição. Esse experimento não corrige nem substitui o EFG vetorial.
+
+```bash
+python3 scripts/m6c_scalar_campaign.py --binary build/scalar_efg_control --out out/m6c
+OPENBLAS_NUM_THREADS=1 python3 scripts/verify_scalar_control.py --campaign out/m6c
+```
+
+O autovalor fundamental calculado no refinamento 17×15 foi
+`12,336116117`, contra referência TM11 `12,337005501`
+(erro `0,007209%`). O autovalor está **ligeiramente abaixo** da referência,
+porque a restrição nodal não equivale a Dirichlet contínuo conforme.
+Não há proliferação de dezenas de autovalores positivos de baixa frequência
+como na formulação cartesiana não restrita. O campo e os contornos
+precisam de validação independente antes de alegações mais gerais.
+
+Veja [método e limitações M6c](docs/implementation/07_scalar_efg_control.md) e
+[primeiros resultados efetivamente medidos](docs/results/independent_validation/M6C_SCALAR_CONTROL_RESULTS.md).
 ## Documentação
 
 O README serve como índice. As deduções detalhadas, equações, critérios de validação e discussões de arquitetura estão organizados nos arquivos Markdown:
