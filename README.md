@@ -11,7 +11,7 @@ Reprodução crítica da dissertação de **Hussam Al Maleh (2009)**, *A Vector 
 | M1 — MLS linear/quadrático, gradientes e Hessianas | **Implementado e testado** (CTest e GitHub Actions) |
 | M2 — Formulação cartesiana, quadratura, matrizes de massa e curl-curl | **Implementado e testado** (protótipo de montagem) |
 | M3 — Solucionador generalizado, referências TM e exportação de campos | **Protótipo implementado e testado**; convergência física ainda pendente |
-| M4 — Diagnóstico dos modos espúrios | Pendente |
+| M4 — Comparação modal, núcleo curl-curl e campanha de refinamento | **Implementado e testado**; classificação física ainda exploratória |
 | M5 — Formulação rotacional/irrotacional | Pendente de verificação bibliográfica |
 | M6 — Comparação independente com NASA TP-3485 e EFGMI-H(curl) | Pendente |
 
@@ -37,6 +37,21 @@ ctest --test-dir build --output-on-failure
 ```
 
 **A identificação física e a convergência dos modos TM ainda não foram estabelecidas.** Veja [implementação M3](docs/implementation/03_generalized_eigenproblem.md), [solucionador](src/spectral.cpp), [testes](tests/test_spectral.cpp) e [exemplos CSV no GitHub Actions](https://github.com/Lucas-Sperotto/al-maleh-2009-vector-efg-waveguides/actions).
+
+## Validacao espectral M4
+
+O executavel `tm_validation` compara formas de campo (`curl(H)`) e autovalores com os modos analiticos TM do guia retangular. A campanha reproduz tres refinamentos nodais e variacoes de raio de suporte, grau MLS e quadratura:
+
+```bash
+python3 scripts/m4_campaign.py --binary build/tm_validation --out out/m4 --profile ci
+```
+
+Na primeira campanha de oito casos, **todos foram executados**. O modo TM11 apresentou erro relativo de aproximadamente 0,013%, 0,003% e 0,004% nas nuvens 5x5, 7x7 e 9x7. Entretanto, modos superiores em nuvens grosseiras podem ter autovalores proximos aos analiticos e campos fisicamente inconsistentes. **Os resultados sao diagnósticos, nao certificacao de ausencia de modos espurios.**
+
+- [Metodologia, criterios e limites de M4](docs/implementation/04_tm_validation.md)
+- [Resultados medidos do M4](docs/results/M4_initial_campaign.md)
+- [Codigo e correspondencia modal](src/tm_validation.cpp)
+- [Artefatos reproduziveis no GitHub Actions](https://github.com/Lucas-Sperotto/al-maleh-2009-vector-efg-waveguides/actions)
 
 ## Documentação
 
