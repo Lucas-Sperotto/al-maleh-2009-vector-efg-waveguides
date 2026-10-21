@@ -230,3 +230,11 @@ if(BUILD_TESTING)
   add_test(NAME m5_ch6_3x5_gauss2
     COMMAND rot_irrot_rect 5 3 2 3.3 2 "${CMAKE_CURRENT_BINARY_DIR}/m5_ch6_smoke")
 endif()
+
+if(BUILD_TESTING AND Python3_Interpreter_FOUND)
+  add_test(NAME m5_ch6_author_tables
+    COMMAND ${Python3_EXECUTABLE} -m unittest discover -s tests
+      -p test_m5_ch6_reference.py -v)
+  set_tests_properties(m5_ch6_author_tables PROPERTIES
+    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
+endif()
