@@ -12,6 +12,7 @@ import math
 from pathlib import Path
 import subprocess
 import sys
+from m2_ch5_quiver_svg import render
 
 DEFAULT_REFERENCE = Path("docs/results/m2_author_ch5_tables_2_3.csv")
 MODES = {"TM11": (1,1), "TM21": (2,1)}
@@ -101,6 +102,10 @@ def main():
             int(meta["dofs"])!=2*nx*ny):
             raise RuntimeError(f"Incorrect Ch5 integration topology: {name}")
         modes=read_modes(folder/"tm_matches.csv")
+        for fig_mode in ("tm11","tm21"):
+            render(folder/(fig_mode+"_vector_field.csv"),
+                   folder/(fig_mode+"_vector_field.svg"),
+                   f"EFG numérico - {fig_mode.upper()} - malha {ny}x{nx} - Gauss {gauss}x{gauss}")
         results[(nx,ny,gauss)]=(modes,meta)
     summary=[]
     for r in ref:
@@ -182,7 +187,8 @@ def main():
         "não deve ser confundida com correspondência física de campo.",
         "",
         "Arquivos: comparison.csv, metadata.json e uma pasta por combinação",
-        "com espectro completo, matrizes, diagnósticos e stdout/stderr.",
+        "com espectro completo, matrizes, diagnósticos e campos TM11/TM21",
+        "em CSV e SVG originais, além de stdout/stderr.",
         "Nenhum espectro histórico M6a–M6f foi alterado.",
         ""
     ]
