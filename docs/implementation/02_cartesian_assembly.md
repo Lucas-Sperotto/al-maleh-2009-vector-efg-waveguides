@@ -124,3 +124,10 @@ O argumento final 2 controla a subdivisão de células. Sem ele o executável pr
 - A conclusão do autor de que a representação cartesiana introduz modos espúrios é consistente com as campanhas M6a–M6f, mas ainda não foi reproduzido quantitativamente o exemplo de k²=12,1456 da Figura 15.
 - Mesmo quando o módulo de diferença de autovalores é pequeno, o campo pode estar fisicamente incorreto; usar sobreposição, divergência, contorno e subespaços invariantes, especialmente nos modos degenerados.
 - O capítulo 6 da dissertação, necessário para o **M5 rotacional/irrotacional**, será documentado separadamente quando fornecido. O conteúdo fornecido agora é o **capítulo 5**, que fundamenta o M2/M3/M4 cartesiano.
+
+
+## Auditoria M2 pós-merges: qualidade do pareamento
+
+A comparação das 28 linhas transcritas das Tabelas 2/3 mostrou diferença média absoluta dos **erros assinados de lambda**, em pontos percentuais, de **4,998 pp** se o modo for escolhido pelo autovalor mais próximo, contra **1,859 pp** se escolhido pela maior correlação espacial de curl(H). Na malha 3×5 a discrepância média cai de **9,432** para **0,645 pp**. Isso comprova que a seleção espectral sozinha pode escolher um ramo modal incorreto, mas **não certifica** a identidade física por correlação de curl isoladamente.
+
+Uma varredura controlada de suporte (3,0/3,3/3,6), com Gauss 2×2 e quatro subcélulas, encontrou para TM11 em 3×5: +17,874%, +17,887%, +17,863%; o autor publica +17,199%. O efeito do suporte **nessa faixa** é pequeno no M2 grosseiro. Os resultados originais e limitações estão no [relatório de suporte MLS](../results/MLS_SUPPORT_SENSITIVITY_MEASURED_2026-10-21.md); relatório geral em [auditoria pós-merges](../results/POST_MERGE_SCIENTIFIC_AUDIT_2026-10-21.md). **Não extrapolar a faixa testada ou atribuir Wendland C² ao autor.**
