@@ -8,6 +8,7 @@ arbitrarily declared physically validated.
 """
 import argparse
 import csv
+import hashlib
 import json
 import math
 from pathlib import Path
@@ -199,6 +200,20 @@ def run(binary,out,tol,support,timeout):
       "",
     ]
     (out/"REPORT.md").write_text("\n".join(report),encoding="utf-8")
+    # Immutable checksums of all independently generated artifacts:
+    # preserve raw signed eigenvalues, vector coefficients, matrices and
+    # field parts; the manifest excludes itself to avoid recursion.
+    digests=[]
+    for artifact in sorted(out.rglob("*")):
+        if not artifact.is_file() or artifact.name=="manifest_sha256.csv":
+            continue
+        digests.append((str(artifact.relative_to(out)),
+                        hashlib.sha256(artifact.read_bytes()).hexdigest()))
+    with (out/"manifest_sha256.csv").open("w",newline="",encoding="utf-8") as stream:
+        writer=csv.writer(stream)
+        writer.writerow(("file","sha256"))
+        writer.writerows(digests)
+
     print("\n".join(report),flush=True)
     print(f"PASS: {len(measured)} configurations and {len(rows)} source points",flush=True)
 
