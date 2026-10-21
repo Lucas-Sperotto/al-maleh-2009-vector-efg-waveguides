@@ -1,0 +1,1512 @@
+{
+  "schema_version": 1,
+  "created_at": "2026-10-21T09:14:03.198848-03:00",
+  "sources": {
+    "efg": {
+      "commit": "dc1d98b53753ecf00573117d954c0a837dab9d49",
+      "remote": "https://github.com/Lucas-Sperotto/al-maleh-2009-vector-efg-waveguides.git",
+      "branch": "feat/m6a-independent-fem-validation"
+    },
+    "fem": {
+      "commit": "4c56a526b1a308edd2e17e3beec306f76dd5dce5",
+      "remote": "https://github.com/Lucas-Sperotto/fem-eigen-em-2d3d-whitney.git",
+      "branch": "main"
+    }
+  },
+  "cases": {
+    "efg/13x11": {
+      "schema_version": 1,
+      "origin": "tm_validation_M4",
+      "created_utc": "2026-10-21T12:06:25Z",
+      "source_commit": "dc1d98b53753ecf00573117d954c0a837dab9d49",
+      "geometry": {
+        "xmin": 0,
+        "xmax": 2,
+        "ymin": 0,
+        "ymax": 1,
+        "a": 2,
+        "b": 1,
+        "area": 2
+      },
+      "cloud": {
+        "nx": 13,
+        "ny": 11,
+        "nodes": 143,
+        "degree": 1,
+        "support_factor": 3.3,
+        "support_radius": 0.5499999999999999,
+        "basis": "centered scaled polynomial",
+        "weight": "Wendland C2"
+      },
+      "quadrature": {
+        "cells_x": 12,
+        "cells_y": 10,
+        "gauss_order": 3,
+        "points": 1080,
+        "boundary_gauss_order": 3,
+        "max_moment_condition": 629.2631665994726
+      },
+      "spectrum": {
+        "dofs": 286,
+        "modes": 286,
+        "zero_cutoff": 1.7137444925488545e-06,
+        "numerical_kernel_dimension": 6,
+        "mass_condition": 285083.8563968592,
+        "min_mass_eigenvalue": 5.105639118487071e-08,
+        "max_relative_residual": 1.0838919091692848e-14,
+        "max_abs_M_orthogonality_error": 1.899205619160238e-12,
+        "K_symmetry_frobenius": 1.956793607686814e-16,
+        "M_symmetry_frobenius": 4.536495096516341e-18
+      },
+      "solver": {
+        "library": "Eigen",
+        "method": "GeneralizedSelfAdjointEigenSolver",
+        "arithmetic": "IEEE 754 binary64",
+        "normalization": "original columns V; V^T M V = I; no rescaling",
+        "residual_definition": "||Kv-lambda Mv||_2 / ((||K||_F+|lambda| ||M||_F)||v||_2)"
+      },
+      "conventions": {
+        "dof_order": "Hx_0..Hx_(N-1),Hy_0..Hy_(N-1)",
+        "csv_index_base": 0,
+        "matrix_market_index_base": 1,
+        "matrix_market_column": "eigenvalue index + 1",
+        "kc": "sqrt(max(0,lambda)); signed lambda retained",
+        "text_significant_digits": 17,
+        "near_zero": "lambda <= zero_cutoff; all columns retained",
+        "divergence_ratio": "||div H||/(sqrt(lambda)||H||); blank for near_zero",
+        "normal_ratio": "sqrt(integral_boundary((H.n)^2) * area/perimeter / field_energy)"
+      },
+      "physics": {
+        "mu": 1,
+        "epsilon": 1,
+        "coordinate_scale": "domain dimensions in geometry; no automatic rescaling; lambda has inverse length squared units",
+        "boundary": "natural curl(H)=0; gradient kernel unfiltered",
+        "classification": "experimental candidates; eigenvalue proximity alone does not establish physical identity"
+      },
+      "common_grid": {
+        "nx": 80,
+        "ny": 40,
+        "rows": 3200,
+        "ordering": "j-major, i-fast",
+        "location": "cell centers",
+        "field": "curl(H)=dHy/dx-dHx/dy; every spectral column",
+        "weights": "grid.csv weight column"
+      },
+      "environment": {
+        "compiler": "GNU-13.3.0",
+        "compiler_version": "13.3.0",
+        "build_type": "Release",
+        "cplusplus": 201703,
+        "Eigen": "3.4.0",
+        "zlib": "1.3",
+        "OMP_NUM_THREADS": "1"
+      }
+    },
+    "efg/17x15": {
+      "schema_version": 1,
+      "origin": "tm_validation_M4",
+      "created_utc": "2026-10-21T12:06:31Z",
+      "source_commit": "dc1d98b53753ecf00573117d954c0a837dab9d49",
+      "geometry": {
+        "xmin": 0,
+        "xmax": 2,
+        "ymin": 0,
+        "ymax": 1,
+        "a": 2,
+        "b": 1,
+        "area": 2
+      },
+      "cloud": {
+        "nx": 17,
+        "ny": 15,
+        "nodes": 255,
+        "degree": 1,
+        "support_factor": 3.3,
+        "support_radius": 0.4125,
+        "basis": "centered scaled polynomial",
+        "weight": "Wendland C2"
+      },
+      "quadrature": {
+        "cells_x": 16,
+        "cells_y": 14,
+        "gauss_order": 3,
+        "points": 2016,
+        "boundary_gauss_order": 3,
+        "max_moment_condition": 1148.8765492014861
+      },
+      "spectrum": {
+        "dofs": 510,
+        "modes": 510,
+        "zero_cutoff": 3.283251861594681e-06,
+        "numerical_kernel_dimension": 9,
+        "mass_condition": 443914.0966216285,
+        "min_mass_eigenvalue": 1.8410359674251887e-08,
+        "max_relative_residual": 2.1014002471899537e-14,
+        "max_abs_M_orthogonality_error": 4.9792392431413646e-12,
+        "K_symmetry_frobenius": 2.275705042467127e-16,
+        "M_symmetry_frobenius": 2.9924456191424376e-18
+      },
+      "solver": {
+        "library": "Eigen",
+        "method": "GeneralizedSelfAdjointEigenSolver",
+        "arithmetic": "IEEE 754 binary64",
+        "normalization": "original columns V; V^T M V = I; no rescaling",
+        "residual_definition": "||Kv-lambda Mv||_2 / ((||K||_F+|lambda| ||M||_F)||v||_2)"
+      },
+      "conventions": {
+        "dof_order": "Hx_0..Hx_(N-1),Hy_0..Hy_(N-1)",
+        "csv_index_base": 0,
+        "matrix_market_index_base": 1,
+        "matrix_market_column": "eigenvalue index + 1",
+        "kc": "sqrt(max(0,lambda)); signed lambda retained",
+        "text_significant_digits": 17,
+        "near_zero": "lambda <= zero_cutoff; all columns retained",
+        "divergence_ratio": "||div H||/(sqrt(lambda)||H||); blank for near_zero",
+        "normal_ratio": "sqrt(integral_boundary((H.n)^2) * area/perimeter / field_energy)"
+      },
+      "physics": {
+        "mu": 1,
+        "epsilon": 1,
+        "coordinate_scale": "domain dimensions in geometry; no automatic rescaling; lambda has inverse length squared units",
+        "boundary": "natural curl(H)=0; gradient kernel unfiltered",
+        "classification": "experimental candidates; eigenvalue proximity alone does not establish physical identity"
+      },
+      "common_grid": {
+        "nx": 80,
+        "ny": 40,
+        "rows": 3200,
+        "ordering": "j-major, i-fast",
+        "location": "cell centers",
+        "field": "curl(H)=dHy/dx-dHx/dy; every spectral column",
+        "weights": "grid.csv weight column"
+      },
+      "environment": {
+        "compiler": "GNU-13.3.0",
+        "compiler_version": "13.3.0",
+        "build_type": "Release",
+        "cplusplus": 201703,
+        "Eigen": "3.4.0",
+        "zlib": "1.3",
+        "OMP_NUM_THREADS": "1"
+      }
+    },
+    "efg/9x7": {
+      "schema_version": 1,
+      "origin": "tm_validation_M4",
+      "created_utc": "2026-10-21T12:06:22Z",
+      "source_commit": "dc1d98b53753ecf00573117d954c0a837dab9d49",
+      "geometry": {
+        "xmin": 0,
+        "xmax": 2,
+        "ymin": 0,
+        "ymax": 1,
+        "a": 2,
+        "b": 1,
+        "area": 2
+      },
+      "cloud": {
+        "nx": 9,
+        "ny": 7,
+        "nodes": 63,
+        "degree": 1,
+        "support_factor": 3.3,
+        "support_radius": 0.825,
+        "basis": "centered scaled polynomial",
+        "weight": "Wendland C2"
+      },
+      "quadrature": {
+        "cells_x": 8,
+        "cells_y": 6,
+        "gauss_order": 3,
+        "points": 432,
+        "boundary_gauss_order": 3,
+        "max_moment_condition": 265.598156747654
+      },
+      "spectrum": {
+        "dofs": 126,
+        "modes": 126,
+        "zero_cutoff": 6.327234728133474e-07,
+        "numerical_kernel_dimension": 5,
+        "mass_condition": 72373.61662921858,
+        "min_mass_eigenvalue": 4.546061276277448e-07,
+        "max_relative_residual": 2.484627006048032e-15,
+        "max_abs_M_orthogonality_error": 4.1866510258614653e-13,
+        "K_symmetry_frobenius": 1.7875567003342138e-16,
+        "M_symmetry_frobenius": 7.181380216780271e-18
+      },
+      "solver": {
+        "library": "Eigen",
+        "method": "GeneralizedSelfAdjointEigenSolver",
+        "arithmetic": "IEEE 754 binary64",
+        "normalization": "original columns V; V^T M V = I; no rescaling",
+        "residual_definition": "||Kv-lambda Mv||_2 / ((||K||_F+|lambda| ||M||_F)||v||_2)"
+      },
+      "conventions": {
+        "dof_order": "Hx_0..Hx_(N-1),Hy_0..Hy_(N-1)",
+        "csv_index_base": 0,
+        "matrix_market_index_base": 1,
+        "matrix_market_column": "eigenvalue index + 1",
+        "kc": "sqrt(max(0,lambda)); signed lambda retained",
+        "text_significant_digits": 17,
+        "near_zero": "lambda <= zero_cutoff; all columns retained",
+        "divergence_ratio": "||div H||/(sqrt(lambda)||H||); blank for near_zero",
+        "normal_ratio": "sqrt(integral_boundary((H.n)^2) * area/perimeter / field_energy)"
+      },
+      "physics": {
+        "mu": 1,
+        "epsilon": 1,
+        "coordinate_scale": "domain dimensions in geometry; no automatic rescaling; lambda has inverse length squared units",
+        "boundary": "natural curl(H)=0; gradient kernel unfiltered",
+        "classification": "experimental candidates; eigenvalue proximity alone does not establish physical identity"
+      },
+      "common_grid": {
+        "nx": 80,
+        "ny": 40,
+        "rows": 3200,
+        "ordering": "j-major, i-fast",
+        "location": "cell centers",
+        "field": "curl(H)=dHy/dx-dHx/dy; every spectral column",
+        "weights": "grid.csv weight column"
+      },
+      "environment": {
+        "compiler": "GNU-13.3.0",
+        "compiler_version": "13.3.0",
+        "build_type": "Release",
+        "cplusplus": 201703,
+        "Eigen": "3.4.0",
+        "zlib": "1.3",
+        "OMP_NUM_THREADS": "1"
+      }
+    },
+    "fem/coarse": {
+      "method": "independent scalar P1 triangular FEM",
+      "family": "TM",
+      "boundary_condition": "homogeneous Dirichlet Ez=0",
+      "geometry": {
+        "a": 2.0,
+        "b": 1.0,
+        "unit": "m"
+      },
+      "nx": 16,
+      "ny": 8,
+      "nodes": 153,
+      "triangles": 256,
+      "dofs": 105,
+      "matrix_dimensions": [
+        105,
+        105
+      ],
+      "eigenpairs": 105,
+      "source_repository": "/home/sperotto/fem-eigen-em-2d3d-whitney",
+      "source_remote": "https://github.com/Lucas-Sperotto/fem-eigen-em-2d3d-whitney.git",
+      "source_commit": "4c56a526b1a308edd2e17e3beec306f76dd5dce5",
+      "source_modified": false,
+      "source_worktree_status_preserved": [
+        "?? out/2d/",
+        "?? out/RESULTS_REPORT.md",
+        "?? out/img_all/",
+        "?? out/run_all.log",
+        "?? out/validation/"
+      ],
+      "command": [
+        "helm10_rect",
+        "--ar-m",
+        "2.0",
+        "--nx",
+        "16",
+        "--ny",
+        "8",
+        "--nmodos",
+        "12",
+        "--backend",
+        "closed-form"
+      ],
+      "material": {
+        "eps_r": 1.0,
+        "mu_r": 1.0
+      },
+      "backend": "closed-form",
+      "solver": {
+        "library": "LAPACKE_dsygv",
+        "itype": 1,
+        "layout": "column-major",
+        "jobz": "V",
+        "uplo": "U",
+        "info": 0,
+        "precision": "IEEE 754 binary64",
+        "algorithm": "Cholesky reduction to standard symmetric EVP, DSYEV implicit QL/QR eigensolve, back transformation",
+        "normalization": "V.T @ T @ V = I; LAPACK normalization is preserved",
+        "input": "S u = lambda T u; lambda = kc squared",
+        "capture_call": 2
+      },
+      "export": {
+        "matrix_market": "array real general; full matrix; column-major text order",
+        "text_significant_digits": 17,
+        "native_csv_significant_digits": 16,
+        "index_base": 0,
+        "eigenvector_column": "eigenvalues.csv index",
+        "capture": "transparent LD_PRELOAD forwards real LAPACKE_dsygv; records S/T before and eigenpairs after without numerical substitution",
+        "coefficient_order": "interior nodes in row-major mesh node order; one Ez DOF per node",
+        "field_convention": "Ez is mass-normalized nodal scalar; dEz gradients are exact P1 element gradients; first 12 modes saved, all modes reconstructible from coefficients",
+        "degenerate_modes": "individual vectors may rotate; compare physical two-dimensional subspaces",
+        "raw_native_outputs": "native_exports/*.csv.gz; unmodified executable exports"
+      },
+      "diagnostics": {
+        "maximum_relative_residual": 4.332830139596286e-14,
+        "mass_orthogonality_max_abs_error": 4.440892098500626e-15,
+        "mass_smallest_eigenvalue": 0.004139237736591163,
+        "stiffness_symmetry_max_abs_error": 0.0,
+        "mass_symmetry_max_abs_error": 0.0,
+        "mesh_stiffness_reconstruction_max_abs_error": 1.7763568394002505e-15,
+        "mesh_mass_reconstruction_max_abs_error": 4.336808689942018e-18,
+        "native_vtk_coordinates_max_abs_error": 0.0,
+        "native_vtk_connectivity_identical": true,
+        "native_export_stiffness_max_abs_error": 0.0,
+        "native_export_mass_max_abs_error": 2.168404344971009e-19,
+        "near_zero_threshold": 1.5659753704086002e-07,
+        "near_zero_count": 0,
+        "negative_count": 0
+      },
+      "checks": {
+        "passed": 14,
+        "failed": 0,
+        "details": {
+          "all_finite": true,
+          "complete_spectrum_dimensions": true,
+          "stiffness_symmetric": true,
+          "mass_symmetric": true,
+          "mass_positive_definite": true,
+          "all_eigenpair_residuals": true,
+          "mass_orthonormality": true,
+          "mesh_stiffness_reconstruction": true,
+          "mesh_mass_reconstruction": true,
+          "positive_dirichlet_spectrum": true,
+          "native_vtk_connectivity": true,
+          "native_vtk_coordinates": true,
+          "native_export_stiffness": true,
+          "native_export_mass": true
+        }
+      },
+      "tools": {
+        "python": "3.12.3",
+        "numpy": "1.26.4",
+        "cmake": "cmake version 3.28.3",
+        "compiler": "c++ (Ubuntu 13.3.0-6ubuntu2~24.04.1) 13.3.0",
+        "platform": "Linux-6.18.33.2-microsoft-standard-WSL2-x86_64-with-glibc2.39"
+      },
+      "executed_at_utc": "2026-10-21T12:06:41.159888+00:00",
+      "threads": {
+        "OPENBLAS_NUM_THREADS": "1"
+      },
+      "interceptor_transparency_control": {
+        "independent_uninstrumented_command": [
+          "helm10_rect",
+          "--ar-m",
+          "2.0",
+          "--nx",
+          "16",
+          "--ny",
+          "8",
+          "--nmodos",
+          "12",
+          "--backend",
+          "closed-form"
+        ],
+        "native_outputs_byte_identical": true,
+        "sha256": {
+          "helm10_rect_tm_eigenvalues.csv": "4b13453f025addf2c73f13c5516a4fac75bce07d3d7d98b9ea409b51c9b8b005",
+          "helm10_rect_tm_eigenvectors.csv": "5933947b45db874ccc7c4d925d3a1bc7505e050abd37d880894af057009a081a",
+          "helm10_rect_tm_S_crs.csv": "f076700f1b91223c173783d217fcbf53e5cd0471fad38918cbc85d372a36a1d3",
+          "helm10_rect_tm_T_crs.csv": "faf4e60c5026341d52e68de8db0b5e2676f10e7752a9ea77f5ea547e331fe225"
+        }
+      }
+    },
+    "fem/fine": {
+      "method": "independent scalar P1 triangular FEM",
+      "family": "TM",
+      "boundary_condition": "homogeneous Dirichlet Ez=0",
+      "geometry": {
+        "a": 2.0,
+        "b": 1.0,
+        "unit": "m"
+      },
+      "nx": 40,
+      "ny": 20,
+      "nodes": 861,
+      "triangles": 1600,
+      "dofs": 741,
+      "matrix_dimensions": [
+        741,
+        741
+      ],
+      "eigenpairs": 741,
+      "source_repository": "/home/sperotto/fem-eigen-em-2d3d-whitney",
+      "source_remote": "https://github.com/Lucas-Sperotto/fem-eigen-em-2d3d-whitney.git",
+      "source_commit": "4c56a526b1a308edd2e17e3beec306f76dd5dce5",
+      "source_modified": false,
+      "source_worktree_status_preserved": [
+        "?? out/2d/",
+        "?? out/RESULTS_REPORT.md",
+        "?? out/img_all/",
+        "?? out/run_all.log",
+        "?? out/validation/"
+      ],
+      "command": [
+        "helm10_rect",
+        "--ar-m",
+        "2.0",
+        "--nx",
+        "40",
+        "--ny",
+        "20",
+        "--nmodos",
+        "12",
+        "--backend",
+        "closed-form"
+      ],
+      "material": {
+        "eps_r": 1.0,
+        "mu_r": 1.0
+      },
+      "backend": "closed-form",
+      "solver": {
+        "library": "LAPACKE_dsygv",
+        "itype": 1,
+        "layout": "column-major",
+        "jobz": "V",
+        "uplo": "U",
+        "info": 0,
+        "precision": "IEEE 754 binary64",
+        "algorithm": "Cholesky reduction to standard symmetric EVP, DSYEV implicit QL/QR eigensolve, back transformation",
+        "normalization": "V.T @ T @ V = I; LAPACK normalization is preserved",
+        "input": "S u = lambda T u; lambda = kc squared",
+        "capture_call": 2
+      },
+      "export": {
+        "matrix_market": "array real general; full matrix; column-major text order",
+        "text_significant_digits": 17,
+        "native_csv_significant_digits": 16,
+        "index_base": 0,
+        "eigenvector_column": "eigenvalues.csv index",
+        "capture": "transparent LD_PRELOAD forwards real LAPACKE_dsygv; records S/T before and eigenpairs after without numerical substitution",
+        "coefficient_order": "interior nodes in row-major mesh node order; one Ez DOF per node",
+        "field_convention": "Ez is mass-normalized nodal scalar; dEz gradients are exact P1 element gradients; first 12 modes saved, all modes reconstructible from coefficients",
+        "degenerate_modes": "individual vectors may rotate; compare physical two-dimensional subspaces",
+        "raw_native_outputs": "native_exports/*.csv.gz; unmodified executable exports"
+      },
+      "diagnostics": {
+        "maximum_relative_residual": 6.452807600951396e-13,
+        "mass_orthogonality_max_abs_error": 1.0658141036401503e-14,
+        "mass_smallest_eigenvalue": 0.0006311638830707355,
+        "stiffness_symmetry_max_abs_error": 0.0,
+        "mass_symmetry_max_abs_error": 0.0,
+        "mesh_stiffness_reconstruction_max_abs_error": 3.552713678800501e-15,
+        "mesh_mass_reconstruction_max_abs_error": 1.0842021724855044e-18,
+        "native_vtk_coordinates_max_abs_error": 0.0,
+        "native_vtk_connectivity_identical": true,
+        "native_export_stiffness_max_abs_error": 4.440892098500626e-16,
+        "native_export_mass_max_abs_error": 4.336808689942018e-19,
+        "near_zero_threshold": 1.024515391670502e-06,
+        "near_zero_count": 0,
+        "negative_count": 0
+      },
+      "checks": {
+        "passed": 14,
+        "failed": 0,
+        "details": {
+          "all_finite": true,
+          "complete_spectrum_dimensions": true,
+          "stiffness_symmetric": true,
+          "mass_symmetric": true,
+          "mass_positive_definite": true,
+          "all_eigenpair_residuals": true,
+          "mass_orthonormality": true,
+          "mesh_stiffness_reconstruction": true,
+          "mesh_mass_reconstruction": true,
+          "positive_dirichlet_spectrum": true,
+          "native_vtk_connectivity": true,
+          "native_vtk_coordinates": true,
+          "native_export_stiffness": true,
+          "native_export_mass": true
+        }
+      },
+      "tools": {
+        "python": "3.12.3",
+        "numpy": "1.26.4",
+        "cmake": "cmake version 3.28.3",
+        "compiler": "c++ (Ubuntu 13.3.0-6ubuntu2~24.04.1) 13.3.0",
+        "platform": "Linux-6.18.33.2-microsoft-standard-WSL2-x86_64-with-glibc2.39"
+      },
+      "executed_at_utc": "2026-10-21T12:06:48.800918+00:00",
+      "threads": {
+        "OPENBLAS_NUM_THREADS": "1"
+      },
+      "interceptor_transparency_control": null
+    },
+    "fem/medium": {
+      "method": "independent scalar P1 triangular FEM",
+      "family": "TM",
+      "boundary_condition": "homogeneous Dirichlet Ez=0",
+      "geometry": {
+        "a": 2.0,
+        "b": 1.0,
+        "unit": "m"
+      },
+      "nx": 30,
+      "ny": 15,
+      "nodes": 496,
+      "triangles": 900,
+      "dofs": 406,
+      "matrix_dimensions": [
+        406,
+        406
+      ],
+      "eigenpairs": 406,
+      "source_repository": "/home/sperotto/fem-eigen-em-2d3d-whitney",
+      "source_remote": "https://github.com/Lucas-Sperotto/fem-eigen-em-2d3d-whitney.git",
+      "source_commit": "4c56a526b1a308edd2e17e3beec306f76dd5dce5",
+      "source_modified": false,
+      "source_worktree_status_preserved": [
+        "?? out/2d/",
+        "?? out/RESULTS_REPORT.md",
+        "?? out/img_all/",
+        "?? out/run_all.log",
+        "?? out/validation/"
+      ],
+      "command": [
+        "helm10_rect",
+        "--ar-m",
+        "2.0",
+        "--nx",
+        "30",
+        "--ny",
+        "15",
+        "--nmodos",
+        "12",
+        "--backend",
+        "closed-form"
+      ],
+      "material": {
+        "eps_r": 1.0,
+        "mu_r": 1.0
+      },
+      "backend": "closed-form",
+      "solver": {
+        "library": "LAPACKE_dsygv",
+        "itype": 1,
+        "layout": "column-major",
+        "jobz": "V",
+        "uplo": "U",
+        "info": 0,
+        "precision": "IEEE 754 binary64",
+        "algorithm": "Cholesky reduction to standard symmetric EVP, DSYEV implicit QL/QR eigensolve, back transformation",
+        "normalization": "V.T @ T @ V = I; LAPACK normalization is preserved",
+        "input": "S u = lambda T u; lambda = kc squared",
+        "capture_call": 2
+      },
+      "export": {
+        "matrix_market": "array real general; full matrix; column-major text order",
+        "text_significant_digits": 17,
+        "native_csv_significant_digits": 16,
+        "index_base": 0,
+        "eigenvector_column": "eigenvalues.csv index",
+        "capture": "transparent LD_PRELOAD forwards real LAPACKE_dsygv; records S/T before and eigenpairs after without numerical substitution",
+        "coefficient_order": "interior nodes in row-major mesh node order; one Ez DOF per node",
+        "field_convention": "Ez is mass-normalized nodal scalar; dEz gradients are exact P1 element gradients; first 12 modes saved, all modes reconstructible from coefficients",
+        "degenerate_modes": "individual vectors may rotate; compare physical two-dimensional subspaces",
+        "raw_native_outputs": "native_exports/*.csv.gz; unmodified executable exports"
+      },
+      "diagnostics": {
+        "maximum_relative_residual": 3.3476175346133357e-13,
+        "mass_orthogonality_max_abs_error": 7.993605777301127e-15,
+        "mass_smallest_eigenvalue": 0.0011304985069344412,
+        "stiffness_symmetry_max_abs_error": 0.0,
+        "mass_symmetry_max_abs_error": 0.0,
+        "mesh_stiffness_reconstruction_max_abs_error": 3.552713678800501e-15,
+        "mesh_mass_reconstruction_max_abs_error": 1.734723475976807e-18,
+        "native_vtk_coordinates_max_abs_error": 3.3333333333551707e-06,
+        "native_vtk_connectivity_identical": true,
+        "native_export_stiffness_max_abs_error": 4.440892098500626e-16,
+        "native_export_mass_max_abs_error": 4.336808689942018e-19,
+        "near_zero_threshold": 5.721604230736852e-07,
+        "near_zero_count": 0,
+        "negative_count": 0
+      },
+      "checks": {
+        "passed": 14,
+        "failed": 0,
+        "details": {
+          "all_finite": true,
+          "complete_spectrum_dimensions": true,
+          "stiffness_symmetric": true,
+          "mass_symmetric": true,
+          "mass_positive_definite": true,
+          "all_eigenpair_residuals": true,
+          "mass_orthonormality": true,
+          "mesh_stiffness_reconstruction": true,
+          "mesh_mass_reconstruction": true,
+          "positive_dirichlet_spectrum": true,
+          "native_vtk_connectivity": true,
+          "native_vtk_coordinates": true,
+          "native_export_stiffness": true,
+          "native_export_mass": true
+        }
+      },
+      "tools": {
+        "python": "3.12.3",
+        "numpy": "1.26.4",
+        "cmake": "cmake version 3.28.3",
+        "compiler": "c++ (Ubuntu 13.3.0-6ubuntu2~24.04.1) 13.3.0",
+        "platform": "Linux-6.18.33.2-microsoft-standard-WSL2-x86_64-with-glibc2.39"
+      },
+      "executed_at_utc": "2026-10-21T12:06:42.513189+00:00",
+      "threads": {
+        "OPENBLAS_NUM_THREADS": "1"
+      },
+      "interceptor_transparency_control": null
+    }
+  },
+  "hash_policy": "SHA-256 of every campaign file except manifest.json itself",
+  "files": [
+    {
+      "path": "REPORT.md",
+      "bytes": 17085,
+      "sha256": "469d82b3e6947772e30af1130dd068c100c66a8f796920951a78bce0ba33a298"
+    },
+    {
+      "path": "analysis.log",
+      "bytes": 319,
+      "sha256": "d4e2d884537b75f9e07cccc51cf77ba969274125bb4a49bb5abd17147595621f"
+    },
+    {
+      "path": "comparison.csv",
+      "bytes": 4043,
+      "sha256": "d1b148a77533c0742c8e79bff8ba48f8245c96978235a8606f89ae6e750412be"
+    },
+    {
+      "path": "convergence.csv",
+      "bytes": 9023,
+      "sha256": "ca3ebff322e921afe4fcc395a02f9dac384bcbe13e96cb67396e73c6bfd7515c"
+    },
+    {
+      "path": "efg/13x11/candidate_spectrum.csv",
+      "bytes": 1757,
+      "sha256": "692c0874832a8c910d5ecd9af531927debab7744015a94d0ce62472b0028332e"
+    },
+    {
+      "path": "efg/13x11/dof_map.csv",
+      "bytes": 16682,
+      "sha256": "67379696d0be6dc19240ba090d6e9efe997aab788b691c29e60b14cf317e08c3"
+    },
+    {
+      "path": "efg/13x11/eigenvalues.csv",
+      "bytes": 24090,
+      "sha256": "525da1fd1cab46edf409a9bd1bdf727b1aeaadb7bc3976673f1933b6f0bccbd6"
+    },
+    {
+      "path": "efg/13x11/eigenvectors.mtx.gz",
+      "bytes": 644067,
+      "sha256": "7f86a905fd19ee0957f04c52e4f7d8b5acc00aa035e5e783a608da8737169104"
+    },
+    {
+      "path": "efg/13x11/field_curl.mtx.gz",
+      "bytes": 7248822,
+      "sha256": "bc9315af201e6e8b1108169c29a1523242c8989171b8129c1d92de630f52fce8"
+    },
+    {
+      "path": "efg/13x11/grid.csv",
+      "bytes": 189707,
+      "sha256": "3912ffc32e601ff73c4238dda4d2c26e09bc7b872a34c3e30c6f0900db438abb"
+    },
+    {
+      "path": "efg/13x11/mass_matrix.mtx.gz",
+      "bytes": 260362,
+      "sha256": "863ce301242f65ca914607bb86363eeb447bfda4071376d366875c5bbbc81f42"
+    },
+    {
+      "path": "efg/13x11/mode_diagnostics.csv",
+      "bytes": 68236,
+      "sha256": "b418b3b6330b779e4cf6ea51654241a5689fe94f5c161ee04534dd20da8b3e9b"
+    },
+    {
+      "path": "efg/13x11/run_metadata.json",
+      "bytes": 2446,
+      "sha256": "27451c81612f3ab323114fc18a1f8332b229c93eee1b2bb052c427222c726747"
+    },
+    {
+      "path": "efg/13x11/run_metadata.txt",
+      "bytes": 420,
+      "sha256": "d0e94397e493a1a22767b3a0d614beed005bb0ed1d3493943c851e15122c09d9"
+    },
+    {
+      "path": "efg/13x11/stderr.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "efg/13x11/stdout.txt",
+      "bytes": 313,
+      "sha256": "bf6032a0d88b06c7b3b138250735f83819fe8d7ebf6ffab7041b362d46a3b97e"
+    },
+    {
+      "path": "efg/13x11/stiffness_matrix.mtx.gz",
+      "bytes": 591889,
+      "sha256": "9e666ef4289878813dc6b7a569f1168425b0968c6c74c21aefd978bb36ff956f"
+    },
+    {
+      "path": "efg/13x11/tm_matches.csv",
+      "bytes": 3714,
+      "sha256": "e33d0f474baf6892be6a6a078f3b875f3d03e6239853aa512702a84835be251a"
+    },
+    {
+      "path": "efg/17x15/candidate_spectrum.csv",
+      "bytes": 1762,
+      "sha256": "70f2cb556213f09587848c3189d7d943533ad78087a57010a23c4bcfa0ab2371"
+    },
+    {
+      "path": "efg/17x15/dof_map.csv",
+      "bytes": 26206,
+      "sha256": "ea4cd90470d86943ab3af8d09dc8f4b3db25edfb0257b400f4d31e0120e36ab0"
+    },
+    {
+      "path": "efg/17x15/eigenvalues.csv",
+      "bytes": 42989,
+      "sha256": "555b7e8a19dc776e60d893d91150310ee08472ae67dfd8cb8331bb86e8eb8b8e"
+    },
+    {
+      "path": "efg/17x15/eigenvectors.mtx.gz",
+      "bytes": 2050266,
+      "sha256": "1fd0d44161fd28a233eb735d565b77f1d77eeba5f1ab2542909ca7fd18c4e2d0"
+    },
+    {
+      "path": "efg/17x15/field_curl.mtx.gz",
+      "bytes": 13018152,
+      "sha256": "d895afcbee7efbe7f0e23c812f9b4589ce086d9894a080bb7a4534c9bdb094da"
+    },
+    {
+      "path": "efg/17x15/grid.csv",
+      "bytes": 189707,
+      "sha256": "3912ffc32e601ff73c4238dda4d2c26e09bc7b872a34c3e30c6f0900db438abb"
+    },
+    {
+      "path": "efg/17x15/mass_matrix.mtx.gz",
+      "bytes": 563952,
+      "sha256": "b688db6bad23f9584001bca8fa82b36fa5bfaf368fb9deffc1319ffcdca55bc5"
+    },
+    {
+      "path": "efg/17x15/mode_diagnostics.csv",
+      "bytes": 121444,
+      "sha256": "a37c7da3848b249c1fb51358a13b6910e18cae32bece49ee2ebcb27a5d81a1fc"
+    },
+    {
+      "path": "efg/17x15/run_metadata.json",
+      "bytes": 2446,
+      "sha256": "a94841dd5ec09a8144fdd18b7c612fad620ce820a9bf18437f7e27c68432d2a8"
+    },
+    {
+      "path": "efg/17x15/run_metadata.txt",
+      "bytes": 419,
+      "sha256": "7aa3277bc851951b0feccabcb185608a09f728c7c960d6aee4f1fe6a934897f5"
+    },
+    {
+      "path": "efg/17x15/stderr.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "efg/17x15/stdout.txt",
+      "bytes": 313,
+      "sha256": "521c4713918e66d6a1e969642d510f7574749f13d96b42c33f6dd055344f4ae7"
+    },
+    {
+      "path": "efg/17x15/stiffness_matrix.mtx.gz",
+      "bytes": 1263820,
+      "sha256": "81958c073e61d2feb601c6a8744603646d469f5afa11ad9bee3a8d0c3b9f535d"
+    },
+    {
+      "path": "efg/17x15/tm_matches.csv",
+      "bytes": 3726,
+      "sha256": "99c0c8e03d999450ae61e5270b4de0972280cb81df82a921e149610f9e4c3f9a"
+    },
+    {
+      "path": "efg/9x7/candidate_spectrum.csv",
+      "bytes": 1748,
+      "sha256": "1dc2e8610c5c7aceb19f254debeab54e306116f204ebfb4db809f84c0ee27d91"
+    },
+    {
+      "path": "efg/9x7/dof_map.csv",
+      "bytes": 5748,
+      "sha256": "4d490c6cda3b220ce6b23c845cab03fff42e99bc2bac6ef7ee1844c9184cd287"
+    },
+    {
+      "path": "efg/9x7/eigenvalues.csv",
+      "bytes": 10584,
+      "sha256": "5ed608bd1f77832327f408b9935ab8e021910e369079246d66dacef0134c2f12"
+    },
+    {
+      "path": "efg/9x7/eigenvectors.mtx.gz",
+      "bytes": 124272,
+      "sha256": "e2603a411c63e5dfae6b16f0fda55bcf32649165325ccfe2dd67d294077f7362"
+    },
+    {
+      "path": "efg/9x7/field_curl.mtx.gz",
+      "bytes": 3126189,
+      "sha256": "dc2c22d7c3866d2c0ccf753da7147496c1b6e82667128debf86b29294ee0af21"
+    },
+    {
+      "path": "efg/9x7/grid.csv",
+      "bytes": 189707,
+      "sha256": "3912ffc32e601ff73c4238dda4d2c26e09bc7b872a34c3e30c6f0900db438abb"
+    },
+    {
+      "path": "efg/9x7/mass_matrix.mtx.gz",
+      "bytes": 54743,
+      "sha256": "021923f85d9615b7426740f99800be16c06b5a21becc21936a9bd00dbe406f8e"
+    },
+    {
+      "path": "efg/9x7/mode_diagnostics.csv",
+      "bytes": 29954,
+      "sha256": "06ff382d66aa3bcbc630f7966266557d4b6d5dc37572e0853f3e6ad258edb612"
+    },
+    {
+      "path": "efg/9x7/run_metadata.json",
+      "bytes": 2439,
+      "sha256": "40480e49eac8e0a0c182a3a417d9e238d1d323332db9ab774bc77623a7017c2e"
+    },
+    {
+      "path": "efg/9x7/run_metadata.txt",
+      "bytes": 414,
+      "sha256": "4b61c0e4726705fda2cceb640d0864581ce7576cb1351a8a212d68796f1ccae1"
+    },
+    {
+      "path": "efg/9x7/stderr.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "efg/9x7/stdout.txt",
+      "bytes": 308,
+      "sha256": "d871776c9bef75ce0688c94b84f4e82c3d5a1c87c7dfbdf42447d0ea68c4d4b7"
+    },
+    {
+      "path": "efg/9x7/stiffness_matrix.mtx.gz",
+      "bytes": 135022,
+      "sha256": "6394ad0b5e992ad72bbfeeebcfdc9601beac8362451f23c0af2b3cc856292d6e"
+    },
+    {
+      "path": "efg/9x7/tm_matches.csv",
+      "bytes": 3669,
+      "sha256": "91ce860284b9bac37f196a2d732b061074d401f3d016930d8fa1f274570d3450"
+    },
+    {
+      "path": "efg_campaign.log",
+      "bytes": 6395,
+      "sha256": "774a2e75c9657e15a3903a53de5d143a8732ba91c38d7e034757151d80b57c98"
+    },
+    {
+      "path": "execution_summary.json",
+      "bytes": 1900,
+      "sha256": "52573ffe91ae078049f8ecd8a34022600da68fb32f5ff0decd5f84224298bd8d"
+    },
+    {
+      "path": "fem/coarse/common_grid_columns.csv",
+      "bytes": 61,
+      "sha256": "4ab32cce9ab9156d8b1bf236e7bb20516efae5179d66495f1142c1a3227bbe69"
+    },
+    {
+      "path": "fem/coarse/common_grid_ez.mtx.gz",
+      "bytes": 161068,
+      "sha256": "f4662c230a82106a3d6241fb7114175173c7036241f54c487a9b2a39db339542"
+    },
+    {
+      "path": "fem/coarse/dof_map.csv",
+      "bytes": 1791,
+      "sha256": "d92e7b6e67c60a3045328a199d04c3c05a0f95a723b370402c8e61c93645da0a"
+    },
+    {
+      "path": "fem/coarse/eigenvalues.csv",
+      "bytes": 7666,
+      "sha256": "91d7be83b7962509e0e01cb8b3f56edf446208d1ae31dcc77a5f822f8263e96f"
+    },
+    {
+      "path": "fem/coarse/eigenvectors.mtx.gz",
+      "bytes": 84862,
+      "sha256": "584b2b425ad77d736917f4eec0c0bc7381b9618dc7271ac745fc1a8f0a45ca98"
+    },
+    {
+      "path": "fem/coarse/fields_elements.csv.gz",
+      "bytes": 35895,
+      "sha256": "26f54ac3872a893af84d244ce9cdf69060a85c909a91df1df94453e8adf387b2"
+    },
+    {
+      "path": "fem/coarse/fields_nodes.csv.gz",
+      "bytes": 11215,
+      "sha256": "8383c89de8cf0aaf91f41c78fb87ba778ea23cfc608c6cee39bddca52a950759"
+    },
+    {
+      "path": "fem/coarse/mass_matrix.mtx.gz",
+      "bytes": 373,
+      "sha256": "2af90f18f3438305ef9253fca572c36b22fe6af521bee8ca27613a088686c06a"
+    },
+    {
+      "path": "fem/coarse/mesh_elements.csv",
+      "bytes": 3470,
+      "sha256": "3480d21febb029935e17fbb8c0eabb920561655052efceebc97164a6d09518e8"
+    },
+    {
+      "path": "fem/coarse/mesh_nodes.csv",
+      "bytes": 2287,
+      "sha256": "3abbe99ec815018b9566b8bfda96c2debe67abf0b041dd779076bfb77bf8f4b3"
+    },
+    {
+      "path": "fem/coarse/mode_diagnostics.csv",
+      "bytes": 10315,
+      "sha256": "fe68c4a8184ac43c86215b66e456464e75072c4c5e378bdb4fd99ecf648c5aa9"
+    },
+    {
+      "path": "fem/coarse/native_exports/helm10_rect_fields_TM_m1_n1_rank01.csv.gz",
+      "bytes": 4718,
+      "sha256": "73b8d77d1cb41fd0f1abcb3895ca488c33cca70308fbf87c4861d22476d5cb36"
+    },
+    {
+      "path": "fem/coarse/native_exports/helm10_rect_fields_TM_m1_n2_rank04.csv.gz",
+      "bytes": 4725,
+      "sha256": "6dcd11ea5f8b1af35c64e3997dae634c43f08b15a58929e71abf208d52058e8a"
+    },
+    {
+      "path": "fem/coarse/native_exports/helm10_rect_fields_TM_m1_n3_rank10.csv.gz",
+      "bytes": 4662,
+      "sha256": "7fe1f937fe7a06bab666111c7d7896b7b2a44025b3c588acadb66ab6002f5e6c"
+    },
+    {
+      "path": "fem/coarse/native_exports/helm10_rect_fields_TM_m2_n1_rank02.csv.gz",
+      "bytes": 4697,
+      "sha256": "092bf7124f4890bfec4ed370d4ab6a589aa9d65a19d174ec03ea4b300901852a"
+    },
+    {
+      "path": "fem/coarse/native_exports/helm10_rect_fields_TM_m2_n2_rank06.csv.gz",
+      "bytes": 4812,
+      "sha256": "d11cbb988fb3305204e74fc5bb036738443c3d1ff7a51f302898fd64493852ba"
+    },
+    {
+      "path": "fem/coarse/native_exports/helm10_rect_fields_TM_m2_n3_rank12.csv.gz",
+      "bytes": 4626,
+      "sha256": "1bcc6902265e75d8413b6a533e2a37e9d792cb18224b6ec2c0ab70e530c9f678"
+    },
+    {
+      "path": "fem/coarse/native_exports/helm10_rect_fields_TM_m3_n1_rank03.csv.gz",
+      "bytes": 4624,
+      "sha256": "b251e319061097d2f4028509e879401f091ae2005f09ea508938e851d2438ad6"
+    },
+    {
+      "path": "fem/coarse/native_exports/helm10_rect_fields_TM_m3_n2_rank07.csv.gz",
+      "bytes": 4722,
+      "sha256": "07df6a0191e0bedc65bc5a2dd845f17df3c81db867114bb4ee40e9bb27d79898"
+    },
+    {
+      "path": "fem/coarse/native_exports/helm10_rect_fields_TM_m4_n1_rank05.csv.gz",
+      "bytes": 4815,
+      "sha256": "abecb2f097a705d64e12b239adaaa36eb3d82b61b018dda046198240e4c6d28f"
+    },
+    {
+      "path": "fem/coarse/native_exports/helm10_rect_fields_TM_m4_n2_rank09.csv.gz",
+      "bytes": 4590,
+      "sha256": "146dfa2c2f67b69d0da9d817111558e208bf8ec0dd58eadfe3948c3f768ffb1e"
+    },
+    {
+      "path": "fem/coarse/native_exports/helm10_rect_fields_TM_m5_n1_rank08.csv.gz",
+      "bytes": 4664,
+      "sha256": "e87ac7cf901cd310372c4e35809a4b8084f3ecd3656aa5e370a824bf51c4fa48"
+    },
+    {
+      "path": "fem/coarse/native_exports/helm10_rect_fields_TM_m6_n1_rank11.csv.gz",
+      "bytes": 4682,
+      "sha256": "15b1bb353c44523829b6f52422f38ea99f49d11375b8a29a27f5db1f0d98a208"
+    },
+    {
+      "path": "fem/coarse/native_exports/helm10_rect_modes.csv.gz",
+      "bytes": 2202,
+      "sha256": "51738b413b6be16c95033aee415593efd56b25e1b4a62bbfa92a097cc4bbf23d"
+    },
+    {
+      "path": "fem/coarse/native_exports/helm10_rect_tm_S_crs.csv.gz",
+      "bytes": 3301,
+      "sha256": "531e440d68ba873ee55348bc5fae9cf1347c651249c507670efddca249f20aa8"
+    },
+    {
+      "path": "fem/coarse/native_exports/helm10_rect_tm_T_crs.csv.gz",
+      "bytes": 4598,
+      "sha256": "a8546341920f6b6f201a501b4181af114e03d2879977efae849fed6cce2e0a70"
+    },
+    {
+      "path": "fem/coarse/native_exports/helm10_rect_tm_eigenvalues.csv.gz",
+      "bytes": 1380,
+      "sha256": "59d9499334185a502186fe4e2d60cfb98bc36738cdaa1a49014611d607fb7a36"
+    },
+    {
+      "path": "fem/coarse/native_exports/helm10_rect_tm_eigenvectors.csv.gz",
+      "bytes": 108821,
+      "sha256": "8fb192849cdd9cad974aa23ce6a5530b55538216e38f3d2157d2a357eb612e88"
+    },
+    {
+      "path": "fem/coarse/native_exports/run_timing.csv.gz",
+      "bytes": 374,
+      "sha256": "ba2c78ea80f1eaec0debe5d05b1716e663be388175cf055d70b05bb606a6becd"
+    },
+    {
+      "path": "fem/coarse/native_exports/tm11_rect_sv.vtk.gz",
+      "bytes": 3131,
+      "sha256": "ae19181f926209304136ed4af90a7a51d787d53d908040c9e7b45535a24cf949"
+    },
+    {
+      "path": "fem/coarse/run_metadata.json",
+      "bytes": 4735,
+      "sha256": "ab1dfae880c05cc463605ac079b0c57d9f0a14f750f24560edfb8f31aca15f58"
+    },
+    {
+      "path": "fem/coarse/stderr.log",
+      "bytes": 138,
+      "sha256": "ae22eafea135bf5921dd931fb361e99cdf38fb710cc1b6a915de7708df8ce117"
+    },
+    {
+      "path": "fem/coarse/stdout.log",
+      "bytes": 4488,
+      "sha256": "5df586b9fd56299a09d3b195b2ee630e788dc5dc0d7067098ade635c83b3f01f"
+    },
+    {
+      "path": "fem/coarse/stiffness_matrix.mtx.gz",
+      "bytes": 277,
+      "sha256": "6563806676a0c98c4d5e6f1e6a3c3263378b030c89ec4d0f2f3622d390efd29d"
+    },
+    {
+      "path": "fem/fine/common_grid_columns.csv",
+      "bytes": 61,
+      "sha256": "4ab32cce9ab9156d8b1bf236e7bb20516efae5179d66495f1142c1a3227bbe69"
+    },
+    {
+      "path": "fem/fine/common_grid_ez.mtx.gz",
+      "bytes": 184286,
+      "sha256": "284b8c622ca3264d7b92821d549ea35b8cb936f723e4042c10cd818f7a84cabf"
+    },
+    {
+      "path": "fem/fine/dof_map.csv",
+      "bytes": 29087,
+      "sha256": "fcaad5cb9dcc54aeea009715b2d37cafa712a224f211398f2885c5d37e12def2"
+    },
+    {
+      "path": "fem/fine/eigenvalues.csv",
+      "bytes": 54533,
+      "sha256": "4b711458c0bcf753c5e3c7d29e7feaa5c99f0042923219041741534ea18c8198"
+    },
+    {
+      "path": "fem/fine/eigenvectors.mtx.gz",
+      "bytes": 4331789,
+      "sha256": "21d239471596f33cda3f0a0070b7c69ec52a61d5df9abde9cf90a3703df39f26"
+    },
+    {
+      "path": "fem/fine/fields_elements.csv.gz",
+      "bytes": 306621,
+      "sha256": "f7e81a3abbc982165ef435f5611be3ebc3d58cc8a9bec94cbc82d532f2856909"
+    },
+    {
+      "path": "fem/fine/fields_nodes.csv.gz",
+      "bytes": 88861,
+      "sha256": "8ad1de04a099d265d2f131583292795a6cad0c0b4271091c3955281f2e403459"
+    },
+    {
+      "path": "fem/fine/mass_matrix.mtx.gz",
+      "bytes": 7052,
+      "sha256": "23d076bcbc88df85368a036491c030c31771f2f2469631f9ca23546061de0b35"
+    },
+    {
+      "path": "fem/fine/mesh_elements.csv",
+      "bytes": 25628,
+      "sha256": "66347447c4f5a670e210c77e39627f2de96d2a1479396e3634a811fe728c0438"
+    },
+    {
+      "path": "fem/fine/mesh_nodes.csv",
+      "bytes": 30385,
+      "sha256": "367e03f6fb50e5169d2ac73d9267caac62676b35f0698972c78b1c83385482ca"
+    },
+    {
+      "path": "fem/fine/mode_diagnostics.csv",
+      "bytes": 72835,
+      "sha256": "240abd5b2d45e7cae1190675391ad663e7e98b9053f1512447d84ec74f78a256"
+    },
+    {
+      "path": "fem/fine/native_exports/helm10_rect_fields_TM_m1_n1_rank01.csv.gz",
+      "bytes": 31163,
+      "sha256": "d9bfcdc581547b03966f60923099ef2a11ca6febc63d9f055c6916daf40e63f3"
+    },
+    {
+      "path": "fem/fine/native_exports/helm10_rect_fields_TM_m1_n2_rank04.csv.gz",
+      "bytes": 31375,
+      "sha256": "5f185cf8115ffdac098a88929bf5055dd822bfe43c697c21fd295909852aaef0"
+    },
+    {
+      "path": "fem/fine/native_exports/helm10_rect_fields_TM_m1_n3_rank10.csv.gz",
+      "bytes": 31206,
+      "sha256": "c57db7aa885d827014d80c1f2ba16c8668e3daf6b2acaec1e584e8ddc6c6c1ef"
+    },
+    {
+      "path": "fem/fine/native_exports/helm10_rect_fields_TM_m2_n1_rank02.csv.gz",
+      "bytes": 31080,
+      "sha256": "305c7487a24439e66de049ed77375f9d05952f7c4553077ac8acf73bb2dd4795"
+    },
+    {
+      "path": "fem/fine/native_exports/helm10_rect_fields_TM_m2_n2_rank06.csv.gz",
+      "bytes": 32147,
+      "sha256": "46d71e4c44391a3745990a27a15e6e9b192cf2d5e97e3de03e8bf3774fb0c468"
+    },
+    {
+      "path": "fem/fine/native_exports/helm10_rect_fields_TM_m2_n3_rank12.csv.gz",
+      "bytes": 31350,
+      "sha256": "9359fc46f34739c87969e953296e2ef3c1cd9b2cde32612e3d25e48771421de0"
+    },
+    {
+      "path": "fem/fine/native_exports/helm10_rect_fields_TM_m3_n1_rank03.csv.gz",
+      "bytes": 31115,
+      "sha256": "41d8a013507d458578f045f0eb1c59795c70d87a282c920acb1f9423f835aae1"
+    },
+    {
+      "path": "fem/fine/native_exports/helm10_rect_fields_TM_m3_n2_rank07.csv.gz",
+      "bytes": 31368,
+      "sha256": "e74a922a866bd84bac67a4932eb212c27ab3a02366e4e44b9ae642a062276cac"
+    },
+    {
+      "path": "fem/fine/native_exports/helm10_rect_fields_TM_m4_n1_rank05.csv.gz",
+      "bytes": 31924,
+      "sha256": "e3df5847d59fba9471992f5c76fed9642371b5b2a5577ec82b92a3cbdb135e85"
+    },
+    {
+      "path": "fem/fine/native_exports/helm10_rect_fields_TM_m4_n2_rank09.csv.gz",
+      "bytes": 31124,
+      "sha256": "9ff0f1eea54dbe32988a22e69200b81ea7ee98babeb74c2b3ed412cd5950b34e"
+    },
+    {
+      "path": "fem/fine/native_exports/helm10_rect_fields_TM_m5_n1_rank08.csv.gz",
+      "bytes": 31014,
+      "sha256": "d7d2e1850a51434a7d7ec045c5c1a65bea07bda1bee28afe86c63cf5e4c6a7e3"
+    },
+    {
+      "path": "fem/fine/native_exports/helm10_rect_fields_TM_m6_n1_rank11.csv.gz",
+      "bytes": 31391,
+      "sha256": "75d589937c1c0da51639cba391aa5c51f5adb545fd69e8b1ed835dd52c42c753"
+    },
+    {
+      "path": "fem/fine/native_exports/helm10_rect_modes.csv.gz",
+      "bytes": 2177,
+      "sha256": "0adcc77b5ebe83eb776557da5a07e01d0ee555f4f7cec96ee5d831e7633be99c"
+    },
+    {
+      "path": "fem/fine/native_exports/helm10_rect_tm_S_crs.csv.gz",
+      "bytes": 27828,
+      "sha256": "75dba0bfb2487e8fd43141e2ff908a0f9427579771d24798510b99ad119aa68c"
+    },
+    {
+      "path": "fem/fine/native_exports/helm10_rect_tm_T_crs.csv.gz",
+      "bytes": 36452,
+      "sha256": "cbbd8709dcc5bedca8d9e8968c580a5249db0f7b622439cf138003db12aa5698"
+    },
+    {
+      "path": "fem/fine/native_exports/helm10_rect_tm_eigenvalues.csv.gz",
+      "bytes": 9691,
+      "sha256": "436f889a92924d7a8fc981d69030c58c09d7e21aa82d39bdd978c51dd37b7209"
+    },
+    {
+      "path": "fem/fine/native_exports/helm10_rect_tm_eigenvectors.csv.gz",
+      "bytes": 5605423,
+      "sha256": "0ab5b667c0b5e50c66d969a442162049f78d010adaf8464af5d192c81c2206e4"
+    },
+    {
+      "path": "fem/fine/native_exports/run_timing.csv.gz",
+      "bytes": 383,
+      "sha256": "4e6f8c27ee528af099897d19c8dce92f82992b0478904d45002631ef11234c22"
+    },
+    {
+      "path": "fem/fine/native_exports/tm11_rect_sv.vtk.gz",
+      "bytes": 18064,
+      "sha256": "90e8daf07e72d174d6606d74d6d57cdea04855aa744bc8f0ccaf311d9ea3e23a"
+    },
+    {
+      "path": "fem/fine/run_metadata.json",
+      "bytes": 4050,
+      "sha256": "fa9abe467dac4fd1b2d77e7e601cdb84beb23d56f478aa6788df00018dced9d3"
+    },
+    {
+      "path": "fem/fine/stderr.log",
+      "bytes": 138,
+      "sha256": "b6ca344f3ae12670bc2f67b768d002f4baf9902452078233b916485f7bf0a0fa"
+    },
+    {
+      "path": "fem/fine/stdout.log",
+      "bytes": 4465,
+      "sha256": "5dbe1ad5e942fa5784d7bab6a17f81a1fcf7a8abf1a965953f5563f8d0da596d"
+    },
+    {
+      "path": "fem/fine/stiffness_matrix.mtx.gz",
+      "bytes": 5337,
+      "sha256": "5259158088bd7e7b9dbbf992b923236703a95d7001ae79cea637b2a4fcb5e573"
+    },
+    {
+      "path": "fem/medium/common_grid_columns.csv",
+      "bytes": 61,
+      "sha256": "4ab32cce9ab9156d8b1bf236e7bb20516efae5179d66495f1142c1a3227bbe69"
+    },
+    {
+      "path": "fem/medium/common_grid_ez.mtx.gz",
+      "bytes": 181433,
+      "sha256": "c93bbdefefcfeb07781a2603719764de0aae45d8c03ed4de370272526195e673"
+    },
+    {
+      "path": "fem/medium/dof_map.csv",
+      "bytes": 18465,
+      "sha256": "902861659f5ca6d916eeca2ce2a5c31ea72e022fe3e4a182169afd8fa0852200"
+    },
+    {
+      "path": "fem/medium/eigenvalues.csv",
+      "bytes": 29835,
+      "sha256": "08f853430cb56ac42820806b17a059089d0414408cd144c91036c143ecc7fb37"
+    },
+    {
+      "path": "fem/medium/eigenvectors.mtx.gz",
+      "bytes": 1288211,
+      "sha256": "59000f5eb9063a447ac105378b8c294d2d64c11eeb20a53538b2c59aa42afd56"
+    },
+    {
+      "path": "fem/medium/fields_elements.csv.gz",
+      "bytes": 139496,
+      "sha256": "ce3ce8d46b0377d16bdcefa8d04f381c3752a7c8ec1d422f61c7b80fa170a526"
+    },
+    {
+      "path": "fem/medium/fields_nodes.csv.gz",
+      "bytes": 48640,
+      "sha256": "a276a7ae48f2c89c81df4755f6a23ffdd6f4ff0b132979af6fe47907a77f0c7c"
+    },
+    {
+      "path": "fem/medium/mass_matrix.mtx.gz",
+      "bytes": 2891,
+      "sha256": "9840ad94dce5f6271609249931d5d384554050e7bc0dd09c7439bb3373ebeeab"
+    },
+    {
+      "path": "fem/medium/mesh_elements.csv",
+      "bytes": 13804,
+      "sha256": "05da7571607ca0e6b483047359b5be87f11ab92e881d1a44728d2dac28e11caf"
+    },
+    {
+      "path": "fem/medium/mesh_nodes.csv",
+      "bytes": 20049,
+      "sha256": "f40db9d549da9acaa1c9769911edf73a00e95726268b1cd9ccf06cc7f6da69ee"
+    },
+    {
+      "path": "fem/medium/mode_diagnostics.csv",
+      "bytes": 39781,
+      "sha256": "8cae23d07814c6033756a9caac7d932ced8552bf648881354ae58e512ffa1ca7"
+    },
+    {
+      "path": "fem/medium/native_exports/helm10_rect_fields_TM_m1_n1_rank01.csv.gz",
+      "bytes": 17721,
+      "sha256": "5d53aa4fea40f31a448ca1c40b5466f3e227a7679256b21c272981fdba1eee74"
+    },
+    {
+      "path": "fem/medium/native_exports/helm10_rect_fields_TM_m1_n2_rank04.csv.gz",
+      "bytes": 17908,
+      "sha256": "58bc071d74cc6b9e2b3c763ee7b315f44687866b940783c8758363667cf643d6"
+    },
+    {
+      "path": "fem/medium/native_exports/helm10_rect_fields_TM_m1_n3_rank10.csv.gz",
+      "bytes": 17837,
+      "sha256": "df8b2253f383d44916532d135eb335e666c69c6032e0268efce50f76ddc05ea8"
+    },
+    {
+      "path": "fem/medium/native_exports/helm10_rect_fields_TM_m2_n1_rank02.csv.gz",
+      "bytes": 17771,
+      "sha256": "58b4f73294d9ffeff791eb08dcdb625bccab4f0025c9c4814eaf9f665adcd83d"
+    },
+    {
+      "path": "fem/medium/native_exports/helm10_rect_fields_TM_m2_n2_rank06.csv.gz",
+      "bytes": 18519,
+      "sha256": "86d0d1bcd65d767cc77faec0f8dc4fc04482f20112cec228bb1fce41364d29c7"
+    },
+    {
+      "path": "fem/medium/native_exports/helm10_rect_fields_TM_m2_n3_rank12.csv.gz",
+      "bytes": 17916,
+      "sha256": "291ee85a76bd1ff27d53cc06cc3eccc7319bc76fc3f54e3c1e72ac32048be13d"
+    },
+    {
+      "path": "fem/medium/native_exports/helm10_rect_fields_TM_m3_n1_rank03.csv.gz",
+      "bytes": 17755,
+      "sha256": "e69c9232c955d7353da63bfbe8fab8a80936ce2825b8236178ae7da48c107f78"
+    },
+    {
+      "path": "fem/medium/native_exports/helm10_rect_fields_TM_m3_n2_rank07.csv.gz",
+      "bytes": 17879,
+      "sha256": "82bddeae4c53a8bbc5d8b07976967a247bac9861fd57871b2e23e01ce1a97246"
+    },
+    {
+      "path": "fem/medium/native_exports/helm10_rect_fields_TM_m4_n1_rank05.csv.gz",
+      "bytes": 18433,
+      "sha256": "11b221503edc4cf034263128ebe8715c3ed9c032732ac0ff156ae717492f5984"
+    },
+    {
+      "path": "fem/medium/native_exports/helm10_rect_fields_TM_m4_n2_rank09.csv.gz",
+      "bytes": 17801,
+      "sha256": "7ab8c169fbb36ddd7475572fe4860846a7a169950c0ad3f82012ea74f98429c0"
+    },
+    {
+      "path": "fem/medium/native_exports/helm10_rect_fields_TM_m5_n1_rank08.csv.gz",
+      "bytes": 17749,
+      "sha256": "c2fe9940ea8450a8a8ff89db25ffce5954ee90621c52d30ec11a8622a58c0828"
+    },
+    {
+      "path": "fem/medium/native_exports/helm10_rect_fields_TM_m6_n1_rank11.csv.gz",
+      "bytes": 17880,
+      "sha256": "7a8d7f60cde3ea86047cfbf12a2d82e2a36015e1be1ca0c8fd6ad0d8c91e7624"
+    },
+    {
+      "path": "fem/medium/native_exports/helm10_rect_modes.csv.gz",
+      "bytes": 2172,
+      "sha256": "e86c71717647925e17afcc8474b2f5f6962a7aa4380c404b88d2445cc8474a18"
+    },
+    {
+      "path": "fem/medium/native_exports/helm10_rect_tm_S_crs.csv.gz",
+      "bytes": 14554,
+      "sha256": "559f5db2b80ee5ba6b21b534582038426741d02109e9f30a0ff8b8342f9ca280"
+    },
+    {
+      "path": "fem/medium/native_exports/helm10_rect_tm_T_crs.csv.gz",
+      "bytes": 19875,
+      "sha256": "95f71ef7b6f3d7e89b464cb8fdabf766c9965da22ff0c0e4df07c270d281c2e5"
+    },
+    {
+      "path": "fem/medium/native_exports/helm10_rect_tm_eigenvalues.csv.gz",
+      "bytes": 5294,
+      "sha256": "bfe0b7617b5415cf5c7bd0a9c040b8775fdf3f4e4a3ab51b924df48f43eca705"
+    },
+    {
+      "path": "fem/medium/native_exports/helm10_rect_tm_eigenvectors.csv.gz",
+      "bytes": 1675145,
+      "sha256": "9ab6944a089b6f398418e520eab0c7d58432b7601d08117029f1a93e06876432"
+    },
+    {
+      "path": "fem/medium/native_exports/run_timing.csv.gz",
+      "bytes": 379,
+      "sha256": "12dea46c31755f09fcb238a0a9824baf021797165fc9543d03c9a04eb4457691"
+    },
+    {
+      "path": "fem/medium/native_exports/tm11_rect_sv.vtk.gz",
+      "bytes": 10392,
+      "sha256": "15ff61c693de5b906ec44adaff286ffbad7754d5293105b14acb301031210e7b"
+    },
+    {
+      "path": "fem/medium/run_metadata.json",
+      "bytes": 4067,
+      "sha256": "f73229b97dd55c75ad74e8212f27dc289f9c784ee9a7310594bf055854f5b054"
+    },
+    {
+      "path": "fem/medium/stderr.log",
+      "bytes": 138,
+      "sha256": "4fe563b48fbf17fd8c2f685e7ae04685146fe3981ae060238013ab347ac0f768"
+    },
+    {
+      "path": "fem/medium/stdout.log",
+      "bytes": 4491,
+      "sha256": "19651d517b6e9c80cbe8c20b41f1f8ac9f22424bad2d29db1cff998a1a310234"
+    },
+    {
+      "path": "fem/medium/stiffness_matrix.mtx.gz",
+      "bytes": 2297,
+      "sha256": "de0854b33468188e09071b054d3889e75af534d90cd2624589c7e5fcb3752e15"
+    },
+    {
+      "path": "fem_build.log",
+      "bytes": 512,
+      "sha256": "260017851e449997129574f6f7223abe4493d92fe147e28c2ca52193d042eb30"
+    },
+    {
+      "path": "fem_configure.log",
+      "bytes": 375,
+      "sha256": "df39b50455cf98808b937acca74fbb2653bd9ab12428ed070fc09a7e6a68c3ed"
+    },
+    {
+      "path": "fem_export_checks.log",
+      "bytes": 217,
+      "sha256": "2f89bb7a91e8ef2b9ba72586887bd404fa8a62ea38ac0dc45b8413115ee894b1"
+    },
+    {
+      "path": "figures/efg_physical_indicators.png",
+      "bytes": 64919,
+      "sha256": "ace47c6136fe7847d86bcbe66145d78c57d41e7c06bda8672638d171fbc77ede"
+    },
+    {
+      "path": "figures/eigenvalue_convergence.png",
+      "bytes": 114500,
+      "sha256": "c0fe233aae650b1f75cad57c045ed125cdd50095a9c3b80efab3f9479b36f2b0"
+    },
+    {
+      "path": "figures/eigenvalue_errors.png",
+      "bytes": 22156,
+      "sha256": "d0d8873c3e5c12396f32829348c37d23d1059ee34748480f14d39106ec0bed14"
+    },
+    {
+      "path": "figures/field_comparison.png",
+      "bytes": 127209,
+      "sha256": "a4aec6c063fdfe50382c0579ff89be1dbe99ee0ab7dfe57a3cbce02b8b81ab71"
+    },
+    {
+      "path": "figures/kernel_threshold_sensitivity.png",
+      "bytes": 49604,
+      "sha256": "2331916cb545e79f27c8969ba9a785595a4467a8e4bb4b61253fdb765d2ebd92"
+    },
+    {
+      "path": "final_ctest.log",
+      "bytes": 1615,
+      "sha256": "5c7b57db367592ab442c1bc7abd3468210005f0b1c9d7cfcb21cd261ca936556"
+    },
+    {
+      "path": "kernel_sensitivity.csv",
+      "bytes": 1599,
+      "sha256": "d78749d107c3590557e99ce431eb812af86eb96e4c2f2cbc98a3f11c33069e96"
+    },
+    {
+      "path": "m4/REPORT.md",
+      "bytes": 2274,
+      "sha256": "cba0b59f9772aeb8f21d5f8e70e95a9555fb6721ac6a73fd45276636bc81ab35"
+    },
+    {
+      "path": "m4/runs.csv",
+      "bytes": 319,
+      "sha256": "522d8e0c940b470b3de2d4649987ca29b13c0ee93ec96fcd45a922b60e269642"
+    },
+    {
+      "path": "m4/tm_matches_all.csv",
+      "bytes": 11496,
+      "sha256": "8ea8fbf62837651a61a3677f92722eeba2cbcced7796ec92970748365a98c2ef"
+    },
+    {
+      "path": "report_data.json",
+      "bytes": 15695,
+      "sha256": "786b8810c3593ca54d1ab15606863f3b146f0e0460e388f9203686d7cb2ca279"
+    },
+    {
+      "path": "repository_audit.json",
+      "bytes": 2166,
+      "sha256": "574dc863c4bec06960a7a661f51c30094577d1e5f76387cfcd2e2153b2afb489"
+    },
+    {
+      "path": "solver_comparison.csv",
+      "bytes": 160613,
+      "sha256": "e8e7c32d1fdd4cf2b4e1fa3a44263c1a0fbcccd299c23404993c5bec25620765"
+    },
+    {
+      "path": "solver_subspaces.csv",
+      "bytes": 54899,
+      "sha256": "20db81e385eee92e0b2296dd4407ba15f24885498c1bcc40be4b74128231d00e"
+    },
+    {
+      "path": "verification.log",
+      "bytes": 233,
+      "sha256": "6a20c42a000d7e18fb2a38a9944ba5c00617663c3f27f427fa9b87be47fab2c7"
+    }
+  ]
+}

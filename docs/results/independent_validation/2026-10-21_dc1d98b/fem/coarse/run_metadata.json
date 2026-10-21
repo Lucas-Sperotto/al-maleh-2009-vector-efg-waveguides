@@ -1,0 +1,143 @@
+{
+  "method": "independent scalar P1 triangular FEM",
+  "family": "TM",
+  "boundary_condition": "homogeneous Dirichlet Ez=0",
+  "geometry": {
+    "a": 2.0,
+    "b": 1.0,
+    "unit": "m"
+  },
+  "nx": 16,
+  "ny": 8,
+  "nodes": 153,
+  "triangles": 256,
+  "dofs": 105,
+  "matrix_dimensions": [
+    105,
+    105
+  ],
+  "eigenpairs": 105,
+  "source_repository": "/home/sperotto/fem-eigen-em-2d3d-whitney",
+  "source_remote": "https://github.com/Lucas-Sperotto/fem-eigen-em-2d3d-whitney.git",
+  "source_commit": "4c56a526b1a308edd2e17e3beec306f76dd5dce5",
+  "source_modified": false,
+  "source_worktree_status_preserved": [
+    "?? out/2d/",
+    "?? out/RESULTS_REPORT.md",
+    "?? out/img_all/",
+    "?? out/run_all.log",
+    "?? out/validation/"
+  ],
+  "command": [
+    "helm10_rect",
+    "--ar-m",
+    "2.0",
+    "--nx",
+    "16",
+    "--ny",
+    "8",
+    "--nmodos",
+    "12",
+    "--backend",
+    "closed-form"
+  ],
+  "material": {
+    "eps_r": 1.0,
+    "mu_r": 1.0
+  },
+  "backend": "closed-form",
+  "solver": {
+    "library": "LAPACKE_dsygv",
+    "itype": 1,
+    "layout": "column-major",
+    "jobz": "V",
+    "uplo": "U",
+    "info": 0,
+    "precision": "IEEE 754 binary64",
+    "algorithm": "Cholesky reduction to standard symmetric EVP, DSYEV implicit QL/QR eigensolve, back transformation",
+    "normalization": "V.T @ T @ V = I; LAPACK normalization is preserved",
+    "input": "S u = lambda T u; lambda = kc squared",
+    "capture_call": 2
+  },
+  "export": {
+    "matrix_market": "array real general; full matrix; column-major text order",
+    "text_significant_digits": 17,
+    "native_csv_significant_digits": 16,
+    "index_base": 0,
+    "eigenvector_column": "eigenvalues.csv index",
+    "capture": "transparent LD_PRELOAD forwards real LAPACKE_dsygv; records S/T before and eigenpairs after without numerical substitution",
+    "coefficient_order": "interior nodes in row-major mesh node order; one Ez DOF per node",
+    "field_convention": "Ez is mass-normalized nodal scalar; dEz gradients are exact P1 element gradients; first 12 modes saved, all modes reconstructible from coefficients",
+    "degenerate_modes": "individual vectors may rotate; compare physical two-dimensional subspaces",
+    "raw_native_outputs": "native_exports/*.csv.gz; unmodified executable exports"
+  },
+  "diagnostics": {
+    "maximum_relative_residual": 4.332830139596286e-14,
+    "mass_orthogonality_max_abs_error": 4.440892098500626e-15,
+    "mass_smallest_eigenvalue": 0.004139237736591163,
+    "stiffness_symmetry_max_abs_error": 0.0,
+    "mass_symmetry_max_abs_error": 0.0,
+    "mesh_stiffness_reconstruction_max_abs_error": 1.7763568394002505e-15,
+    "mesh_mass_reconstruction_max_abs_error": 4.336808689942018e-18,
+    "native_vtk_coordinates_max_abs_error": 0.0,
+    "native_vtk_connectivity_identical": true,
+    "native_export_stiffness_max_abs_error": 0.0,
+    "native_export_mass_max_abs_error": 2.168404344971009e-19,
+    "near_zero_threshold": 1.5659753704086002e-07,
+    "near_zero_count": 0,
+    "negative_count": 0
+  },
+  "checks": {
+    "passed": 14,
+    "failed": 0,
+    "details": {
+      "all_finite": true,
+      "complete_spectrum_dimensions": true,
+      "stiffness_symmetric": true,
+      "mass_symmetric": true,
+      "mass_positive_definite": true,
+      "all_eigenpair_residuals": true,
+      "mass_orthonormality": true,
+      "mesh_stiffness_reconstruction": true,
+      "mesh_mass_reconstruction": true,
+      "positive_dirichlet_spectrum": true,
+      "native_vtk_connectivity": true,
+      "native_vtk_coordinates": true,
+      "native_export_stiffness": true,
+      "native_export_mass": true
+    }
+  },
+  "tools": {
+    "python": "3.12.3",
+    "numpy": "1.26.4",
+    "cmake": "cmake version 3.28.3",
+    "compiler": "c++ (Ubuntu 13.3.0-6ubuntu2~24.04.1) 13.3.0",
+    "platform": "Linux-6.18.33.2-microsoft-standard-WSL2-x86_64-with-glibc2.39"
+  },
+  "executed_at_utc": "2026-10-21T12:06:41.159888+00:00",
+  "threads": {
+    "OPENBLAS_NUM_THREADS": "1"
+  },
+  "interceptor_transparency_control": {
+    "independent_uninstrumented_command": [
+      "helm10_rect",
+      "--ar-m",
+      "2.0",
+      "--nx",
+      "16",
+      "--ny",
+      "8",
+      "--nmodos",
+      "12",
+      "--backend",
+      "closed-form"
+    ],
+    "native_outputs_byte_identical": true,
+    "sha256": {
+      "helm10_rect_tm_eigenvalues.csv": "4b13453f025addf2c73f13c5516a4fac75bce07d3d7d98b9ea409b51c9b8b005",
+      "helm10_rect_tm_eigenvectors.csv": "5933947b45db874ccc7c4d925d3a1bc7505e050abd37d880894af057009a081a",
+      "helm10_rect_tm_S_crs.csv": "f076700f1b91223c173783d217fcbf53e5cd0471fad38918cbc85d372a36a1d3",
+      "helm10_rect_tm_T_crs.csv": "faf4e60c5026341d52e68de8db0b5e2676f10e7752a9ea77f5ea547e331fe225"
+    }
+  }
+}

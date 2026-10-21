@@ -3,6 +3,8 @@
 #include "al_maleh/cartesian.hpp"
 #include <Eigen/Core>
 #include <Eigen/SparseCore>
+#include <filesystem>
+#include <string>
 #include <vector>
 namespace al_maleh {
 struct SpectralOptions {
@@ -32,4 +34,18 @@ struct FieldMetrics {
 FieldMetrics modal_diagnostics(const MLSEvaluator& mls,
   const BackgroundQuadrature& rule,
   const Eigen::VectorXd& coefficients,double eigenvalue);
+
+// Persist every column without filtering or changing the solver's original
+// M normalization. CSV spectrum indices are zero based; Matrix Market rows
+// and columns follow the format's one-based convention. Hx DOFs precede Hy.
+struct SpectralExportOptions {
+  int nx=0,ny=0;
+  double support_factor=0;
+  std::string origin="cartesian_EFG";
+  int grid_nx=80,grid_ny=40;
+};
+void export_spectrum(const std::filesystem::path& directory,
+  const MLSEvaluator& mls,const BackgroundQuadrature& rule,
+  const CartesianAssembly& matrices,const Spectrum& spectrum,
+  const SpectralExportOptions& options);
 } // namespace al_maleh

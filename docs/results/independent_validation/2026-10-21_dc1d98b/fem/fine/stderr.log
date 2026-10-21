@@ -1,0 +1,2 @@
+M6A_LAPACK_CALL call=1 layout=102 itype=1 jobz=V uplo=U n=861 info=0
+M6A_LAPACK_CALL call=2 layout=102 itype=1 jobz=V uplo=U n=741 info=0

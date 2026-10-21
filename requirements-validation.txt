@@ -1,0 +1,4 @@
+# Isolate from unrelated user-site packages: python3 -m venv .venv-validation
+numpy>=1.26,<3
+scipy>=1.11,<2
+matplotlib>=3.6,<4

@@ -74,6 +74,17 @@ além de tabelas CSV detalhadas por modo e indicadores de divergência/contorno.
 reprodução numérica de uma tabela específica da dissertação.**
 Consulte [o guia completo de execução](docs/implementation/05_local_refinement.md).
 Veja também os [resultados medidos em três refinamentos (até 510 DOFs)](docs/results/M4_high_refinement.md).
+
+## Validação independente M6a e espectros completos
+
+A [campanha FEM × EFG de 21/10/2026](docs/results/independent_validation/2026-10-21_dc1d98b/REPORT.md)
+executou os dois programas independentes e preservou 2174 autovetores completos,
+suas matrizes, mapas de DOFs e campos. Quatro modos simples passam nos critérios
+usados; o subespaço TM22/TM41 fino reprova por divergência, apesar da proximidade
+espectral. A verificação adicional Eigen × LAPACK nas mesmas matrizes EFG passou.
+O [guia de reprodução e formatos](docs/results/independent_validation/README.md)
+inclui comandos, testes, manifesto SHA-256 e limites científicos.
+
 ## Documentação
 
 O README serve como índice. As deduções detalhadas, equações, critérios de validação e discussões de arquitetura estão organizados nos arquivos Markdown:

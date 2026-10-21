@@ -66,6 +66,7 @@ int main(int argc,char** argv){
        <<(l<=s.zero_cutoff?"near_zero":"positive_candidate")<<','
        <<s.residuals[static_cast<std::size_t>(j)]<<'\n';
    }
+   modes.close();
    const auto tm=rectangular_tm_reference(rect,4,4);
    std::ofstream bench(out/"tm_reference.csv");
    if(!bench)throw std::runtime_error("Cannot create TM reference CSV");
@@ -104,6 +105,7 @@ int main(int argc,char** argv){
                            mls,s.eigenvectors.col(j),rect,nx-1,ny-1);
      ++count;
    }
+   diag.close();
    std::ofstream meta(out/"run_metadata.txt");
    meta<<std::setprecision(17)
        <<"model=cartesian_EFG_M3_experimental\n"
@@ -118,6 +120,11 @@ int main(int argc,char** argv){
        <<"\nmass_condition="<<s.mass_condition
        <<"\nmax_mls_condition="<<a.max_moment_condition
        <<"\nnumerical_kernel="<<s.numerical_kernel_dimension<<'\n';
+   SpectralExportOptions export_options;
+   export_options.nx=nx;export_options.ny=ny;
+   export_options.support_factor=support;
+   export_options.origin="cartesian_spectrum_M3";
+   export_spectrum(out,mls,quad,a,s,export_options);
    std::cout<<"M3 prototype: dofs="<<s.eigenvalues.size()
        <<" near_zero="<<s.numerical_kernel_dimension
        <<" mass_condition="<<s.mass_condition
