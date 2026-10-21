@@ -44,11 +44,10 @@ ligeiramente abaixo da referência analítica.
 | 13×11 | 0,008633 | 0,008055 | 0,003244 | 0,009430 |
 | 17×15 | 0,007209 | 0,005396 | 0,000991 | 0,006770 |
 
-O erro do TM12 não é monotônico nesta sequência (0,009430% para
-0,006770% é uma melhoria; todas as quatro linhas diminuem, exceto
-a amplitude relativa de TM31 que melhora mais rápido). A atribuição
-foi por proximidade espectral e a tabela não valida degenerescências
-nem todos os demais modos.
+Todos os quatro erros espectrais tabelados diminuem de 9×7
+até 17×15. A atribuição foi feita por proximidade espectral, de forma
+exploratória: a tabela não valida degenerescências nem o restante do
+espectro.
 
 ## Violar as condições de parede entre nós ainda é possível
 
