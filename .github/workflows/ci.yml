@@ -138,3 +138,17 @@ jobs:
           path: build/m6f_centroids/
           if-no-files-found: warn
           retention-days: 30
+      - name: Audit M2/M5 chapter tables and observed outcomes
+        run: python3 scripts/audit_m2_m5_reproduction.py --out build/m2_m5_audit.json
+      - name: Controlled M2/M5 MLS support-sensitivity campaign
+        run: PYTHONNOUSERSITE=1 OPENBLAS_NUM_THREADS=1 python3 scripts/mls_support_sensitivity.py --cartesian-binary build/tm_validation --rot-irrot-binary build/rot_irrot_rect --out build/mls_support_sensitivity
+      - name: Publish post-merge original thesis reproduction audit
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: post-merge-ch4-mls-support-audit
+          path: |
+            build/m2_m5_audit.json
+            build/mls_support_sensitivity/
+          if-no-files-found: warn
+          retention-days: 30
