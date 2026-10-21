@@ -205,6 +205,18 @@ A etapa compara espectros e referências TM; campos vetoriais completos
 e o dubleto degenerado ainda exigem matching por forma/ângulos principais.
 
 Veja [protocolo M6e, fontes, reprodução e limitações](docs/implementation/09_whitney_edge_cross_validation.md) e [resultados medidos](docs/results/independent_validation/M6E_WHITNEY_EDGE_INITIAL_RESULTS.md).
+## M6f — campos vetoriais H EFG × Whitney (diagnóstico por centroides)
+
+O experimento M6f avalia os campos TM-H dos dois métodos nos **mesmos**
+centroides de triângulos, após transformar as coordenadas do guia FEM
+1×0,5 para o guia EFG 2×1. Compara correlações L2 dos modos simples
+e ângulos principais invariantes do dubleto TM22/TM41.
+
+**Esta é uma campanha de amostragem exploratória**, não uma quadratura
+com convergência nem certificação física de divergência e contorno.
+Para reproduzir, execute M6e antes e siga
+[o protocolo de comparação dos campos](docs/implementation/10_whitney_efg_vector_overlap.md).
+
 ## Documentação
 
 O README serve como índice. As deduções detalhadas, equações, critérios de validação e discussões de arquitetura estão organizados nos arquivos Markdown:

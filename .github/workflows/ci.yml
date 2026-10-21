@@ -128,3 +128,13 @@ jobs:
           path: build/m5_ch6/
           if-no-files-found: warn
           retention-days: 30
+      - name: M6f exploratory common-centroid TM-H field overlaps
+        run: PYTHONNOUSERSITE=1 OPENBLAS_NUM_THREADS=1 python3 scripts/m6f_centroid_overlap.py --efg-binary build/efg_sample_vector_fields --m6e-campaign build/m6e_edge --out build/m6f_centroids
+      - name: Publish M6f raw common-centroid vector fields and principal angles
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: m6f-centroid-vector-subspaces
+          path: build/m6f_centroids/
+          if-no-files-found: warn
+          retention-days: 30
