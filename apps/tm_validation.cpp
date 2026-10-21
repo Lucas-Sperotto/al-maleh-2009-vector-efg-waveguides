@@ -79,6 +79,8 @@ int main(int argc,char** argv) {
       <<"nx="<<nx<<"\nny="<<ny<<"\ndegree="<<degree
       <<"\nsupport_factor="<<factor<<"\nsupport_radius="<<radius
       <<"\ngauss_order="<<gauss<<"\n"
+      <<"subcells_per_node_interval="<<subdivision<<"\n"
+      <<"background_cells="<<((nx-1)*subdivision*(ny-1)*subdivision)<<"\n"
       <<"dofs="<<s.eigenvalues.size()
       <<"\nquadrature_points="<<matrices.quadrature_points
       <<"\nnumerical_kernel="<<s.numerical_kernel_dimension
