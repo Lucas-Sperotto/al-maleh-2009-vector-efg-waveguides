@@ -73,6 +73,7 @@ além de tabelas CSV detalhadas por modo e indicadores de divergência/contorno.
 **A comparação é feita com soluções TM analíticas e ainda não equivale à
 reprodução numérica de uma tabela específica da dissertação.**
 Consulte [o guia completo de execução](docs/implementation/05_local_refinement.md).
+Veja também os [resultados medidos em três refinamentos (até 510 DOFs)](docs/results/M4_high_refinement.md).
 ## Documentação
 
 O README serve como índice. As deduções detalhadas, equações, critérios de validação e discussões de arquitetura estão organizados nos arquivos Markdown:
