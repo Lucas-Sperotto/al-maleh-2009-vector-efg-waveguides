@@ -102,6 +102,18 @@ O problema escalar TM de um guia homogêneo é referência matemática legítima
 
 **Novo experimento em desenvolvimento nesta PR:** scripts/mls_support_sensitivity.py muda **somente** o suporte (fatores 3,0 / 3,3 / 3,6) em 3×5 e 4×7, mantém MLS linear, Wendland C², Gauss 2×2 e quatro subcélulas. Executa as duas formulações e registra seleção espectral, correlação de curl, massa e quase-núcleo, sem alterar arquivos históricos. A primeira execução CI define seus resultados; **não são parâmetros confirmados do autor**.
 
+## 7.1. Sensibilidade ao suporte: dados novos já medidos
+
+A primeira campanha experimental deste trabalho **já terminou com sucesso** na [CI 39642651230](https://github.com/Lucas-Sperotto/al-maleh-2009-vector-efg-waveguides/actions/runs/39642651230): 28/28 testes; 12 execuções de solver e 24 comparações. Os resultados estão em [MLS_SUPPORT_SENSITIVITY_MEASURED_2026-10-21.md](MLS_SUPPORT_SENSITIVITY_MEASURED_2026-10-21.md) e no [artefato bruto](https://github.com/Lucas-Sperotto/al-maleh-2009-vector-efg-waveguides/actions/runs/39642651230/artifacts/12365842067).
+
+| Caso | Fator 3,0 | Fator 3,3 | Fator 3,6 |
+|---|---:|---:|---:|
+| M2 TM11, 3×5 — erro de lambda (%) | +17,874 | +17,887 | +17,863 |
+| M5 TM11, 3×5 — erro de lambda (%) | +19,314 | +19,287 | +18,647 |
+| M5 TM21, 3×5 — erro de lambda (%) | +30,566 | +31,465 | **−8,503** |
+| M5 TM11, 4×7 — erro de lambda (%) | +2,157 | +2,612 | +3,839 |
+
+O resultado M5 TM21 é especialmente relevante: o modo selecionado por melhor correlação de curl **troca abruptamente de autovalor** com suporte 3,6, embora a correlação cresça e o posto de massa permaneça 26 no caso 3×5. Isso exige **rastreamento da identidade dos autovetores** antes de interpretar uma piora ou melhora real do modo físico. Variar apenas suporte não resolve, na faixa medida, a discrepância quantitativa das tabelas originais.
 ## 8. Comandos de reprodução
 
 Depois de atualizar a branch de auditoria e compilar:
