@@ -121,7 +121,7 @@ def main():
         if not matches:
             return "| " + case + " | falha | — | — | — |"
         x = matches[0]
-        return ("| {} | {} | {:.5f} | {:.5f} | {} |".format(
+        return ("| {} | {} | {:.9f} | {:.9f} | {} |".format(
             case, x["nearest_index"],
             float(x["nearest_relative_error"]),
             float(x["nearest_cluster_overlap"]), x["status"]))
