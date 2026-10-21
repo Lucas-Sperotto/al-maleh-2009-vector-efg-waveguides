@@ -85,6 +85,22 @@ espectral. A verificação adicional Eigen × LAPACK nas mesmas matrizes EFG pas
 O [guia de reprodução e formatos](docs/results/independent_validation/README.md)
 inclui comandos, testes, manifesto SHA-256 e limites científicos.
 
+## M6b — Diagnóstico de subespaços degenerados (experimental)
+
+As novas formas quadráticas de divergência `D` e fluxo normal `B`
+permitem calcular extremos invariantes à escolha de base em TM22/TM41,
+sem modificar a matriz K/M nem os arquivos históricos da campanha M6a.
+
+```bash
+python3 scripts/m6b_campaign.py --binary build/constraint_subspace --out out/m6b
+```
+
+A execução analisa os dubletos das nuvens 9×7, 13×11 e 17×15,
+e registra também os candidatos espectrais positivos abaixo de TM11.
+**A validação física continua parcial e não declaramos ausência de espúrios.**
+Consulte [M6b — método, testes e limites](docs/implementation/06_constraint_subspaces.md).
+
+[Resultados medidos dos três refinamentos do M6b](docs/results/independent_validation/M6B_INITIAL_RESULTS.md).
 ## Documentação
 
 O README serve como índice. As deduções detalhadas, equações, critérios de validação e discussões de arquitetura estão organizados nos arquivos Markdown:

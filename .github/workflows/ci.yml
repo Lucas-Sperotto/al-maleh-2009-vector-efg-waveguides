@@ -43,3 +43,13 @@ jobs:
           path: build/m4_high/
           if-no-files-found: warn
           retention-days: 30
+      - name: M6b invariant divergence and normal-flux subspaces
+        run: python3 scripts/m6b_campaign.py --binary build/constraint_subspace --out build/m6b_diagnostics
+      - name: Publish M6b diagnostic-only artifacts
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: m6b-constraint-subspaces
+          path: build/m6b_diagnostics/
+          if-no-files-found: warn
+          retention-days: 30
