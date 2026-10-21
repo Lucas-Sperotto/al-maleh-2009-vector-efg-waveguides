@@ -45,7 +45,7 @@ void test_quadrature() {
   near(xy,1.0,2e-14,"integration xy");
   if(evaluations!=54)throw std::runtime_error("Wrong quadrature size");
 
-  reject([&]{ BackgroundQuadrature bad=rule; bad.gauss_order=5;
+  reject([&]{ BackgroundQuadrature bad=rule; bad.gauss_order=6;
     for_each_quadrature_point(bad, [](Point2,double){}); },"gauss order");
   reject([&]{ BackgroundQuadrature bad=rule; bad.cells_y=0;
     for_each_quadrature_point(bad, [](Point2,double){}); },"zero cells");
