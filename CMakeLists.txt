@@ -96,6 +96,14 @@ endif()
 # Scientific post-processing is optional for core C++ builds. CI installs it.
 find_package(Python3 COMPONENTS Interpreter QUIET)
 if(BUILD_TESTING AND Python3_Interpreter_FOUND)
+  # Independent stdlib-only audit: verify that low positive EFG modes
+  # and the failing doublet remain visible in the archived campaign.
+  if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/docs/results/independent_validation/LATEST")
+    add_test(NAME archived_spectral_pollution
+      COMMAND ${Python3_EXECUTABLE} -m unittest discover -s tests -p test_spectral_pollution.py -v)
+    set_tests_properties(archived_spectral_pollution PROPERTIES
+      WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
+  endif()
   add_test(NAME validation_manifest_integrity
     COMMAND ${Python3_EXECUTABLE} -m unittest discover -s tests -p test_validation_manifest.py -v)
   set_tests_properties(validation_manifest_integrity PROPERTIES
