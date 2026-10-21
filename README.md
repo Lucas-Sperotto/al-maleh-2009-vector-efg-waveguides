@@ -87,7 +87,7 @@ python3 scripts/m5_ch6_campaign.py --binary build/rot_irrot_rect --out out/m5
 Os CSV e SVG produzidos incluem TM11, TM21 e os campos irrotacional
 e rotacional de TM11, além de espectros completos e relatórios de posto.
 Veja [implementação e limitações M5](docs/implementation/11_rot_irrot_original_chapter6.md)
-e [dados originais do autor](docs/results/m5_author_ch6_tables_5_6.csv).
+e [dados originais do autor](docs/results/m5_author_ch6_tables_5_6.csv). Veja ainda [os 24 resultados realmente calculados, postos e divergências](docs/results/M5_CH6_MEASURED_2026-10-21.md) e [o pacote integral CI de matrizes, espectros e campos](https://github.com/Lucas-Sperotto/al-maleh-2009-vector-efg-waveguides/actions/runs/39636316113/artifacts/12363260079).
 ## Validacao espectral M4
 
 O executavel `tm_validation` compara formas de campo (`curl(H)`) e autovalores com os modos analiticos TM do guia retangular. A campanha reproduz tres refinamentos nodais e variacoes de raio de suporte, grau MLS e quadratura:
