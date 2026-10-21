@@ -9,7 +9,7 @@ Reprodução crítica da dissertação de **Hussam Al Maleh (2009)**, *A Vector 
 | Etapa | Estado |
 |---|---|
 | M1 — MLS linear/quadrático, gradientes e Hessianas | **Implementado e testado** (CTest e GitHub Actions) |
-| M2 — Formulação cartesiana, quadratura, matrizes de massa e curl-curl | Pendente |
+| M2 — Formulação cartesiana, quadratura, matrizes de massa e curl-curl | **Implementado e testado** (protótipo de montagem) |
 | M3 — Autovalores TM e campos de guia retangular PEC | Pendente |
 | M4 — Diagnóstico dos modos espúrios | Pendente |
 | M5 — Formulação rotacional/irrotacional | Pendente de verificação bibliográfica |
