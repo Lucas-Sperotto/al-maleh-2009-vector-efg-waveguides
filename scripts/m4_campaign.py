@@ -134,6 +134,33 @@ def main():
         "|---|---:|---:|---:|---|",
         *[summary_line(row["case"]) for row in run_rows],
         "",
+        "## Correspondência dos modos TM21 e TM12 (refinamentos)",
+        "",
+        "| Caso | Referência | Erro relativo lambda | Projeção de curl | Divergência | Fluxo normal |",
+        "|---|---|---:|---:|---:|---:|",
+        *[
+            "| {} | TM{}{} | {:.8f} | {:.8f} | {:.6f} | {:.6f} |".format(
+                case, m, n, float(row["nearest_relative_error"]),
+                float(row["nearest_cluster_overlap"]),
+                float(row["divergence_ratio"]),
+                float(row["normal_boundary_ratio"]))
+            for case in (r["case"] for r in run_rows[:3])
+            for m, n in (("2", "1"), ("1", "2"))
+            for row in match_rows
+            if row["case"] == case and row["m"] == m and row["n"] == n
+        ],
+        "",
+        "## Diagnóstico do núcleo e massa",
+        "",
+        "| Caso | Estado | Núcleo numérico | Condição da massa |",
+        "|---|---|---:|---:|",
+        *[
+            "| {} | {} | {} | {} |".format(
+                r["case"], r["status"],
+                r["numerical_kernel"], r["mass_condition"])
+            for r in run_rows
+        ],
+        "",
         "Interpretação: a sobreposição mede a correlação normalizada entre "
         "curl(H) e sin(mπx/a) sin(nπy/b), com tratamento de clusters "
         "espectrais degenerados. Erro pequeno no autovalor **sozinho** não "
