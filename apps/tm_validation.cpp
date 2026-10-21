@@ -31,7 +31,7 @@ int main(int argc,char** argv) {
   const BackgroundQuadrature quadrature{r,nx-1,ny-1,gauss};
   const auto matrices=assemble_cartesian(mls,quadrature);
   const auto s=solve_generalized_symmetric(matrices.stiffness,matrices.mass);
-  const auto reference=validate_tm_modes(mls,quadrature,matrices,s,2,2);
+  const auto reference=validate_tm_modes(mls,quadrature,matrices,s,4,3);
 
   std::filesystem::create_directories(dir);
   std::ofstream csv(dir/"tm_matches.csv");
