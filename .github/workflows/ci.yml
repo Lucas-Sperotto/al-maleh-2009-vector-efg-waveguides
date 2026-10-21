@@ -77,3 +77,32 @@ jobs:
           path: build/m6d_gradient/
           if-no-files-found: warn
           retention-days: 30
+      # M6e: pin the independent Nedelec/Whitney implementation exactly.
+      - name: Checkout pinned independent FEM edge reference
+        uses: actions/checkout@v6
+        with:
+          repository: Lucas-Sperotto/fem-eigen-em-2d3d-whitney
+          ref: dc1d9545c1238554c2292aa0f64a3c1b883d4118
+          path: edge-fem-reference
+          filter: blob:none
+          sparse-checkout: |
+            CMakeLists.txt
+            src
+      - name: Install independent edge FEM dependencies
+        run: sudo apt-get install -y libopenblas-dev liblapacke-dev
+      - name: Configure independent edge FEM (unchanged source)
+        run: cmake -S edge-fem-reference -B build-edge -DCMAKE_BUILD_TYPE=Release
+      - name: Build independent Whitney edge_rect only
+        run: cmake --build build-edge --target edge_rect --parallel 2
+      - name: M6e original TM Whitney vs archived Cartesian EFG
+        run: PYTHONNOUSERSITE=1 OPENBLAS_NUM_THREADS=1 python3 scripts/m6e_edge_compare.py --edge-binary build-edge/edge_rect --edge-source-dir edge-fem-reference --out build/m6e_edge --timeout 600
+      - name: Independently verify native Whitney FEM TM S/T and complete eigenpairs
+        run: PYTHONNOUSERSITE=1 OPENBLAS_NUM_THREADS=1 python3 scripts/verify_m6e_edge.py --campaign build/m6e_edge
+      - name: Publish M6e full Whitney edge/EFG comparisons
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: m6e-whitney-edge-comparison
+          path: build/m6e_edge/
+          if-no-files-found: warn
+          retention-days: 30

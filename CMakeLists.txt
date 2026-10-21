@@ -184,3 +184,13 @@ if(BUILD_TESTING)
   add_test(NAME m6d_gradient_smoke
     COMMAND gradient_kernel_audit 9 7 "${CMAKE_CURRENT_BINARY_DIR}/m6d_smoke")
 endif()
+
+# M6e: stdlib-only spectral matching and geometry-scaling regression.
+# The independent FEM edge executable is an external scientific dependency.
+if(BUILD_TESTING AND Python3_Interpreter_FOUND)
+  add_test(NAME m6e_edge_comparison_contract
+    COMMAND ${Python3_EXECUTABLE} -m unittest discover
+      -s tests -p test_m6e_edge_compare.py -v)
+  set_tests_properties(m6e_edge_comparison_contract PROPERTIES
+    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
+endif()

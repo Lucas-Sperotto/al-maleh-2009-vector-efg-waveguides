@@ -142,6 +142,19 @@ PYTHONNOUSERSITE=1 OPENBLAS_NUM_THREADS=1 python3 scripts/verify_m6d_gradient.py
 
 Consulte [formulação e limites M6d](docs/implementation/08_gradient_kernel_audit.md)
 e [resultados medidos](docs/results/independent_validation/M6D_GRADIENT_KERNEL_RESULTS.md).
+## M6e — FEM de aresta Whitney independente
+
+A comparação vetorial agora inclui o executável `edge_rect` (ramo TM
+em H_t) do repositório independente [fem-eigen-em-2d3d-whitney](https://github.com/Lucas-Sperotto/fem-eigen-em-2d3d-whitney).
+A referência é fixada ao commit `dc1d9545` e compilada separadamente
+na CI, sem alterações no código FEM.
+
+O driver FEM edge usa retângulo 1×0,5, enquanto o EFG usa 2×1.
+Os autovalores são portanto comparados mediante λ_edge/4.
+A etapa compara espectros e referências TM; campos vetoriais completos
+e o dubleto degenerado ainda exigem matching por forma/ângulos principais.
+
+Veja [protocolo M6e, fontes, reprodução e limitações](docs/implementation/09_whitney_edge_cross_validation.md) e [resultados medidos](docs/results/independent_validation/M6E_WHITNEY_EDGE_INITIAL_RESULTS.md).
 ## Documentação
 
 O README serve como índice. As deduções detalhadas, equações, critérios de validação e discussões de arquitetura estão organizados nos arquivos Markdown:
