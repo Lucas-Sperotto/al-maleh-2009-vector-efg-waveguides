@@ -1,3 +1,15 @@
+> **Estado do código (M1, 20/10/2026):** núcleo MLS em C++17 implementado (bases lineares/quadráticas, suporte Wendland C², derivadas de 1ª e 2ª ordens) e teste local aprovado. **Ainda não existe um solver de autovalores de Maxwell** neste repositório. Consulte [implementação MLS](docs/implementation/01_mls_core.md), [código](src/mls.cpp), [testes](tests/test_mls.cpp) e [proveniência](docs/implementation/CODE_PROVENANCE.md).
+
+```bash
+sudo apt-get install -y build-essential cmake libeigen3-dev
+cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
+cmake --build build -j
+ctest --test-dir build --output-on-failure
+./build/mls_probe > mls_probe.csv
+```
+
+---
+
 # Análise matemática e proposta de implementação do método de Al Maleh (2009)
 
 **Minha recomendação é reproduzir primeiro as duas formulações de Al Maleh em um repositório próprio, utilizando o projeto NASA TP-3485 como referência de validação.** Depois, poderemos integrar os resultados ao projeto EFGMI-H(curl), no qual você já está investigando funções de Whitney difusas.
