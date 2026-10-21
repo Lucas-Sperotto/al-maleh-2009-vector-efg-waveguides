@@ -33,3 +33,13 @@ jobs:
           path: build/m4_campaign/
           if-no-files-found: warn
           retention-days: 30
+      - name: M4 high-refinement reference campaign (9x7, 13x11, 17x15)
+        run: python3 scripts/m4_campaign.py --binary build/tm_validation --out build/m4_high --profile local --timeout 600
+      - name: Publish high-refinement experimental data
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: m4-high-refinement
+          path: build/m4_high/
+          if-no-files-found: warn
+          retention-days: 30
