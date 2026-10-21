@@ -106,3 +106,13 @@ jobs:
           path: build/m6e_edge/
           if-no-files-found: warn
           retention-days: 30
+      - name: M2 original Chapter 5 Al Maleh grids and Gauss quadrature
+        run: PYTHONNOUSERSITE=1 OPENBLAS_NUM_THREADS=1 python3 scripts/m2_ch5_benchmark.py --binary build/tm_validation --out build/m2_ch5 --timeout 600
+      - name: Publish M2 source-anchored original Table 2 and 3 comparison
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: m2-al-maleh-2009-chapter5
+          path: build/m2_ch5/
+          if-no-files-found: warn
+          retention-days: 30

@@ -194,3 +194,20 @@ if(BUILD_TESTING AND Python3_Interpreter_FOUND)
   set_tests_properties(m6e_edge_comparison_contract PROPERTIES
     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
 endif()
+
+# M2/Al Maleh Ch.5 regression: reference Table 2/3 transcription, Gauss
+# 1x1 and 5x5, four background integration cells per nodal rectangle.
+# The M2 benchmark reuses M3/M4 eigen-solver and source-anchored mesh.
+if(BUILD_TESTING AND Python3_Interpreter_FOUND)
+  add_test(NAME m2_ch5_author_tables
+    COMMAND ${Python3_EXECUTABLE} -m unittest discover -s tests
+      -p test_m2_ch5_reference.py -v)
+  set_tests_properties(m2_ch5_author_tables PROPERTIES
+    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
+  add_test(NAME m2_ch5_3x5_gauss1
+    COMMAND tm_validation 5 3 1 3.3 1
+      "${CMAKE_CURRENT_BINARY_DIR}/m2_ch5_gauss1" 2)
+  add_test(NAME m2_ch5_3x5_gauss5
+    COMMAND tm_validation 5 3 1 3.3 5
+      "${CMAKE_CURRENT_BINARY_DIR}/m2_ch5_gauss5" 2)
+endif()

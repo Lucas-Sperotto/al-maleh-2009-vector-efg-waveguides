@@ -1,78 +1,126 @@
-# M2 — Montagem vetorial cartesiana EFG (protótipo)
+# M2 — Formulação vetorial cartesiana EFG, conferida com Al Maleh (2009), capítulo 5
 
-**Status:** implementado na branch de desenvolvimento, sujeito a testes CTest/CI. O trabalho **não** é ainda uma reprodução completa dos experimentos de Al Maleh nem resolve o autoproblema de Maxwell.
+**Estado:** montagem K/M implementada e testada; as equações (5-1)–(5-11) e resultados do capítulo 5 foram finalmente confrontados com as páginas fornecidas pelo usuário em 21/10/2026. A reprodução exata dos erros percentuais das Tabelas 2 e 3 **não está demonstrada**. A implementação da representação rotacional/irrotacional é outra etapa (M5) e será conferida contra as páginas do capítulo 6.
 
-## Incógnita e espaço vetorial
+## 1. Equações do autor: o que agora está realmente conferido
 
-O campo aproximado é a dupla transversal de componentes de campo magnético
+**Capítulo 5, “Element-Free Galerkin for Vector Fields: Cartesian Shape Functions”**:
 
-$$
-\mathbf H_t^h=(\sum_i\phi_i h_{x,i},\;\sum_i\phi_i h_{y,i})^T.
-$$
+| Fonte primária | Formulação conforme as páginas do autor | Implementação |
+|---|---|---|
+| (5-1a), (5-2a)–(5-2d) | H(s)=sum_i (Hxi xhat + Hyi yhat + Hzi zhat) Ni; em 2D, Ni*xhat, Ni*yhat por nó | MLS escalar para cada componente transversal Hx, Hy |
+| (5-3) | condição PEC natural: (curl H) × n = 0 | condição natural da forma fraca; sem anulação artificial dos Hx/Hy dos nós na parede |
+| (5-4), (5-5) | Maxwell harmônico com meio homogêneo e livre de fontes | hipótese do problema de autovalores |
+| (5-6)–(5-8) | problema de Helmholtz vetorial e forma fraca; [S−k²T]h=0 | diagonalização K h = λ M h, com λ=k² |
+| (5-9) | T_ij=∫Ω Ni·Nj dΩ | massa M |
+| (5-10) | S_ij=∫Ω curl(Ni)·curl(Nj) dΩ | rigidez curl-curl K |
+| (5-11) | k=√[(mπ/a)²+(nπ/b)²] | referências TM exatas para a=2 m, b=1 m |
+| Fig. 9 | grade **3×5 nós** com **quatro células de integração por retângulo entre quatro nós vizinhos** | novo parâmetro explícito subdivision=2, mantém subdivision=1 como padrão histórico |
+| Tabelas 2–3 | grades 3×5, 4×7, 5×9, 6×11 e quadraturas 1×1 até 5×5 | campanha M2-Ch5 de 14 combinações e 28 valores de referência originais |
+| Figs. 10–13 | vetores de H transversal nos modos TM11 e TM21 | amostragem original Hx,Hy e desenho SVG de quiver, sem reutilizar figuras da dissertação |
+| Fig. 15 | modo espúrio no caso 6×11, quadratura 2×2, com k²≈12,1456 | diagnóstico explícito; proximidade numérica de λ(TM11) não basta para classificação física |
 
-As funções de base são $\mathbf N_i^x=(\phi_i,0)^T$ e $\mathbf N_i^y=(0,\phi_i)^T$. Definimos o rotacional escalar 2D por $\mathrm{curl}_t\mathbf H_t=\partial_xH_y-\partial_yH_x$. Portanto:
+A base vetorial do autor é enumerada de modo intercalado (N1 xhat, N1 yhat, N2 xhat, N2 yhat, ...). **Nossa ordenação de coeficientes difere apenas por permutação:** primeiro todos Hx_i, depois todos Hy_i. Essa diferença não altera os autovalores se as matrizes forem permutadas consistentemente.
 
-$$
-\mathbf K=\begin{bmatrix} K_{xx}&K_{xy}\\K_{yx}&K_{yy}\end{bmatrix},
-\qquad
-K_{xx}^{ij}=\int_\Omega\phi_{i,y}\phi_{j,y},\quad
+### Observação crítica sobre sinais das equações originais
+
+Na reprodução visual disponibilizada, a Eq. (5-6) aparece com termo **+k²H**, mas a forma fraca (5-7) contém **−k²(Ni·H)** e o sistema (5-8) é claramente **[S−k²T]h=0**. Isso constitui uma aparente diferença de sinal **dentro do texto fornecido**; não a corrigimos silenciosamente nem concluímos que o autor errou sem verificar a íntegra e convenções de rotacional. **Nossa implementação segue precisamente o autoproblema generalizado positivo das Eqs. (5-7)–(5-10): S h=λT h.**
+
+## 2. Blocos cartesianos da discretização implementada
+
+Se phi_i é uma função MLS escalar e N_i^x=(phi_i,0), N_i^y=(0,phi_i), então:
+
+\[
+\mathrm{curl}_t\,\mathbf N_i^x=-\partial_y\phi_i,\quad
+\mathrm{curl}_t\,\mathbf N_i^y=+\partial_x\phi_i.
+\]
+
+\[
+K_{xx}^{ij}=\int_\Omega \phi_{i,y}\phi_{j,y},\quad
 K_{xy}^{ij}=-\int_\Omega\phi_{i,y}\phi_{j,x},
-$$
-
-$$
-K_{yx}^{ij}=-\int_\Omega\phi_{i,x}\phi_{j,y},\quad
+\quad K_{yx}=K_{xy}^\top,\quad
 K_{yy}^{ij}=\int_\Omega\phi_{i,x}\phi_{j,x}.
-$$
+\]
 
-A matriz de massa tem blocos diagonais idênticos:
+\[
+M=\mathrm{diag}(M_s,M_s),\qquad
+(M_s)_{ij}=\int_\Omega\phi_i\phi_j.
+\]
 
-$$
-\mathbf M=\begin{bmatrix}M_s&0\\0&M_s\end{bmatrix},
-\qquad M_s^{ij}=\int_\Omega\phi_i\phi_j.
-$$
+As integrais seguem diretamente (5-9) e (5-10). O núcleo gradiente do curl-curl é inerente ao operador e **não** é apagado por penalização ou por exclusão automática de autovalores.
 
-A ordenação global de DOFs é **todas as componentes $H_x$ seguidas de todas as $H_y$**. O modelo inicial toma coeficientes materiais unitários e constantes.
+## 3. Geometria e células: importante para confrontar a tese
 
-## Geometria, quadratura e suporte
+O guia do autor tem a=2 m, b=1 m. Na nomenclatura das imagens, **3×5 nós significa ny=3, nx=5**: cinco posições ao longo de x e três ao longo de y (Fig. 9). O mesmo vale para 4×7 => (nx=7, ny=4), 5×9 => (nx=9, ny=5), 6×11 => (nx=11, ny=6).
 
-- Nuvem regular de nós `make_regular_cloud` e domínio retangular com limites explícitos.
-- Quadratura gaussiana tensorial em células de fundo, ordens 2, 3, 4.
-- **A malha de fundo serve apenas à integração; não produz funções de forma FEM.**
-- Integração de funções MLS existentes de grau 1/2, com derivadas consistentes, por suporte circular de Wendland C².
-- Montagem por `Eigen::SparseMatrix` e tripletos (didática; otimização futura).
+A Figura 9 descreve quatro células de integração entre quatro nós adjacentes, ou subdivisão 2 em cada eixo. Nosso protótipo inicial integrava em apenas uma célula por intervalo. Agora ambos os esquemas são possíveis, sem alterar o padrão das campanhas antigas:
 
-## Fronteira e espectro
+- rotina original: BackgroundQuadrature(rect, nx−1, ny−1, gauss);
+- configuração do capítulo 5: BackgroundQuadrature(rect, 2(nx−1), 2(ny−1), gauss).
 
-No modelo TM homogêneo em campo magnético transversal, a condição natural associada à forma fraca curl-curl é `curl_t H_t = 0` na fronteira PEC. Nesta **etapa de montagem**, nenhuma restrição nodal artificial é aplicada ao campo, e o operador discreto inclui um amplo núcleo de campos tipo gradiente. **Não classificar autovalores deste sistema como modos TM validados antes de implementar e analisar adequadamente a seleção dos modos positivos.**
+Em cada célula, a quadratura Gauss-Legendre tensorial recebe de 1 até 5 pontos por eixo, ou seja, **1, 4, 9, 16 ou 25 pontos por célula**. Testamos áreas, momentos, quadratura de grau alto e as contagens de pontos explicitamente. A malha de integração não é a base EFG e não cria funções FEM.
 
-Em particular, não penalizamos a matriz de massa e não impomos `H_t=0` na parede: ambas as decisões produziriam outro problema físico.
+O fator de suporte MLS **3,3 e o peso Wendland C² continuam escolhas deste nosso protótipo**; as imagens não documentam os detalhes completos dos pesos, estratégias de suporte, tolerâncias e solver da tese. Logo, não podemos exigir igualdade percentual rígida com os resultados do autor. O script deixa as divergências visíveis.
 
-## Testes analíticos M2
+## 4. Referências numéricas transcritas das páginas
 
-Para $\Omega=[0,2]\times[0,1]$, a quadratura deve integrar área e momentos polinomiais $1,x,y,x^2,xy,y^2$ exatamente. Para campos reproduzidos pela base MLS linear/quadrática:
+Pela Eq. (5-11), o autor escreve:
 
-- Campo uniforme $\mathbf H=(1,0)$: massa $2$, rigidez zero.
-- Campo uniforme $\mathbf H=(0,1)$: massa $2$, rigidez zero.
-- Campo rotacional $\mathbf H=(-y,x)$: $\mathrm{curl}\mathbf H=2$, energia curl-curl $8$, massa $10/3$.
-- Campo gradiente $\mathbf H=(x,y)$: rotacional zero e energia curl-curl zero.
-- Simetria de $K$/$M$, bloco de massa cruzado zero e formas quadráticas não negativas em vetores de teste.
+- TM11: k²≈12,3370 (rad/m)² — valor com maior precisão em nosso código 12,337005501;
+- TM21: k²≈19,7392 (rad/m)² — 19,739208802.
 
-## Arquivos
+**Tabela 2: erro percentual com sinal publicado para TM11**
 
-- [API](../../include/al_maleh/cartesian.hpp)
-- [Implementação](../../src/cartesian.cpp)
-- [Testes](../../tests/test_cartesian.cpp)
-- [Aplicativo de diagnóstico](../../apps/cartesian_rect.cpp)
+| Nós autor | Gauss 1×1 | 2×2 | 3×3 | 4×4 | 5×5 |
+|---|---:|---:|---:|---:|---:|
+| 3×5 | +23,767 | +17,199 | +17,210 | +17,206 | +17,206 |
+| 4×7 | +5,978 | +3,608 | +3,763 | +3,759 | +3,756 |
+| 5×9 | +2,805 | +1,617 | — | — | — |
+| 6×11 | +1,567 | +0,839 | — | — | — |
 
-Compilação:
+**Tabela 3: erro percentual com sinal publicado para TM21**
 
-```bash
+| Nós autor | Gauss 1×1 | 2×2 | 3×3 | 4×4 | 5×5 |
+|---|---:|---:|---:|---:|---:|
+| 3×5 | +18,557 | +11,846 | +12,103 | +12,089 | +12,085 |
+| 4×7 | +4,508 | +2,038 | +2,174 | +2,164 | +2,161 |
+| 5×9 | +2,313 | +1,071 | — | — | — |
+| 6×11 | +1,307 | +0,539 | — | — | — |
+
+Traços representam células **não publicadas**, não zero nem resultados estimados. Os dados de referência legíveis e sua proveniência estão em [m2_author_ch5_tables_2_3.csv](../results/m2_author_ch5_tables_2_3.csv); testes impedem preencher silenciosamente essas lacunas.
+
+As imagens também registram Fig. 10 (H para TM11, 3×5, 5×5), Fig. 11 (TM11, 6×11, 2×2), Fig. 12 (TM21, 3×5, 5×5), Fig. 13 (TM21, 4×7, 2×2) e Fig. 15 (campo espúrio 6×11, 2×2, k²≈12,1456). **Não confundir a Figura 15 com TM11** apenas porque 12,1456 é próximo a 12,3370. Nossas saídas gráficas serão calculadas com nossos próprios autovetores, sem republicar as imagens da dissertação.
+
+## 5. Testes e execução da nova campanha
+
+Os testes originais cobrem reprodução de funções constantes/lineares, energia de rotação, gradiente no núcleo curl-curl, blocos K/M, simetria e massa. Novos testes cobrem quadraturas 1×1 e 5×5 e topologia de quatro células da Figura 9. O espectro é resolvido pelo módulo M3/M4 já implementado: o **M2 isolado monta K/M**, mas a comparação de autovalores precisa do solver generalizado.
+
+No repositório:
+
+~~~bash
 cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
-cmake --build build -j
-ctest --test-dir build --output-on-failure
-./build/cartesian_rect 7 5 1 4.0
-```
+cmake --build build --parallel 2
+/usr/bin/ctest --test-dir build --output-on-failure
 
-## Pendente para M3
+# Fonte M2-Ch5: 14 combinações de grade/quadratura e 28 valores originais
+python3 scripts/m2_ch5_benchmark.py \
+  --binary build/tm_validation --out out/m2_ch5
+~~~
 
-Solver generalizado $Kq=\lambda Mq$, diagnóstico de posto e modos nulos, convergência dos autovalores TM positivos para casos PEC, projeção/divergência de campos e comparação independente com NASA TP-3485. A interpretação física de modos próximos de zero deve ser feita por critérios espectrais, não pela filtragem indiscriminada dos valores pequenos.
+O script gera: out/m2_ch5/REPORT.md, comparison.csv, metadata.json, 14 pastas com espectros completos e matrizes exportadas, campos Hx/Hy para TM11 e TM21 e **SVGs originais** correspondentes. Cada linha compara tanto o candidato com lambda mais próximo quanto o candidato que maximiza a sobreposição de curl(H) com o modo analítico. São critérios diferentes para evitar ocultar candidatos espúrios.
+
+**O resultado de uma campanha concluída deve ser citado como valor experimental, não confundido com os percentuais publicados do autor.** As fontes M6a–M6e e seus manifestos imutáveis permanecem intactos.
+
+### Teste manual da Figura 9
+
+~~~bash
+./build/tm_validation 5 3 1 3.3 5 out/m2_ch5/manual_3x5 2
+~~~
+
+O argumento final 2 controla a subdivisão de células. Sem ele o executável preserva o comportamento histórico (subdivisão 1). O quinto argumento 5 indica 5×5 pontos de Gauss **por célula**, não 5×5 células.
+
+## 6. Limitações
+
+- A conclusão do autor de que a representação cartesiana introduz modos espúrios é consistente com as campanhas M6a–M6f, mas ainda não foi reproduzido quantitativamente o exemplo de k²=12,1456 da Figura 15.
+- Mesmo quando o módulo de diferença de autovalores é pequeno, o campo pode estar fisicamente incorreto; usar sobreposição, divergência, contorno e subespaços invariantes, especialmente nos modos degenerados.
+- O capítulo 6 da dissertação, necessário para o **M5 rotacional/irrotacional**, será documentado separadamente quando fornecido. O conteúdo fornecido agora é o **capítulo 5**, que fundamenta o M2/M3/M4 cartesiano.
