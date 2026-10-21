@@ -92,3 +92,35 @@ if(BUILD_TESTING)
   add_test(NAME m4_smoke COMMAND tm_validation 5 5 1 3.3 3
     "${CMAKE_CURRENT_BINARY_DIR}/m4_smoke")
 endif()
+
+# Scientific post-processing is optional for core C++ builds. CI installs it.
+find_package(Python3 COMPONENTS Interpreter QUIET)
+if(BUILD_TESTING AND Python3_Interpreter_FOUND)
+  add_test(NAME validation_manifest_integrity
+    COMMAND ${Python3_EXECUTABLE} -m unittest discover -s tests -p test_validation_manifest.py -v)
+  set_tests_properties(validation_manifest_integrity PROPERTIES
+    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
+  execute_process(COMMAND ${CMAKE_COMMAND} -E env PYTHONNOUSERSITE=1
+    ${Python3_EXECUTABLE} -c "import numpy, scipy, matplotlib"
+    RESULT_VARIABLE AL_MALEH_SCIENTIFIC_PYTHON OUTPUT_QUIET ERROR_QUIET)
+  if(AL_MALEH_SCIENTIFIC_PYTHON EQUAL 0)
+    add_test(NAME independent_validation_algorithms
+      COMMAND ${Python3_EXECUTABLE} -m unittest discover -s tests -p test_independent_validation.py -v)
+    set_tests_properties(independent_validation_algorithms PROPERTIES
+      WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+      ENVIRONMENT "PYTHONNOUSERSITE=1;OPENBLAS_NUM_THREADS=1;OMP_NUM_THREADS=1")
+    if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/docs/results/independent_validation/LATEST")
+      file(READ "${CMAKE_CURRENT_SOURCE_DIR}/docs/results/independent_validation/LATEST" AL_MALEH_CAMPAIGN)
+      string(STRIP "${AL_MALEH_CAMPAIGN}" AL_MALEH_CAMPAIGN)
+      add_test(NAME independent_published_results
+        COMMAND ${Python3_EXECUTABLE} scripts/independent_validation.py --check-only
+          --campaign "docs/results/independent_validation/${AL_MALEH_CAMPAIGN}")
+      add_test(NAME independent_published_hashes
+        COMMAND ${Python3_EXECUTABLE} scripts/validation_manifest.py --verify
+          --campaign "docs/results/independent_validation/${AL_MALEH_CAMPAIGN}")
+      set_tests_properties(independent_published_results independent_published_hashes PROPERTIES
+        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+        ENVIRONMENT "PYTHONNOUSERSITE=1;OPENBLAS_NUM_THREADS=1;OMP_NUM_THREADS=1")
+    endif()
+  endif()
+endif()
