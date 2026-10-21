@@ -63,8 +63,8 @@ O autoproblema é $K\mathbf h=\lambda M\mathbf h$ com $\lambda=k_c^2$. É necess
 Escolha células de integração de fundo $C$ e pontos gaussianos $\mathbf x_q$ com pesos físicos $W_q=w_q|J_C(\xi_q)|$. A malha de integração **não é malha de interpolação**; os graus de liberdade pertencem à nuvem de nós EFG. Em cada ponto, calcular $\phi_i$, $\phi_{i,x}$ e $\phi_{i,y}$ para o conjunto local de nós ativos. Para cada par $i,j$:
 
 $$
-K_{ij}\mathrel{+}=W_q\,c_i c_j,\qquad
-M_{ij}\mathrel{+}=W_q\,\mathbf N_i\cdot\mathbf N_j,
+K_{ij}\gets K_{ij}+W_q\,c_i c_j,\qquad
+M_{ij}\gets M_{ij}+W_q\,\mathbf N_i\cdot\mathbf N_j,
 $$
 
 onde $c_i=\operatorname{curl}\mathbf N_i$ para cada DOF cartesiano. Montar os blocos locais por produtos externos reduz a duplicação de laços e facilita testes de simetria. Agregar índices esparsos consistentemente; registrar quadratura e raio de suporte em cada execução.
