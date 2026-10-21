@@ -92,6 +92,38 @@ void test_author_ch5_quadrature() {
     throw std::runtime_error("One-point Gauss unexpectedly exact on x²");
 }
 
+// Independent variational check of Chapter 5 Eq. (5-9)/(5-10):
+// T_ij = integral Ni.Nj and S_ij = integral curl Ni . curl Nj.
+// This test reconstructs the COMPLETE trial field pointwise without
+// relying on the block-matrix formulas used by assemble_cartesian().
+void test_author_ch5_bilinear_forms() {
+  const Rectangle rect{0,2,0,1};
+  const auto nodes=make_regular_cloud(rect,5,3,1.65);
+  const MLSEvaluator mls(nodes,1);
+  const BackgroundQuadrature q{rect,8,4,5}; // Fig.9: 2x2 cells per nodal quad
+  const auto a=assemble_cartesian(mls,q);
+  const auto n=static_cast<Eigen::Index>(nodes.size());
+  Eigen::VectorXd trial=Eigen::VectorXd::Zero(2*n);
+  for(Eigen::Index i=0;i<2*n;++i)trial[i]=std::sin(0.271*(i+1));
+  double direct_m=0,direct_k=0;
+  for_each_quadrature_point(q,[&](Point2 p,double w){
+    const MLSResult s=mls.evaluate(p);
+    double hx=0,hy=0,curl=0;
+    for(std::size_t j=0;j<s.active_nodes.size();++j){
+      const auto index=static_cast<Eigen::Index>(s.active_nodes[j]);
+      hx+=s.phi[j]*trial[index];
+      hy+=s.phi[j]*trial[n+index];
+      curl+=-s.dy[j]*trial[index]+s.dx[j]*trial[n+index];
+    }
+    direct_m+=w*(hx*hx+hy*hy);
+    direct_k+=w*curl*curl;
+  });
+  near(trial.dot(a.mass*trial),direct_m,1e-9,"Ch5 Eq.(5-9) mass form");
+  near(trial.dot(a.stiffness*trial),direct_k,1e-9,"Ch5 Eq.(5-10) curl form");
+  if(!(direct_m>0&&direct_k>=0))
+    throw std::runtime_error("Ch5 bilinear forms are not nonnegative");
+}
+
 void test_cartesian_assembly(int degree) {
   const Rectangle rect{0,2,0,1};
   const auto nodes=make_regular_cloud(rect,5,5,3.0);
@@ -149,6 +181,7 @@ int main() {
   try {
     test_quadrature();
     test_author_ch5_quadrature();
+    test_author_ch5_bilinear_forms();
     test_cartesian_assembly(1);
     test_cartesian_assembly(2);
     std::cout<<"PASS: rectangle quadrature, Cartesian K/M symmetry, constant and rotation patches, curl-grad kernel (degree 1/2), Ch5 1..5 Gauss and four subcells\n";
