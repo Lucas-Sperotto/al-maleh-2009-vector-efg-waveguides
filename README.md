@@ -145,8 +145,7 @@ e [resultados medidos](docs/results/independent_validation/M6D_GRADIENT_KERNEL_R
 ## M6e — FEM de aresta Whitney independente
 
 A comparação vetorial agora inclui o executável `edge_rect` (ramo TM
-em H_t) do repositório independente [fem-eigen-em-2d3d-whitney]
-(https://github.com/Lucas-Sperotto/fem-eigen-em-2d3d-whitney).
+em H_t) do repositório independente [fem-eigen-em-2d3d-whitney](https://github.com/Lucas-Sperotto/fem-eigen-em-2d3d-whitney).
 A referência é fixada ao commit `dc1d9545` e compilada separadamente
 na CI, sem alterações no código FEM.
 
@@ -155,8 +154,7 @@ Os autovalores são portanto comparados mediante λ_edge/4.
 A etapa compara espectros e referências TM; campos vetoriais completos
 e o dubleto degenerado ainda exigem matching por forma/ângulos principais.
 
-Veja [protocolo M6e, fontes, reproduções e limitações]
-(docs/implementation/09_whitney_edge_cross_validation.md).
+Veja [protocolo M6e, fontes, reprodução e limitações](docs/implementation/09_whitney_edge_cross_validation.md) e [resultados medidos](docs/results/independent_validation/M6E_WHITNEY_EDGE_INITIAL_RESULTS.md).
 ## Documentação
 
 O README serve como índice. As deduções detalhadas, equações, critérios de validação e discussões de arquitetura estão organizados nos arquivos Markdown:
