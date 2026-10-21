@@ -6,7 +6,7 @@ jobs:
   build-and-test:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: Install dependencies
         run: sudo apt-get update && sudo apt-get install -y libeigen3-dev cmake g++
       - name: Configure
@@ -17,7 +17,7 @@ jobs:
         run: ctest --test-dir build --output-on-failure
       - name: Publish M3 experimental spectrum
         if: success()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: m3-experimental-spectrum
           path: build/m3_ci/
@@ -27,9 +27,19 @@ jobs:
         run: python3 scripts/m4_campaign.py --binary build/tm_validation --out build/m4_campaign --profile ci
       - name: Publish M4 validation artifacts
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: m4-tm-validation
           path: build/m4_campaign/
+          if-no-files-found: warn
+          retention-days: 30
+      - name: M4 high-refinement reference campaign (9x7, 13x11, 17x15)
+        run: python3 scripts/m4_campaign.py --binary build/tm_validation --out build/m4_high --profile local --timeout 600
+      - name: Publish high-refinement experimental data
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: m4-high-refinement
+          path: build/m4_high/
           if-no-files-found: warn
           retention-days: 30
