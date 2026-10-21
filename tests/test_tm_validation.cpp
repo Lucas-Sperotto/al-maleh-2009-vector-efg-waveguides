@@ -44,10 +44,35 @@ void test_overlap() {
  check(mh.size()==1 && std::isfinite(mh[0].nearest_overlap),
        "Higher-order quadrature failed");
 }
+void test_refined_tm_shape() {
+  // Stronger physics regression: compare the actual numerical curl field
+  // against TM11, TM21 and TM12 analytic profiles on a 9x7 cloud.
+  const Rectangle r{0,2,0,1};
+  const auto nodes=make_regular_cloud(r,9,7,0.825);
+  const MLSEvaluator mls(nodes,1);
+  const BackgroundQuadrature q{r,8,6,3};
+  const auto a=assemble_cartesian(mls,q);
+  const auto s=solve_generalized_symmetric(a.stiffness,a.mass);
+  const auto tm=validate_tm_modes(mls,q,a,s,2,2);
+  for(const auto& match:tm) {
+    if(match.reference.m==2 && match.reference.n==2)continue;
+    check(match.nearest_relative_error<0.01,
+          "Refined TM benchmark relative eigenvalue error");
+    check(match.nearest_cluster_overlap>0.98,
+          "Refined TM benchmark curl-field similarity");
+    check(match.divergence_ratio<0.20,
+          "Refined TM benchmark divergence indicator");
+    check(match.normal_ratio<0.20,
+          "Refined TM benchmark PEC normal indicator");
+    check(match.algebraic_residual<1e-7,
+          "Refined TM benchmark algebraic residual");
+  }
+}
 }
 int main() {
  try{
   test_overlap();
+  test_refined_tm_shape();
   std::cout<<"PASS: TM analytic curl overlaps, subspace and diagnostics\n";
  }catch(const std::exception& e){
   std::cerr<<"FAIL: "<<e.what()<<'\n';return 1;
