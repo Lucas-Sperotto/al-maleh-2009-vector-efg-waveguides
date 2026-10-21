@@ -512,13 +512,15 @@ def check_published_tables(campaign):
     return count
 
 
-def verify_derived_table(path, expected):
+def verify_derived_table(path, expected, *, ignored_columns=()):
     """Detect stale or manually edited derived data, beyond a finiteness check."""
     actual = read_csv(path)
     if len(actual) != len(expected) or set(actual[0]) != set(expected[0]):
         raise ValueError('Published table schema/row count differs: ' + str(path))
     for row, reference in zip(actual, expected):
         for key, value in reference.items():
+            if key in ignored_columns:
+                continue
             if isinstance(value, (int, float, np.integer, np.floating)):
                 absolute_tolerance = 2e-6 if 'angle_degrees' in key else 1e-12
                 if not np.isclose(float(row[key]), value, rtol=1e-9, atol=absolute_tolerance):
@@ -527,11 +529,88 @@ def verify_derived_table(path, expected):
                 raise ValueError('Published classification differs from recomputation: ' + str(path) + ':' + key)
 
 
-def verify_report(path, expected):
+def verify_solver_publication(campaign, expected_rows, expected_clusters, expected_summaries, cutoffs):
+    """Validate archived and newly solved LAPACK results against the same gates.
+
+    A different BLAS implementation changes roundoff errors and near-zero
+    principal angles. Archived measurements remain intact: they must satisfy
+    the original per-eigenvalue tolerances and agree internally with their
+    published summaries. Indices, Eigen data, classifications and pass/fail
+    statuses retain strict comparison with reconstruction.
+    """
+    campaign = Path(campaign)
+    rows_path = campaign / 'solver_comparison.csv'
+    clusters_path = campaign / 'solver_subspaces.csv'
+    verify_derived_table(rows_path, expected_rows, ignored_columns={
+        'lapack_lambda', 'absolute_difference', 'relative_difference',
+        'allowed_absolute_difference', 'lapack_relative_residual'})
+    verify_derived_table(clusters_path, expected_clusters, ignored_columns={
+        'minimum_mass_correlation', 'maximum_principal_angle_degrees'})
+    rows, clusters = read_csv(rows_path), read_csv(clusters_path)
+    archived = json.loads((campaign / 'report_data.json').read_text())['solver_comparison']
+    if set(archived) != set(expected_summaries) or set(cutoffs) != set(expected_summaries):
+        raise ValueError('Published solver-summary cases differ')
+
+    def close(actual, expected, label):
+        # Round-trip consistency of measurements from one archived execution,
+        # not equality of errors produced by different LAPACK/BLAS builds.
+        if not np.isfinite(actual) or not np.isclose(actual, expected, rtol=1e-9, atol=1e-15):
+            raise ValueError('Published solver measurement is inconsistent: ' + label)
+
+    for case, expected in expected_summaries.items():
+        summary = archived[case]
+        if set(summary) != set(expected):
+            raise ValueError('Published solver-summary schema differs: ' + case)
+        for key in ('backend', 'input'):
+            if summary[key] != expected[key]:
+                raise ValueError('Published solver backend/input differs: ' + case)
+        if not isinstance(summary['library'], str) or not summary['library']:
+            raise ValueError('Published solver library provenance is missing: ' + case)
+        for key in ('eigenvalue_absolute_tolerance', 'eigenvalue_relative_tolerance'):
+            close(float(summary[key]), expected[key], case + '.' + key)
+        case_rows = [row for row in rows if row['case'] == case]
+        case_clusters = [row for row in clusters if row['case'] == case]
+        for row in case_rows:
+            original, lapack = float(row['eigen_lambda']), float(row['lapack_lambda'])
+            absolute_error = abs(original - lapack)
+            allowed = (expected['eigenvalue_absolute_tolerance'] +
+                       expected['eigenvalue_relative_tolerance'] * max(abs(original), abs(lapack)))
+            if not np.isfinite(lapack) or absolute_error > allowed:
+                raise ValueError('Published LAPACK eigenvalue exceeds declared tolerance: ' + case + ':' + row['index'])
+            close(float(row['allowed_absolute_difference']), allowed, case + '.allowed_absolute_difference')
+            close(float(row['absolute_difference']), absolute_error, case + '.absolute_difference')
+            relative_error = absolute_error / max(abs(original), abs(lapack), cutoffs[case])
+            close(float(row['relative_difference']), relative_error, case + '.relative_difference')
+            residual = float(row['lapack_relative_residual'])
+            if not np.isfinite(residual) or not 0 <= residual <= THRESHOLDS['algebraic_relative_residual']:
+                raise ValueError('Published LAPACK residual exceeds unchanged threshold: ' + case)
+        for row in case_clusters:
+            correlation = float(row['minimum_mass_correlation'])
+            if not np.isfinite(correlation) or not 1 - 1e-6 <= correlation <= 1:
+                raise ValueError('Published LAPACK subspace exceeds unchanged threshold: ' + case)
+            angle = float(np.degrees(np.arccos(correlation)))
+            close(float(row['maximum_principal_angle_degrees']), angle, case + '.maximum_principal_angle_degrees')
+        close(float(summary['maximum_eigenvalue_absolute_difference']),
+              max(float(row['absolute_difference']) for row in case_rows), case + '.maximum_eigenvalue_absolute_difference')
+        close(float(summary['maximum_relative_residual']),
+              max(float(row['lapack_relative_residual']) for row in case_rows), case + '.maximum_relative_residual')
+        close(float(summary['minimum_subspace_mass_correlation']),
+              min(float(row['minimum_mass_correlation']) for row in case_clusters), case + '.minimum_subspace_mass_correlation')
+        gram_error = float(summary['m_orthogonality_max_error'])
+        if not np.isfinite(gram_error) or not 0 <= gram_error <= 1e-5:
+            raise ValueError('Published LAPACK M-orthogonality exceeds unchanged threshold: ' + case)
+    return archived
+
+
+def verify_report(path, expected, *, solver_archive=None):
     """Verify published substantive JSON data; execution environment may differ."""
     actual = json.loads(Path(path).read_text())
     actual.pop('environment', None)
     expected = {key: value for key, value in expected.items() if key != 'environment'}
+    if solver_archive is not None:
+        # This section was independently checked against the original gates
+        # and the archived per-pair/per-cluster tables, above.
+        expected['solver_comparison'] = solver_archive
 
     def compare(actual_value, expected_value, location):
         if isinstance(expected_value, dict):
@@ -615,11 +694,12 @@ def main(argv=None):
                   comparisons=comparisons)
     if args.check_only:
         count = check_published_tables(campaign)
-        verify_report(campaign / 'report_data.json', report)
+        solver_archive = verify_solver_publication(
+            campaign, solver_rows, cluster_rows, solver_summaries,
+            {problem['path'].name: problem['cutoff'] for problem in efg_runs})
+        verify_report(campaign / 'report_data.json', report, solver_archive=solver_archive)
         verify_derived_table(campaign / 'comparison.csv', comparisons)
         verify_derived_table(campaign / 'convergence.csv', convergence)
-        verify_derived_table(campaign / 'solver_comparison.csv', solver_rows)
-        verify_derived_table(campaign / 'solver_subspaces.csv', cluster_rows)
         verify_derived_table(campaign / 'kernel_sensitivity.csv', sensitivity)
         for problem in fem_runs:
             stored = read_matrix(problem['path'] / 'common_grid_ez.mtx.gz')

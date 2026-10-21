@@ -4,6 +4,8 @@ Campanhas novas são armazenadas em diretórios `AAAA-MM-DD_<commit>`. O arquivo
 [`LATEST`](LATEST) identifica a campanha publicada; seu `REPORT.md` apresenta
 os valores medidos, limites e veredictos. Resultados M4 anteriores foram preservados.
 Consulte também a [auditoria dos solucionadores](SOLVER_AUDIT.md).
+Uma [nota de portabilidade BLAS/LAPACK](PORTABILITY.md) explica a checagem
+dos diagnósticos arquivados em ambientes numéricos diferentes.
 
 ## Reproduzir os programas e todos os resultados
 

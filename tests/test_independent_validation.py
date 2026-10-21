@@ -1,6 +1,7 @@
 """Scientific invariants for reusable independent-validation postprocessing."""
 import importlib.util
 import csv
+import copy
 import gzip
 import json
 from pathlib import Path
@@ -150,6 +151,106 @@ class IndependentValidationTests(unittest.TestCase):
             v.verify_report(path, dict(audits=[dict(dofs=126, status='pass')], environment={'python': 'new'}))
             with self.assertRaises(ValueError):
                 v.verify_report(path, dict(audits=[dict(dofs=510, status='pass')]))
+
+    def solver_archive_fixture(self, path):
+        # Valid archived measurements may differ from a new BLAS execution.
+        problem = dict(k=np.diag([0., 0., 2., 2., 5.]), m=np.eye(5),
+                       values=np.array([0., 0., 2., 2., 5.]), vectors=np.eye(5),
+                       residuals=np.zeros(5), cutoff=5e-9)
+        rows, clusters, summary = v.solver_comparison(problem, 'synthetic')
+        archived_rows, archived_clusters = copy.deepcopy(rows), copy.deepcopy(clusters)
+        archived_summary = copy.deepcopy(summary)
+        for row in archived_rows:
+            row['lapack_lambda'] = row['eigen_lambda'] + .5 * row['allowed_absolute_difference']
+            row['absolute_difference'] = abs(row['eigen_lambda'] - row['lapack_lambda'])
+            row['relative_difference'] = row['absolute_difference'] / max(
+                abs(row['eigen_lambda']), abs(row['lapack_lambda']), problem['cutoff'])
+            row['allowed_absolute_difference'] = (summary['eigenvalue_absolute_tolerance'] +
+                summary['eigenvalue_relative_tolerance'] * max(abs(row['eigen_lambda']), abs(row['lapack_lambda'])))
+            row['lapack_relative_residual'] = 5e-8
+        for cluster in archived_clusters:
+            cluster['minimum_mass_correlation'] = 1 - 4e-7
+            cluster['maximum_principal_angle_degrees'] = float(np.degrees(np.arccos(1 - 4e-7)))
+        archived_summary.update(
+            library='libdifferentlapack.dylib',
+            maximum_eigenvalue_absolute_difference=max(row['absolute_difference'] for row in archived_rows),
+            maximum_relative_residual=5e-8, m_orthogonality_max_error=2e-6,
+            minimum_subspace_mass_correlation=1 - 4e-7)
+        v.write_csv(path / 'solver_comparison.csv', archived_rows)
+        v.write_csv(path / 'solver_subspaces.csv', archived_clusters)
+        (path / 'report_data.json').write_text(json.dumps({'solver_comparison': {'synthetic': archived_summary}}))
+        return rows, clusters, {'synthetic': summary}, {'synthetic': problem['cutoff']}
+
+    def test_solver_archive_valid_backend_noise_and_library_difference_pass(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            path = Path(temporary)
+            expected = self.solver_archive_fixture(path)
+            archived = v.verify_solver_publication(path, *expected)
+            v.verify_report(path / 'report_data.json', {'solver_comparison': expected[2]}, solver_archive=archived)
+            self.assertEqual(archived['synthetic']['library'], 'libdifferentlapack.dylib')
+
+    def test_solver_archive_eigenvalue_beyond_original_tolerance_fails(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            path = Path(temporary)
+            expected = self.solver_archive_fixture(path)
+            rows = v.read_csv(path / 'solver_comparison.csv')
+            rows[0]['lapack_lambda'] = 2 * float(rows[0]['allowed_absolute_difference'])
+            v.write_csv(path / 'solver_comparison.csv', rows)
+            with self.assertRaisesRegex(ValueError, 'eigenvalue exceeds declared tolerance'):
+                v.verify_solver_publication(path, *expected)
+
+    def test_solver_archive_declared_tolerance_cannot_be_increased(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            path = Path(temporary)
+            expected = self.solver_archive_fixture(path)
+            rows = v.read_csv(path / 'solver_comparison.csv')
+            rows[-1]['allowed_absolute_difference'] = 2 * float(rows[-1]['allowed_absolute_difference'])
+            v.write_csv(path / 'solver_comparison.csv', rows)
+            with self.assertRaisesRegex(ValueError, 'allowed_absolute_difference'):
+                v.verify_solver_publication(path, *expected)
+
+    def test_solver_archive_subspace_outside_original_threshold_fails(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            path = Path(temporary)
+            expected = self.solver_archive_fixture(path)
+            clusters = v.read_csv(path / 'solver_subspaces.csv')
+            clusters[0]['minimum_mass_correlation'] = 1 - 2e-6
+            clusters[0]['maximum_principal_angle_degrees'] = float(np.degrees(np.arccos(1 - 2e-6)))
+            v.write_csv(path / 'solver_subspaces.csv', clusters)
+            with self.assertRaisesRegex(ValueError, 'subspace exceeds unchanged threshold'):
+                v.verify_solver_publication(path, *expected)
+
+    def test_solver_archive_residual_and_gram_thresholds_are_unchanged(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            path = Path(temporary)
+            expected = self.solver_archive_fixture(path)
+            rows = v.read_csv(path / 'solver_comparison.csv')
+            rows[0]['lapack_relative_residual'] = 2e-7
+            v.write_csv(path / 'solver_comparison.csv', rows)
+            with self.assertRaisesRegex(ValueError, 'residual exceeds unchanged threshold'):
+                v.verify_solver_publication(path, *expected)
+            expected = self.solver_archive_fixture(path)
+            report = json.loads((path / 'report_data.json').read_text())
+            report['solver_comparison']['synthetic']['m_orthogonality_max_error'] = 2e-5
+            (path / 'report_data.json').write_text(json.dumps(report))
+            with self.assertRaisesRegex(ValueError, 'M-orthogonality exceeds unchanged threshold'):
+                v.verify_solver_publication(path, *expected)
+
+    def test_solver_archive_indices_status_and_summary_consistency_stay_strict(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            path = Path(temporary)
+            expected = self.solver_archive_fixture(path)
+            rows = v.read_csv(path / 'solver_comparison.csv')
+            rows[0]['index'] = 99
+            v.write_csv(path / 'solver_comparison.csv', rows)
+            with self.assertRaises(ValueError):
+                v.verify_solver_publication(path, *expected)
+            expected = self.solver_archive_fixture(path)
+            report = json.loads((path / 'report_data.json').read_text())
+            report['solver_comparison']['synthetic']['maximum_eigenvalue_absolute_difference'] = 0
+            (path / 'report_data.json').write_text(json.dumps(report))
+            with self.assertRaisesRegex(ValueError, 'maximum_eigenvalue_absolute_difference'):
+                v.verify_solver_publication(path, *expected)
 
     def test_saved_derived_tables_are_checked_against_reconstruction(self):
         with tempfile.TemporaryDirectory() as temporary:
