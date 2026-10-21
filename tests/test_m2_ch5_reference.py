@@ -32,6 +32,36 @@ class OriginalChapterFiveTests(unittest.TestCase):
         self.assertAlmostEqual(self.r[("TM11",4,7,5)],3.756)
         self.assertAlmostEqual(self.r[("TM21",4,7,5)],2.161)
 
+    def test_published_author_table_is_distinct_from_our_measured_outputs(self):
+        import csv
+        measured=ROOT/"docs/results/m2_ch5_observed_2026-10-21.csv"
+        with measured.open(newline="",encoding="utf-8") as stream:
+            values=list(csv.DictReader(stream))
+        self.assertEqual(len(values),28)
+        measured_keys=set()
+        for row in values:
+            ny,nx=[int(x) for x in row["nodes_author_y_x"].split("×")]
+            order=int(row["gauss_per_axis"][0])
+            key=(row["mode"],ny,nx,order)
+            self.assertIn(key,self.r)
+            self.assertNotIn(key,measured_keys)
+            measured_keys.add(key)
+            self.assertAlmostEqual(
+                float(row["author_signed_error_percent"]),self.r[key],places=5)
+            self.assertEqual(row["precision"],"3_decimals_rounded_from_stdout")
+            self.assertEqual(row["ci_run"],"39630223717")
+        self.assertEqual(measured_keys,set(self.r))
+        # A numerical nearest eigenvalue is NOT guaranteed to be the
+        # shape-correct physical mode: this coarse-grid regression makes
+        # the distinction explicit and protects against silently relabeling.
+        coarse=next(r for r in values
+            if r["mode"]=="TM11" and r["nodes_author_y_x"]=="3×5"
+            and r["gauss_per_axis"]=="2×2")
+        self.assertAlmostEqual(
+            float(coarse["observed_nearest_signed_error_percent"]),3.377,places=3)
+        self.assertAlmostEqual(
+            float(coarse["observed_best_curl_signed_error_percent"]),17.887,places=3)
+
     def test_mode_theory_source_equation_5_11(self):
         self.assertAlmostEqual(EXACT["TM11"],1.25*math.pi**2,places=14)
         self.assertAlmostEqual(EXACT["TM21"],2.00*math.pi**2,places=14)
