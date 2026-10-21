@@ -10,7 +10,7 @@ Reprodução crítica da dissertação de **Hussam Al Maleh (2009)**, *A Vector 
 |---|---|
 | M1 — MLS linear/quadrático, gradientes e Hessianas | **Implementado e testado** (CTest e GitHub Actions) |
 | M2 — Formulação cartesiana, quadratura, matrizes de massa e curl-curl | **Implementado e testado** (protótipo de montagem) |
-| M3 — Autovalores TM e campos de guia retangular PEC | Pendente |
+| M3 — Solucionador generalizado, referências TM e exportação de campos | **Protótipo implementado e testado**; convergência física ainda pendente |
 | M4 — Diagnóstico dos modos espúrios | Pendente |
 | M5 — Formulação rotacional/irrotacional | Pendente de verificação bibliográfica |
 | M6 — Comparação independente com NASA TP-3485 e EFGMI-H(curl) | Pendente |
@@ -30,7 +30,13 @@ ctest --test-dir build --output-on-failure
 ./build/mls_probe > mls_probe.csv
 ```
 
-`mls_probe` exporta as funções MLS e suas derivadas. **Ainda não há solver de Maxwell/guia de ondas implementado.**
+`mls_probe` exporta funções MLS e derivadas. O executável `cartesian_rect` monta as matrizes K/M; `cartesian_spectrum` resolve o autoproblema generalizado em dimensões pequenas e exporta espectro, referências TM e campos preliminares:
+
+```bash
+./build/cartesian_spectrum 5 5 1 3.3 out/m3/rect
+```
+
+**A identificação física e a convergência dos modos TM ainda não foram estabelecidas.** Veja [implementação M3](docs/implementation/03_generalized_eigenproblem.md), [solucionador](src/spectral.cpp), [testes](tests/test_spectral.cpp) e [exemplos CSV no GitHub Actions](https://github.com/Lucas-Sperotto/al-maleh-2009-vector-efg-waveguides/actions).
 
 ## Documentação
 
