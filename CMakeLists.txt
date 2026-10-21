@@ -194,3 +194,14 @@ if(BUILD_TESTING AND Python3_Interpreter_FOUND)
   set_tests_properties(m6e_edge_comparison_contract PROPERTIES
     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
 endif()
+
+# M6f: low-cost exploratory cross-method TM-H sampling on FEM centroids.
+add_executable(efg_sample_vector_fields apps/efg_sample_vector_fields.cpp)
+target_link_libraries(efg_sample_vector_fields PRIVATE al_maleh_spectral)
+if(BUILD_TESTING AND Python3_Interpreter_FOUND)
+  add_test(NAME m6f_centroid_geometry_and_subspaces
+    COMMAND ${Python3_EXECUTABLE} -m unittest discover
+      -s tests -p test_m6f_centroid_overlap.py -v)
+  set_tests_properties(m6f_centroid_geometry_and_subspaces PROPERTIES
+    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
+endif()
