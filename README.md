@@ -123,6 +123,25 @@ precisam de validação independente antes de alegações mais gerais.
 
 Veja [método e limitações M6c](docs/implementation/07_scalar_efg_control.md) e
 [primeiros resultados efetivamente medidos](docs/results/independent_validation/M6C_SCALAR_CONTROL_RESULTS.md).
+## M6d — Auditoria do quase-núcleo gradiente
+
+O M6d calcula a projeção L2 dos gradientes escalares MLS no espaço
+vetorial cartesiano e mede a fração de energia gradiente de **todos**
+os autovetores, sem alterar K/M nem filtrar o espectro.
+
+Nos três refinamentos, os 49/94/144 candidatos positivos abaixo de TM11
+apresentaram frações gradientes médias de **91,64%, 97,05% e 98,29%**.
+A coluna B do dubleto TM22/TM41 fino, embora reprovada por divergência
+no M6b, tem fração gradiente de apenas 1,60%; portanto sua falha
+permanece sem explicação completa.
+
+```bash
+python3 scripts/m6d_gradient_campaign.py --binary build/gradient_kernel_audit --out out/m6d
+PYTHONNOUSERSITE=1 OPENBLAS_NUM_THREADS=1 python3 scripts/verify_m6d_gradient.py --campaign out/m6d
+```
+
+Consulte [formulação e limites M6d](docs/implementation/08_gradient_kernel_audit.md)
+e [resultados medidos](docs/results/independent_validation/M6D_GRADIENT_KERNEL_RESULTS.md).
 ## Documentação
 
 O README serve como índice. As deduções detalhadas, equações, critérios de validação e discussões de arquitetura estão organizados nos arquivos Markdown:
