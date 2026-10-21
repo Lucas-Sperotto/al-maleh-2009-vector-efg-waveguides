@@ -211,3 +211,30 @@ if(BUILD_TESTING AND Python3_Interpreter_FOUND)
     COMMAND tm_validation 5 3 1 3.3 5
       "${CMAKE_CURRENT_BINARY_DIR}/m2_ch5_gauss5" 2)
 endif()
+
+# M5: original Al Maleh (2009) Chapter 6 gradient/J-gradient vector functions.
+# Unlike the Cartesian solver, the mass matrix is intentionally singular;
+# M5 uses an explicitly documented rank reduction.
+add_library(al_maleh_rot_irrot STATIC src/rot_irrot.cpp)
+target_include_directories(al_maleh_rot_irrot PUBLIC include)
+target_link_libraries(al_maleh_rot_irrot PUBLIC al_maleh_cartesian Eigen3::Eigen)
+if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
+  target_compile_options(al_maleh_rot_irrot PRIVATE -Wall -Wextra -Wpedantic)
+endif()
+add_executable(rot_irrot_rect apps/rot_irrot_rect.cpp)
+target_link_libraries(rot_irrot_rect PRIVATE al_maleh_rot_irrot)
+if(BUILD_TESTING)
+  add_executable(test_rot_irrot tests/test_rot_irrot.cpp)
+  target_link_libraries(test_rot_irrot PRIVATE al_maleh_rot_irrot)
+  add_test(NAME m5_ch6_basis_and_rank COMMAND test_rot_irrot)
+  add_test(NAME m5_ch6_3x5_gauss2
+    COMMAND rot_irrot_rect 5 3 2 3.3 2 "${CMAKE_CURRENT_BINARY_DIR}/m5_ch6_smoke")
+endif()
+
+if(BUILD_TESTING AND Python3_Interpreter_FOUND)
+  add_test(NAME m5_ch6_author_tables
+    COMMAND ${Python3_EXECUTABLE} -m unittest discover -s tests
+      -p test_m5_ch6_reference.py -v)
+  set_tests_properties(m5_ch6_author_tables PROPERTIES
+    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
+endif()

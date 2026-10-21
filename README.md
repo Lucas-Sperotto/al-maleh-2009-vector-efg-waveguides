@@ -12,7 +12,7 @@ Reprodução crítica da dissertação de **Hussam Al Maleh (2009)**, *A Vector 
 | M2 — Formulação cartesiana, quadratura, matrizes de massa e curl-curl | **Implementado e confrontado com o capítulo 5 da dissertação**; referências numéricas originais transcritas, reprodução quantitativa em avaliação |
 | M3 — Solucionador generalizado, referências TM e exportação de campos | **Protótipo implementado e testado**; convergência física ainda pendente |
 | M4 — Comparação modal, núcleo curl-curl e campanha de refinamento | **Implementado e testado**; classificação física ainda exploratória |
-| M5 — Formulação rotacional/irrotacional | Pendente de verificação bibliográfica |
+| M5 — Formulação rotacional/irrotacional | **Equações (6-1)–(6-6) verificadas contra o Cap. 6 e protótipo implementado**; singularidade de massa e resultados quantitativos em investigação |
 | M6a–M6e — Validação FEM independente, restrições e núcleo gradiente | **Implementados e validados**; M6f (campos vetoriais Whitney) em PR experimental separada |
 
 O M1 usa C++17, Eigen3, bases de grau 1 e 2 e peso Wendland C² como decisões próprias de engenharia. Veja [implementação e resultados dos testes](docs/implementation/01_mls_core.md), [proveniência](docs/implementation/CODE_PROVENANCE.md), [API](include/al_maleh/mls.hpp), [código](src/mls.cpp) e [testes](tests/test_mls.cpp).
@@ -67,6 +67,27 @@ as figuras originais).
 **Ambiente MyHoneyBee:** caso um `ctest` de `~/.local/bin`
 produza `ModuleNotFoundError: No module named 'cmake'`,
 use `/usr/bin/ctest` (o executável oficial CMake/CTest).
+## M5 — Formulação rotacional/irrotacional original (Capítulo 6)
+
+Com as imagens do capítulo 6 foi possível verificar que Al Maleh usa
+**grad(N_i)** e **z×grad(N_i)** para cada nó, exatamente como mostram
+as equações (6-1)–(6-6). A rigidez envolve o Laplaciano das MLS;
+a massa pode ser singular por dependências entre bases, e por isso
+o solver M5 faz redução explícita de posto, preservando e documentando
+o espectro no subespaço reduzido (inclusive autovalores negativos).
+
+Os **24 erros numéricos originais** das Tabelas 5 e 6 foram
+transcritos. As nossas simulações são publicadas separadamente,
+sem afirmar coincidência com os parâmetros MLS exatos do autor.
+
+```bash
+python3 scripts/m5_ch6_campaign.py --binary build/rot_irrot_rect --out out/m5
+```
+
+Os CSV e SVG produzidos incluem TM11, TM21 e os campos irrotacional
+e rotacional de TM11, além de espectros completos e relatórios de posto.
+Veja [implementação e limitações M5](docs/implementation/11_rot_irrot_original_chapter6.md)
+e [dados originais do autor](docs/results/m5_author_ch6_tables_5_6.csv). Veja ainda [os 24 resultados realmente calculados, postos e divergências](docs/results/M5_CH6_MEASURED_2026-10-21.md) e [o pacote integral CI de matrizes, espectros e campos](https://github.com/Lucas-Sperotto/al-maleh-2009-vector-efg-waveguides/actions/runs/39636316113/artifacts/12363260079).
 ## Validacao espectral M4
 
 O executavel `tm_validation` compara formas de campo (`curl(H)`) e autovalores com os modos analiticos TM do guia retangular. A campanha reproduz tres refinamentos nodais e variacoes de raio de suporte, grau MLS e quadratura:

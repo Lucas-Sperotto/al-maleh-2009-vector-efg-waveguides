@@ -116,3 +116,15 @@ jobs:
           path: build/m2_ch5/
           if-no-files-found: warn
           retention-days: 30
+      - name: M5 original Chapter 6 rotational irrotational campaign
+        run: PYTHONNOUSERSITE=1 OPENBLAS_NUM_THREADS=1 python3 scripts/m5_ch6_campaign.py --binary build/rot_irrot_rect --out build/m5_ch6 --timeout 600
+      - name: Independently verify M5 rank, signed spectrum, fields and SHA256
+        run: PYTHONNOUSERSITE=1 OPENBLAS_NUM_THREADS=1 python3 scripts/verify_m5_ch6.py --campaign build/m5_ch6
+      - name: Publish M5 Al Maleh Chapter 6 gradient and rotational vectors
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: m5-al-maleh-2009-chapter6
+          path: build/m5_ch6/
+          if-no-files-found: warn
+          retention-days: 30
