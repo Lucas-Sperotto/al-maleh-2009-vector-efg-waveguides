@@ -15,3 +15,11 @@ jobs:
         run: cmake --build build --parallel 2
       - name: Test
         run: ctest --test-dir build --output-on-failure
+      - name: Publish M3 experimental spectrum
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: m3-experimental-spectrum
+          path: build/m3_ci/
+          if-no-files-found: error
+          retention-days: 30
