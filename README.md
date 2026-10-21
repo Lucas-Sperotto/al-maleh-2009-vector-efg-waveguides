@@ -1337,3 +1337,12 @@ Depois:
 Antes de escrevermos o código definitivo, a prioridade será obter a conferência integral das equações dos capítulos 5 e 6. Isso evitará transformar uma implementação matematicamente plausível em uma reprodução que atribua ao autor escolhas que ele não fez.
 
 Não alterei nenhum dos seus repositórios nesta análise. A decisão arquitetural que considero mais sólida é criar `al-maleh-2009-vector-efg-waveguides` e reservar o NASA TP-3485 para validação cruzada.
+
+
+---
+
+## Fundamentação matemática (20/10/2026)
+
+A teoria inicial de implementação foi organizada em [cinco documentos versionáveis](docs/theory/README.md): Maxwell/TM/forma fraca, MLS e derivadas consistentes, formulações vetoriais, análise espectral de modos espúrios, e arquitetura com rastreabilidade de código e licenças. As edições Word correspondentes estão disponíveis como documentos de apoio.
+
+**Cautela de reprodução:** as expressões derivadas aqui devem ser cotejadas com as páginas originais de Al Maleh antes de qualquer atribuição exata de equações, parâmetros MLS ou condições de contorno ao autor. Os documentos declaram explicitamente esse limite.
