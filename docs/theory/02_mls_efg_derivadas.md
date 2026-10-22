@@ -143,3 +143,18 @@ Foi verificado que `simple-waveguide-efg-fem-solver/mls_shape.cpp` calcula gradi
 Belytschko, T.; Lu, Y. Y.; Gu, L. Element-free Galerkin methods. *International Journal for Numerical Methods in Engineering*, 37, 229–256, 1994. DOI 10.1002/nme.1620370205.
 
 Al Maleh, H. *A Vector Element-Free Galerkin Method for Waveguide Eigenvalue Problems*. McGill University, 2009. A escolha exata de peso da dissertação deve ser conferida no texto primário.
+## Auditoria de 2026-10-22: Capítulo 4 cotejado
+
+- **Peso da fonte:** Eq. (4-2), spline quártica w(q)=1−6q²+8q³−3q⁴, q=l/r,
+  C² em q=1 (w=w'=w''=0). Implementado como `MLSWeight::QuarticSpline`.
+  O raio r não é informado; a identificação inversa contra a Tabela 4
+  indica r=1,5h com base linear (**inferência**).
+- **Base local:** A(x)=Σw_g p(x_g)p(x_g)ᵀ com p deslocada para o ponto x e
+  escalada pelo maior raio. Como N_g é invariante a mudanças afins de uma
+  base polinomial fixa, a escolha não altera N_g nem suas derivadas, mas
+  remove o crescimento artificial de cond(A) com o refino.
+- **Consistência de 2ª ordem:** para que ∫ΔNᵢΔNⱼ (rigidez rotacional do
+  Capítulo 6) seja consistente, a MLS deve reproduzir quadráticas. Com
+  base linear em malha uniforme, Σ|x_g−x|²N_g(x)=h²ĝ((x−x_c)/h), e o defeito
+  de Δ(x²+y²) independe de h (medido: 45% para spline quártica 1,5h,
+  ~2% para Wendland 3,3h). Com base quadrática o defeito é de arredondamento.

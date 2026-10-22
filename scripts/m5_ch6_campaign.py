@@ -58,7 +58,7 @@ def render_field(svg_tool,base,output,name):
     if proc.returncode:
         raise RuntimeError("SVG creation failed: "+proc.stderr)
 
-def run(binary,out,tol,support,timeout):
+def run(binary,out,tol,support,timeout,weight="wendland_c2"):
     ref=read_reference()
     out.mkdir(parents=True,exist_ok=True)
     measured={}
@@ -69,7 +69,7 @@ def run(binary,out,tol,support,timeout):
             path=out/name
             path.mkdir(parents=True,exist_ok=True)
             cmd=[str(binary.resolve()),str(nx),str(ny),str(order),
-                 str(support),"2",str(path),str(tol)]
+                 str(support),"2",str(path),str(tol),"1",weight]
             print("M5 CH6",name," ".join(cmd),flush=True)
             proc=subprocess.run(cmd,check=False,capture_output=True,text=True,
                                 timeout=timeout)
@@ -139,7 +139,7 @@ def run(binary,out,tol,support,timeout):
         reference_rows=len(ref),executed_configs=len(measured),
         alpha="gradient MLS",beta="z_cross_gradient MLS",
         prior_ch5_subdivision=2,original_author_grid_indexing="ny_x_nx",
-        support_factor=support,mls_weight="Wendland C2",
+        support_factor=support,mls_weight=weight,mls_degree=1,
         mass_relative_rank_cutoff=tol,
         negative_eigenvalues_retained_in_raw_exports=True,
         observed_not_an_exact_numerical_replication=True)
@@ -224,9 +224,13 @@ def main():
     p.add_argument("--support-factor",type=float,default=3.3)
     p.add_argument("--mass-rank-relative-cutoff",type=float,default=1e-10)
     p.add_argument("--timeout",type=int,default=600)
+    # Default keeps the historical profile; quartic_spline is Eq. (4-2).
+    p.add_argument("--weight",default="wendland_c2",
+                   choices=("wendland_c2","quartic_spline"))
     a=p.parse_args()
     if not a.binary.is_file():p.error("Missing rot_irrot_rect compiled binary")
-    run(a.binary,a.out.resolve(),a.mass_rank_relative_cutoff,a.support_factor,a.timeout)
+    run(a.binary,a.out.resolve(),a.mass_rank_relative_cutoff,a.support_factor,a.timeout,
+        a.weight)
 
 if __name__=="__main__":
     main()

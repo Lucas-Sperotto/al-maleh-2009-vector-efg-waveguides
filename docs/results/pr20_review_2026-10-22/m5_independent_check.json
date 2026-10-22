@@ -1,0 +1,79 @@
+{
+  "rank": 26,
+  "nullity": 4,
+  "mass_eigen_max": 2.3720181344193376,
+  "largest_removed": 2.6104849978129516e-16,
+  "smallest_retained": 0.015986975350078515,
+  "KZ_relative": 4.4144441493825425e-16,
+  "max_full_residual": 1.6263091704958576e-16,
+  "M_orthogonality_error": 9.547918011776346e-15,
+  "scipy_max_spectrum_difference": 4.405364961712621e-13,
+  "fd": [
+    {
+      "step": 0.001,
+      "K_relative_error": 7.472806746916981e-10,
+      "selections": [
+        {
+          "mode": "TM11",
+          "best_curl_index": 15,
+          "rho": 0.7424186930699882,
+          "best_lambda": 9.197647402005478,
+          "nearest_index": 18,
+          "nearest_lambda": 11.896388121602193
+        },
+        {
+          "mode": "TM21",
+          "best_curl_index": 21,
+          "rho": 0.8059051923646245,
+          "best_lambda": 20.036995072466414,
+          "nearest_index": 20,
+          "nearest_lambda": 19.926337251067054
+        }
+      ]
+    },
+    {
+      "step": 0.0005,
+      "K_relative_error": 1.869123511680716e-09,
+      "selections": [
+        {
+          "mode": "TM11",
+          "best_curl_index": 15,
+          "rho": 0.7424186937567419,
+          "best_lambda": 9.197647402005478,
+          "nearest_index": 18,
+          "nearest_lambda": 11.896388121602193
+        },
+        {
+          "mode": "TM21",
+          "best_curl_index": 21,
+          "rho": 0.8059051928326318,
+          "best_lambda": 20.036995072466414,
+          "nearest_index": 20,
+          "nearest_lambda": 19.926337251067054
+        }
+      ]
+    },
+    {
+      "step": 0.00025,
+      "K_relative_error": 6.5566859435924335e-09,
+      "selections": [
+        {
+          "mode": "TM11",
+          "best_curl_index": 15,
+          "rho": 0.7424186956843525,
+          "best_lambda": 9.197647402005478,
+          "nearest_index": 18,
+          "nearest_lambda": 11.896388121602193
+        },
+        {
+          "mode": "TM21",
+          "best_curl_index": 21,
+          "rho": 0.805905193774281,
+          "best_lambda": 20.036995072466414,
+          "nearest_index": 20,
+          "nearest_lambda": 19.926337251067054
+        }
+      ]
+    }
+  ]
+}

@@ -2,22 +2,41 @@
 
 Reprodução crítica da dissertação de **Hussam Al Maleh (2009)**, *A Vector Element-Free Galerkin Method for Waveguide Eigenvalue Problems* (McGill University). O projeto estuda aproximações vetoriais sem malha para modos **TM** de guias PEC, modos próprios espúrios e comparação com soluções analíticas e FEM.
 
-> **Rigor científico:** a documentação inclui reconstruções matemáticas voltadas à implementação, não uma transcrição integral verificada da dissertação. As funções vetoriais rotacional/irrotacional foram cotejadas com as equações (6-1)–(6-6) das imagens da dissertação. Os parâmetros MLS do Capítulo 4 e a reprodução numérica quantitativa ainda estão pendentes; testes algébricos não certificam ausência de modos espúrios.
+> **Rigor científico:** a documentação inclui reconstruções matemáticas voltadas à implementação. A [auditoria independente de 2026-10-22](docs/results/INDEPENDENT_THEORY_CODE_AUDIT.md) cotejou o **PDF completo** da dissertação (Capítulos 4–6): o peso MLS do autor é a spline quártica da Eq. (4-2); o raio não consta na tese e foi **inferido** (r = 1,5 × espaçamento, base linear) por identificação inversa contra a Tabela 4. Testes algébricos e boa concordância de autovalores não certificam ausência de modos espúrios.
 
-**Auditoria científica pós-merges:** [relatório integral M2/M5/M6, discrepâncias frente à dissertação e plano de reprodução](docs/results/POST_MERGE_SCIENTIFIC_AUDIT_2026-10-21.md).
-A reprodução das bases dos Capítulos 5 e 6 foi verificada, mas **os parâmetros MLS do Capítulo 4 não foram validados**. A CI [39641176860](https://github.com/Lucas-Sperotto/al-maleh-2009-vector-efg-waveguides/actions/runs/39641176860) passou sobre a main pós-merges. Novos ensaios de suporte MLS ficam em PR específica, sem reescrever as campanhas históricas.
+**Auditoria independente teoria × código (2026-10-22):** [relatório](docs/results/INDEPENDENT_THEORY_CODE_AUDIT.md) e [campanha reprodutível com manifesto SHA-256](docs/results/independent_audit_2026-10-22/REPORT.md). Com o perfil identificado, o código reproduz **28/28** entradas das Tabelas 2–3 (<0,001 pp), o espectro da Tabela 4 nas duas formulações e **21/24** entradas das Tabelas 5–6 (≤0,008 pp). Auditoria anterior (histórica): [pós-merges de 21/10](docs/results/POST_MERGE_SCIENTIFIC_AUDIT_2026-10-21.md).
+
 ## Estado do desenvolvimento
 
 | Etapa | Estado |
 |---|---|
-| M1 — MLS linear/quadrático, gradientes e Hessianas | **Implementado e testado** (CTest e GitHub Actions) |
-| M2 — Formulação cartesiana, quadratura, matrizes de massa e curl-curl | **Implementado e confrontado com o capítulo 5 da dissertação**; referências numéricas originais transcritas, reprodução quantitativa em avaliação |
+| M1 — MLS linear/quadrático, gradientes e Hessianas | **Implementado e testado** (CTest e GitHub Actions); pesos Wendland C² e spline quártica (Eq. 4-2); base local com condicionamento independente do refino |
+| M2 — Formulação cartesiana, quadratura, matrizes de massa e curl-curl | **Implementado e confrontado com o capítulo 5 da dissertação**; Tabelas 2–4 reproduzidas com o perfil MLS identificado do Cap. 4 (raio inferido) |
 | M3 — Solucionador generalizado, referências TM e exportação de campos | **Protótipo implementado e testado**; convergência física ainda pendente |
 | M4 — Comparação modal, núcleo curl-curl e campanha de refinamento | **Implementado e testado**; classificação física ainda exploratória |
-| M5 — Formulação rotacional/irrotacional | **Equações (6-1)–(6-6) verificadas contra o Cap. 6 e protótipo implementado**; singularidade de massa e resultados quantitativos em investigação |
-| M6a–M6f — Validação FEM independente, núcleo gradiente e campos Whitney | **Integrados à main**; M6f por centroides é exploratório, faltam quadratura comum convergida e verificação física do dubleto |
+| M5 — Formulação rotacional/irrotacional | **Equações (6-1)–(6-6) verificadas e Tabelas 4–6 reproduzidas com o perfil do Cap. 4**; pencil singular demonstrado e certificado (‖KZ‖, resíduo completo); a não convergência do autor é explicada pela falta de consistência de 2ª ordem da MLS linear |
+| M6a–M6f — Validação FEM independente, núcleo gradiente e campos Whitney | **Integrados à main**; falha do dubleto TM22/TM41 17×15 explicada por hibridização com um modo espúrio; M6f por centroides continua exploratório |
+| M7 — Identidade modal entre parâmetros | **Implementado e testado**: sobreposição L² em regra comum, ângulos principais, associação Hungarian ([documentação](docs/implementation/12_mode_tracking_and_audit_tools.md)) |
 
-O M1 usa C++17, Eigen3, bases de grau 1 e 2 e peso Wendland C² como decisões próprias de engenharia. Veja [implementação e resultados dos testes](docs/implementation/01_mls_core.md), [proveniência](docs/implementation/CODE_PROVENANCE.md), [API](include/al_maleh/mls.hpp), [código](src/mls.cpp) e [testes](tests/test_mls.cpp).
+O M1 usa C++17, Eigen3, bases de grau 1 e 2, base polinomial deslocada ao ponto de avaliação e dois pesos: Wendland C² (padrão histórico, decisão própria) e spline quártica (Eq. 4-2 da dissertação). Veja [implementação e resultados dos testes](docs/implementation/01_mls_core.md), [proveniência](docs/implementation/CODE_PROVENANCE.md), [API](include/al_maleh/mls.hpp), [código](src/mls.cpp) e [testes](tests/test_mls.cpp).
+
+## Auditoria independente de 2026-10-22 — reprodução
+
+```bash
+cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
+cmake --build build --parallel 2
+/usr/bin/ctest --test-dir build --output-on-failure          # 33 testes
+PYTHONNOUSERSITE=1 python3 scripts/independent_audit_campaign.py --out out/independent_audit
+python3 scripts/validation_manifest.py --verify --campaign docs/results/independent_audit_2026-10-22
+```
+
+Perfil do autor nos executáveis (argumentos opcionais; padrões inalterados):
+
+```bash
+./build/tm_validation 5 3 1 1.5 2 out/m2_autor 2 quartic_spline
+./build/rot_irrot_rect 5 3 2 1.5 2 out/m5_autor 1e-10 1 quartic_spline
+./build/mode_tracking m5 5 3 2 2 1 wendland_c2 40 out/m7 3.0 3.3 3.6
+```
 
 ## Compilar e testar
 

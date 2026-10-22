@@ -105,3 +105,22 @@ O projeto `fem-eigen-em-2d3d-whitney` já documenta matrizes, casos TE/TM, expor
 Al Maleh, H. 2009. *A Vector Element-Free Galerkin Method for Waveguide Eigenvalue Problems*. McGill University.
 
 Arnold, D. N.; Falk, R. S.; Winther, R. Finite element exterior calculus: from Hodge theory to numerical stability. *Bulletin of the AMS*, 47(2), 281–354, 2010. DOI: 10.1090/S0273-0979-10-01278-4.
+## Auditoria de 2026-10-22: critérios adicionais
+
+- **Resíduo completo vs. projetado.** Em problemas com massa singular, só
+  ‖Kh−λMh‖ e ‖KZ‖ certificam a equivalência com o problema original; o
+  resíduo projetado é nulo por construção.
+- **Hibridização espúrio–físico.** No cartesiano 17×15 um modo
+  quase-gradiente (λ=49,204, fração gradiente 0,96) a 0,31% do dubleto
+  TM22/TM41 contém ≈1,6% da energia física; o subespaço {192,193} falha em
+  divergência (0,415), mas o melhor subespaço 2D de {190,…,193} recupera o
+  dubleto com div ≤ 0,0145 e a projeção L² do dubleto analítico no mesmo
+  espaço tem div ≤ 0,0045. Comparar subespaços de janelas espectrais, não
+  só pares.
+- **Identidade modal.** Seleção por "maior correlação" pode trocar de ramo
+  sem descontinuidade espectral; rastrear por sobreposição L² em regra
+  comum (M7, `mode_tracking`) e usar ângulos principais para degenerados.
+- **Corte de zero.** No cartesiano, 1e-9·λ_max cresce com o refino e
+  rotula como `near_zero` modos espúrios com λ≫arredondamento; o núcleo
+  exato com reprodução linear tem dimensão 5. Interpretar contagens de
+  `numerical_kernel_dimension` com esse cuidado.

@@ -250,6 +250,43 @@ if(BUILD_TESTING AND Python3_Interpreter_FOUND)
     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
 endif()
 
+# M7: mode identity across MLS parameters by field overlaps on a common
+# sample rule, principal angles for degenerate subspaces (Hungarian matching).
+add_library(al_maleh_mode_tracking STATIC src/mode_tracking.cpp)
+target_include_directories(al_maleh_mode_tracking PUBLIC include)
+target_link_libraries(al_maleh_mode_tracking PUBLIC Eigen3::Eigen)
+if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
+  target_compile_options(al_maleh_mode_tracking PRIVATE -Wall -Wextra -Wpedantic)
+endif()
+add_executable(mode_tracking apps/mode_tracking.cpp)
+target_link_libraries(mode_tracking PRIVATE al_maleh_mode_tracking
+  al_maleh_rot_irrot al_maleh_spectral)
+# Independent theory/code audit studies (Ch.4 profile scan, Laplacian
+# consistency, M5 convergence, rank sweep, TM22/TM41 doublet).
+add_executable(independent_audit apps/independent_audit.cpp)
+target_link_libraries(independent_audit PRIVATE al_maleh_rot_irrot
+  al_maleh_constraints al_maleh_gradient_audit al_maleh_spectral)
+if(BUILD_TESTING)
+  add_executable(test_mode_tracking tests/test_mode_tracking.cpp)
+  target_link_libraries(test_mode_tracking PRIVATE al_maleh_mode_tracking)
+  add_test(NAME m7_mode_tracking_invariance COMMAND test_mode_tracking)
+  add_test(NAME m7_mode_tracking_smoke
+    COMMAND mode_tracking m5 5 3 2 2 1 wendland_c2 40
+      "${CMAKE_CURRENT_BINARY_DIR}/m7_smoke" 3.0 3.3 3.6)
+  add_test(NAME audit_doublet_smoke
+    COMMAND independent_audit doublet 9 7 "${CMAKE_CURRENT_BINARY_DIR}/audit_doublet_9x7.csv")
+  add_test(NAME audit_rank_sweep_smoke
+    COMMAND independent_audit rank-sweep "${CMAKE_CURRENT_BINARY_DIR}/audit_rank_sweep.csv")
+endif()
+if(BUILD_TESTING AND Python3_Interpreter_FOUND AND
+   EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/docs/results/independent_audit_2026-10-22/manifest.json")
+  add_test(NAME independent_audit_campaign_archive
+    COMMAND ${Python3_EXECUTABLE} -m unittest discover -s tests
+      -p test_independent_audit_campaign.py -v)
+  set_tests_properties(independent_audit_campaign_archive PROPERTIES
+    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
+endif()
+
 # Post-merge independent scientific audit of original Ch5/Ch6 tables
 # and observed rank/nullity patterns. Uses only Python stdlib.
 if(BUILD_TESTING AND Python3_Interpreter_FOUND)

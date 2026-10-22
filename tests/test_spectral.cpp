@@ -78,13 +78,42 @@ void assembled_spectrum(){
      !std::isfinite(diag.normal_ratio)||diag.curl_l2<=0)
     throw std::runtime_error("Bad field metrics");
 }
+// Al Maleh (2009) Table 4 (Cartesian, 3x5 grid) and Tables 2/3: quartic
+// spline Eq. (4-2), linear basis, four cells per nodal rectangle. r=1.5h is
+// an inference of this audit (Table 4 r/h scan), NOT a value printed in the
+// thesis. 5 near-zero values, 14 small spurious values and TM11 (row 20).
+void author_profile_table4_cartesian(){
+  const Rectangle r{0,2,0,1};
+  const double pi=std::acos(-1.0);
+  const double table4[3][15]={
+    {1.16e-03,9.87e-03,1.17e-02,3.94e-02,5.73e-02,2.71e-01,6.85e-01,1.05,2.53,2.66,4.68,10.9,11.3,11.9,14.5},
+    {1.08e-03,1.07e-02,1.13e-02,3.96e-02,6.62e-02,2.84e-01,7.24e-01,1.11,2.53,2.82,4.76,10.9,11.6,11.9,14.5},
+    {1.03e-03,9.91e-03,1.08e-02,3.81e-02,6.60e-02,2.84e-01,7.24e-01,1.11,2.52,2.82,4.76,10.8,11.6,11.9,14.5}};
+  const double table2[3]={17.199,17.210,17.206};  // TM11 3x5, Gauss 2..4
+  const MLSEvaluator mls(make_regular_cloud(r,5,3,0.75),1,1e12,MLSWeight::QuarticSpline);
+  for(int g=2;g<=4;++g){
+    const auto a=assemble_cartesian(mls,{r,8,4,g});
+    const auto s=solve_generalized_symmetric(a.stiffness,a.mass);
+    if(s.numerical_kernel_dimension!=5)
+      throw std::runtime_error("Table 4: five near-zero Cartesian eigenvalues expected");
+    for(int k=0;k<15;++k){
+      const double v=s.eigenvalues[5+k];
+      if(std::abs(v/table4[g-2][k]-1)>0.005)
+        throw std::runtime_error("Table 4 Cartesian row "+std::to_string(k+6)+
+                                 " Gauss "+std::to_string(g)+" got "+std::to_string(v));
+    }
+    near(100*(s.eigenvalues[19]/(1.25*pi*pi)-1),table2[g-2],0.002,"Table 2 TM11 3x5");
+  }
+}
 }
 int main(){
  try{
   known_generalized_problem();
   analytical_tm();
   assembled_spectrum();
-  std::cout<<"PASS: known eigenvalues, rank checks, M-orthogonality, TM references and eigenfield metrics\n";
+  author_profile_table4_cartesian();
+  std::cout<<"PASS: known eigenvalues, rank checks, M-orthogonality, TM references, eigenfield metrics "
+             "and Al Maleh Table 4/Table 2 Cartesian spectrum with the identified Ch.4 profile\n";
  }catch(const std::exception& e){
   std::cerr<<"FAIL: "<<e.what()<<'\n';
   return 1;

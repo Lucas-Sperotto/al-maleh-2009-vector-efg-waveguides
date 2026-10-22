@@ -57,3 +57,32 @@ A implementação e os testes do M1 são numericamente consistentes, mas o peso 
 A [primeira varredura controlada de suporte](../results/MLS_SUPPORT_SENSITIVITY_MEASURED_2026-10-21.md) utilizou os fatores 3,0/3,3/3,6, mantendo MLS linear e Wendland C², e demonstrou estabilidade parcial do M2, mas possível troca de modo no M5. **É um estudo da nossa implementação, não um ajuste dos parâmetros da tese.**
 
 Reprodução no MyHoneyBee: use /usr/bin/ctest caso um lançador Python em ~/.local/bin/ctest apresente erro do módulo cmake.
+
+## Auditoria independente de 2026-10-22 — Capítulo 4 cotejado e base local
+
+O PDF completo da dissertação foi consultado (SHA-256 `ba356899…c506`).
+A Eq. (4-2) define o peso **spline quártica** w(l/r)=1−6(l/r)²+8(l/r)³−3(l/r)⁴,
+com l=‖s−x_g‖ (4-1); a Tabela 1 lista bases linear e quadrática e o
+texto **não informa o raio r**. Mudanças desta auditoria:
+
+- `MLSWeight::QuarticSpline` implementa a Eq. (4-2) com gradiente
+  −12(1−q)²/r²·(x−x_g) e Hessiana radial 24(1−q)/(r³l); o padrão continua
+  `WendlandC2` (escolha própria do projeto, nunca atribuída ao autor).
+- **Correção de condicionamento:** a base polinomial passou a ser
+  deslocada para o ponto de avaliação e escalada pelo maior raio. Pela
+  invariância afim da MLS, valores e derivadas não mudam em aritmética
+  exata (espectros arquivados M6a reproduzidos com Δλ/λ ≤ 9,2e-12 na faixa
+  física), mas cond(A) deixa de crescer como (L/h)^{2·grau}: em grau 2,
+  f=3,3, passou de 3,9e3/8,0e4/1,5e6 (5×3/9×5/17×9) para ≈1,3e3 em todas.
+  `condition_number` agora mede apenas a geometria local dos vizinhos.
+- Novos testes: estudo de passo das diferenças finitas (regime O(h²) e de
+  arredondamento), cantos e bordas da nuvem retangular 5×3 com r=1,5h e
+  3,3h, condicionamento independente do refino (falha com a base antiga) e
+  consistência de 2ª ordem: grau 2 reproduz Δ(x²+y²)=4 a ~1e-11; grau 1
+  tem defeito O(1) **independente de h** (mecanismo da não convergência do
+  M5 do autor).
+
+Pela identificação inversa contra a Tabela 4, o perfil do autor é
+spline quártica, base linear, r=1,5h ([relatório](../results/INDEPENDENT_THEORY_CODE_AUDIT.md),
+[campanha](../results/independent_audit_2026-10-22/REPORT.md)). Esse
+raio é **inferência**, não valor impresso na tese.

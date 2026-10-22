@@ -1,5 +1,7 @@
 # Auditoria científica pós-integração — Al Maleh EFG (2026-10-21)
 
+> **Nota posterior (auditoria independente de 2026-10-22):** O PDF completo da dissertação foi obtido e o Capítulo 4 foi cotejado: peso spline quártica (Eq. 4-2); raio não informado, inferido como 1,5h com base linear pela Tabela 4. Com esse perfil o código reproduz 28/28 entradas das Tabelas 2–3 e 21/24 das Tabelas 5–6. Ver [relatório da auditoria](INDEPENDENT_THEORY_CODE_AUDIT.md). O conteúdo abaixo é preservado sem alterações como registro histórico.
+
 **Escopo:** main após integração de M1–M6f; comparação de equações e tabelas extraídas das **imagens fornecidas dos Capítulos 5 e 6** da dissertação (2009); código C++/Python atual; campanhas efetivamente executadas. O Capítulo 4 **não está disponível em texto integral validado** nesta auditoria: embora links públicos para a tese existam, o acesso automático ao PDF retornou erro. Nenhum peso, raio ou solver será atribuído a Al Maleh sem fonte primária.
 
 **Conclusão executiva:** a construção cartesiana do Capítulo 5 e as bases gradiente/rotacional do Capítulo 6 estão implementadas e passaram por verificações algébricas. **Não se reproduziu integralmente os números do autor**, e boa aproximação de autovalores não demonstra ausência de espúrios nem satisfação das condições de Maxwell.

@@ -131,3 +131,21 @@ O argumento final 2 controla a subdivisão de células. Sem ele o executável pr
 A comparação das 28 linhas transcritas das Tabelas 2/3 mostrou diferença média absoluta dos **erros assinados de lambda**, em pontos percentuais, de **4,998 pp** se o modo for escolhido pelo autovalor mais próximo, contra **1,859 pp** se escolhido pela maior correlação espacial de curl(H). Na malha 3×5 a discrepância média cai de **9,432** para **0,645 pp**. Isso comprova que a seleção espectral sozinha pode escolher um ramo modal incorreto, mas **não certifica** a identidade física por correlação de curl isoladamente.
 
 Uma varredura controlada de suporte (3,0/3,3/3,6), com Gauss 2×2 e quatro subcélulas, encontrou para TM11 em 3×5: +17,874%, +17,887%, +17,863%; o autor publica +17,199%. O efeito do suporte **nessa faixa** é pequeno no M2 grosseiro. Os resultados originais e limitações estão no [relatório de suporte MLS](../results/MLS_SUPPORT_SENSITIVITY_MEASURED_2026-10-21.md); relatório geral em [auditoria pós-merges](../results/POST_MERGE_SCIENTIFIC_AUDIT_2026-10-21.md). **Não extrapolar a faixa testada ou atribuir Wendland C² ao autor.**
+
+## Auditoria independente de 2026-10-22 — reprodução numérica integral
+
+- O erro de sinal de (5-6) foi conferido no PDF original (p. 28): (1-1) e
+  (5-6) trazem +k²H, enquanto (5-4)/(5-5) implicam ∇×∇×H−k²H=0 e (5-7)/(5-8)
+  usam [S−k²T]. A implementação segue (5-7)/(5-8).
+- O cabeçalho da Tabela 2 diz k²=12,3770, mas os percentuais publicados
+  correspondem a 5π²/4=12,3370 (reprodução a <0,001 pp).
+- Com o perfil do Capítulo 4 identificado (spline quártica, base linear,
+  r=1,5h — raio **inferido**), a montagem e o solver atuais reproduzem as
+  **28/28** entradas das Tabelas 2 e 3 a <0,001 pp e os 15 autovalores
+  não nulos cartesianos da Tabela 4 nas três quadraturas (erro máximo
+  0,46%, dentro do arredondamento de 3 algarismos). As discrepâncias
+  históricas acima vinham do perfil Wendland C²/3,3h, não da formulação.
+- A comparação continua exigindo seleção por campo: em 3×5 o candidato
+  pelo λ mais próximo é um modo espúrio (ex.: −3,781% em Gauss 2×2).
+
+Detalhes: [INDEPENDENT_THEORY_CODE_AUDIT.md](../results/INDEPENDENT_THEORY_CODE_AUDIT.md).

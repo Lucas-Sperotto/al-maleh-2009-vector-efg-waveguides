@@ -65,6 +65,9 @@ def main():
     p.add_argument("--reference",default=DEFAULT_REFERENCE,type=Path)
     p.add_argument("--support-factor",default=3.3,type=float)
     p.add_argument("--subdivision",default=2,type=int)
+    # Default keeps the historical profile; quartic_spline is Eq. (4-2).
+    p.add_argument("--weight",default="wendland_c2",
+                   choices=("wendland_c2","quartic_spline"))
     p.add_argument("--timeout",default=240,type=int)
     args=p.parse_args()
     if not args.binary.is_file() or not args.reference.is_file():
@@ -85,7 +88,7 @@ def main():
         folder=out/name;folder.mkdir(parents=True,exist_ok=True)
         cmd=[str(args.binary.resolve()),str(nx),str(ny),"1",
              str(args.support_factor),str(gauss),str(folder),
-             str(args.subdivision)]
+             str(args.subdivision),args.weight]
         print("M2 CH5",name,"command:",*cmd,flush=True)
         proc=subprocess.run(cmd,text=True,capture_output=True,
                             check=False,timeout=args.timeout)
@@ -145,7 +148,8 @@ def main():
                current_grid_nx_is_x_not_author_first_dimension=True,
                subcells_per_nodal_interval=args.subdivision,
                integration_cells_per_node_rectangle=args.subdivision**2,
-               polynomial_degree=1,wendland_c2=True,
+               polynomial_degree=1,wendland_c2=args.weight=="wendland_c2",
+               mls_weight=args.weight,
                support_factor=args.support_factor,
                mode_selection="closest_lambda_and_max_curl_overlap_recorded_separately",
                comparison_kind="exploratory_not_exact_replication")
@@ -155,7 +159,7 @@ def main():
         "# M2 — Capítulo 5 de Al Maleh: comparação documentada (cartesiano)",
         "",
         "**Os percentuais do autor foram transcritos das imagens fornecidas.**",
-        "Os cálculos locais usam nossa MLS linear Wendland C², fator de suporte",
+        f"Os cálculos locais usam MLS linear com peso {args.weight}, fator de suporte",
         f"{args.support_factor}, geometria 2×1 e quatro células por retângulo nodal.",
         "Sem conhecimento dos parâmetros de suporte, pesos MLS e estratégias",
         "originais completos, diferenças NÃO significam automaticamente bugs.",

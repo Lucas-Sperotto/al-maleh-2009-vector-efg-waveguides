@@ -1,0 +1,12 @@
+formulation=m5
+nx=5
+ny=3
+gauss=2
+subdivision=2
+degree=1
+weight=wendland_c2
+lambda_max=40
+common_rule=rectangle_2x1_cells_32x16_gauss3_points=4608
+tracking_norm=L2_of_H_on_common_rule
+assignment=Hungarian_max_total_overlap
+status_rule=tracked_if_overlap>=0.9_and_margin>=0.2_else_ambiguous

@@ -1,5 +1,7 @@
 # Varredura controlada de suporte MLS M2/M5 — resultados medidos
 
+> **Nota posterior (auditoria independente de 2026-10-22):** O rastreamento modal M7 (fator 3,00→3,60, passo 0,02) mostrou que todos os ramos com λ<30 variam continuamente (sobreposição mínima 0,956); o salto TM21 +31,465%→−8,503% é troca do autovetor escolhido pelo critério de maior correlação de curl, não descontinuidade espectral. Ver [relatório da auditoria](INDEPENDENT_THEORY_CODE_AUDIT.md). O conteúdo abaixo é preservado sem alterações como registro histórico.
+
 **Fonte:** [GitHub Actions 39642651230](https://github.com/Lucas-Sperotto/al-maleh-2009-vector-efg-waveguides/actions/runs/39642651230) no commit 02eb257f (CI: **28/28 CTests passaram**, campanha 12/12 execuções de solver, 24 linhas de modos). [Artefato com todos os espectros, matrizes e CSVs](https://github.com/Lucas-Sperotto/al-maleh-2009-vector-efg-waveguides/actions/runs/39642651230/artifacts/12365842067).
 
 ## Contrato

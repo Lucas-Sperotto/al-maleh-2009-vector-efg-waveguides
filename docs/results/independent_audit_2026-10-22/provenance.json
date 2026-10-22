@@ -1,0 +1,35 @@
+{
+  "campaign": "independent_theory_code_audit_2026-10-22",
+  "created_utc": "2026-10-22T13:20:56+00:00",
+  "base_commit": "c217aa5b57e92fd9c5be54db06d4458f4d2d0dbc",
+  "branch": "audit/teoria-codigo-efg",
+  "working_tree_dirty": true,
+  "python": "3.12.3",
+  "platform": "Linux-6.18.33.2-microsoft-standard-WSL2-x86_64-with-glibc2.39",
+  "thesis_pdf": "https://mcgill.scholaris.ca/bitstreams/4d79b125-540f-4b38-8c06-722d14eb60bb/download",
+  "thesis_pdf_sha256": "ba356899e516894301a907f5ead06392a2132dd15e5c7b3811733dbae06cc506",
+  "identified_profile": {
+    "weight": "quartic_spline (Eq. 4-2)",
+    "degree": 1,
+    "radius_over_spacing": "1.5 (inferred, not stated in thesis)"
+  },
+  "m7": {
+    "factors": 31,
+    "transitions_below_30": 210,
+    "ambiguous_below_30": 0,
+    "min_tracked_overlap_below_30": 0.9561445023985521,
+    "best_curl_selection_switches": [
+      "3.30",
+      "3.46",
+      "3.50"
+    ],
+    "tm21_best_curl_error_range_pct": [
+      -20.013130710885484,
+      33.99987002885256
+    ],
+    "tm21_best_curl_rho_range": [
+      0.5834397731799883,
+      0.7425487965651404
+    ]
+  }
+}

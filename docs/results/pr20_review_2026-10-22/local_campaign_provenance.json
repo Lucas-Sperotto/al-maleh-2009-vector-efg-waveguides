@@ -1,0 +1,47 @@
+{
+  "campaign": "independent_theory_code_audit_2026-10-22",
+  "created_utc": "2026-10-22T17:06:10+00:00",
+  "base_commit": "ae8de93ee265dfa549bd37e9eedd1dbc6e614028",
+  "branch": "audit/teoria-codigo-efg",
+  "working_tree_dirty": true,
+  "tracked_diff_sha256": "6584fbf91d2bef908b27a5e1dc10d2b0d27c4c8ad3bb17649d2c83ff5aea90cc",
+  "executable_sha256": {
+    "independent_audit": "0891c071a90c01b9479f56a0bad365a9d1ae1328d1b0f887c3a6998b63ff0315",
+    "tm_validation": "6fc38049ef00a834c8d0f4155eb6d72f15db1ae0dfe8c57e56cb9d48c4eabcf6",
+    "rot_irrot_rect": "1504c2812cf2bf9624a4eb8a8b44a16e4fad0f68812eaee747cb5c522519f442",
+    "mode_tracking": "01d042611bcb3fb9637ae4a71636a335c50778a9207c9e26df7e878f49081de4"
+  },
+  "reference_csv_sha256": {
+    "author_ch6_table4_spectra.csv": "e1c23cfeefec01f47638a47db1417b84e5e311714c15e7a112c065de64d9f40f",
+    "m2_author_ch5_tables_2_3.csv": "551243b3a7891eb1cd868de069ea568fc75ae23d067419f427adb165958e7aa2",
+    "m5_author_ch6_tables_5_6.csv": "ab6c7351cd0d1c9160c1819aa037cdb5123a19c44c1631bad53b4d969f07248d"
+  },
+  "python": "3.12.3",
+  "platform": "Linux-6.18.33.2-microsoft-standard-WSL2-x86_64-with-glibc2.39",
+  "thesis_pdf": "https://mcgill.scholaris.ca/bitstreams/4d79b125-540f-4b38-8c06-722d14eb60bb/download",
+  "thesis_pdf_sha256": "ba356899e516894301a907f5ead06392a2132dd15e5c7b3811733dbae06cc506",
+  "identified_profile": {
+    "weight": "quartic_spline (Eq. 4-2)",
+    "degree": 1,
+    "radius_over_spacing": "1.5 (inferred, not stated in thesis)"
+  },
+  "m7": {
+    "factors": 31,
+    "transitions_below_30": 210,
+    "ambiguous_below_30": 0,
+    "min_tracked_overlap_below_30": 0.956144502398554,
+    "best_curl_selection_switches": [
+      "3.30",
+      "3.46",
+      "3.50"
+    ],
+    "tm21_best_curl_error_range_pct": [
+      -20.013130710885484,
+      33.99987002885256
+    ],
+    "tm21_best_curl_rho_range": [
+      0.5834397731799873,
+      0.7425487965651386
+    ]
+  }
+}

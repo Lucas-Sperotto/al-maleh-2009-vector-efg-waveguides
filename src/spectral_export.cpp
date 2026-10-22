@@ -269,7 +269,8 @@ void export_spectrum(const std::filesystem::path& directory,
       <<"  \"cloud\": {\"nx\": "<<options.nx<<", \"ny\": "<<options.ny<<", \"nodes\": "<<nodes
       <<", \"degree\": "<<mls.polynomial_degree()<<", \"support_factor\": "<<options.support_factor
       <<", \"support_radius\": "<<mls.nodes().front().support_radius
-      <<", \"basis\": \"centered scaled polynomial\", \"weight\": \"Wendland C2\"},\n"
+      <<", \"basis\": \"polynomial shifted to query point, scaled by max support radius\", \"weight\": "
+      <<json_string(mls_weight_name(mls.weight()))<<"},\n"
       <<"  \"quadrature\": {\"cells_x\": "<<rule.cells_x<<", \"cells_y\": "<<rule.cells_y
       <<", \"gauss_order\": "<<rule.gauss_order<<", \"points\": "<<matrices.quadrature_points
       <<", \"boundary_gauss_order\": 3, \"max_moment_condition\": "<<matrices.max_moment_condition<<"},\n"
