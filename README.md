@@ -4,19 +4,21 @@ Reprodução crítica da dissertação de **Hussam Al Maleh (2009)**, *A Vector 
 
 > **Rigor científico:** a documentação inclui reconstruções matemáticas voltadas à implementação. A [auditoria independente de 2026-10-22](docs/results/INDEPENDENT_THEORY_CODE_AUDIT.md) cotejou o **PDF completo** da dissertação (Capítulos 4–6): o peso MLS do autor é a spline quártica da Eq. (4-2); o raio não consta na tese e foi **inferido** (r = 1,5 × espaçamento, base linear) por identificação inversa contra a Tabela 4. Testes algébricos e boa concordância de autovalores não certificam ausência de modos espúrios.
 
-**Auditoria independente teoria × código (2026-10-22):** [relatório](docs/results/INDEPENDENT_THEORY_CODE_AUDIT.md) e [campanha reprodutível com manifesto SHA-256](docs/results/independent_audit_2026-10-22/REPORT.md). Com o perfil identificado, o código reproduz **28/28** entradas das Tabelas 2–3 (<0,001 pp), o espectro da Tabela 4 nas duas formulações e **21/24** entradas das Tabelas 5–6 (≤0,008 pp). Auditoria anterior (histórica): [pós-merges de 21/10](docs/results/POST_MERGE_SCIENTIFIC_AUDIT_2026-10-21.md).
+**Auditoria independente teoria × código (2026-10-22, integrada pela PR #20):** [relatório](docs/results/INDEPENDENT_THEORY_CODE_AUDIT.md) e [campanha reprodutível com manifesto SHA-256](docs/results/independent_audit_2026-10-22/REPORT.md). Com o perfil identificado, o código reproduz **28/28** entradas das Tabelas 2–3 (<0,001 pp), o espectro da Tabela 4 nas duas formulações e **21/24** entradas das Tabelas 5–6 (<0,008 pp pelo critério de maior correlação curl). **A coincidência dentro da precisão impressa é menor: 20/28 nas Tabelas 2–3 e 3/24 nas Tabelas 5–6.** Auditoria anterior (histórica): [pós-merges de 21/10](docs/results/POST_MERGE_SCIENTIFIC_AUDIT_2026-10-21.md).
+
+**Estado pós-merge da PR #20:** a auditoria e os testes estão integrados na `main` (commit `0a728d4d`). O [roteiro científico priorizado de 22/10/2026](docs/ROADMAP_POST_PR20_2026-10-22.md) define as próximas etapas M8a–M8d e M9, com issues, riscos, critérios de aceite e reprodutibilidade. **CI verde valida execução, não a ausência de modos espúrios.**
 
 ## Estado do desenvolvimento
 
 | Etapa | Estado |
 |---|---|
 | M1 — MLS linear/quadrático, gradientes e Hessianas | **Implementado e testado** (CTest e GitHub Actions); pesos Wendland C² e spline quártica (Eq. 4-2); base local com condicionamento independente do refino |
-| M2 — Formulação cartesiana, quadratura, matrizes de massa e curl-curl | **Implementado e confrontado com o capítulo 5 da dissertação**; Tabelas 2–4 reproduzidas com o perfil MLS identificado do Cap. 4 (raio inferido) |
+| M2 — Formulação cartesiana, quadratura, matrizes de massa e curl-curl | **Implementado e confrontado com o capítulo 5**; Tabelas 2–3 com 28/28 desvios inferiores a 0,001 pp; Tabela 4 com 45/45 raízes cartesianas não nulas dentro do arredondamento, usando perfil MLS parcialmente inferido |
 | M3 — Solucionador generalizado, referências TM e exportação de campos | **Protótipo implementado e testado**; convergência física ainda pendente |
 | M4 — Comparação modal, núcleo curl-curl e campanha de refinamento | **Implementado e testado**; classificação física ainda exploratória |
-| M5 — Formulação rotacional/irrotacional | **Equações (6-1)–(6-6) verificadas e Tabelas 4–6 reproduzidas com o perfil do Cap. 4**; pencil singular demonstrado e certificado (‖KZ‖, resíduo completo); a não convergência do autor é explicada pela falta de consistência de 2ª ordem da MLS linear |
-| M6a–M6f — Validação FEM independente, núcleo gradiente e campos Whitney | **Integrados à main**; falha do dubleto TM22/TM41 17×15 explicada por hibridização com um modo espúrio; M6f por centroides continua exploratório |
-| M7 — Identidade modal entre parâmetros | **Implementado e testado**: sobreposição L² em regra comum, ângulos principais, associação Hungarian ([documentação](docs/implementation/12_mode_tracking_and_audit_tools.md)) |
+| M5 — Formulação rotacional/irrotacional | **Equações (6-1)–(6-6) verificadas; Tabela 4 M5 aproximada (12/15 valores), Tabelas 5–6 com 21/24 desvios <0,008 pp**; pencil singular certificado sob hipóteses de núcleo válido; estagnação MLS linear observada no perfil inferido, sem prova universal |
+| M6a–M6f — Validação FEM independente, núcleo gradiente e campos Whitney | **Integrados à main**; falha do dubleto TM22/TM41 17×15 ainda sem correção; hibridização com espúrio é hipótese; M6f por centroides continua exploratório |
+| M7 — Identidade modal entre parâmetros | **Implementado e testado para variação de suporte com nuvem/quadratura/posto fixos**: sobreposição L², ângulos principais e Hungarian; clusters degenerados são sinalizados, mas rastreamento automático de subespaços permanece pendente ([documentação](docs/implementation/12_mode_tracking_and_audit_tools.md)) |
 
 O M1 usa C++17, Eigen3, bases de grau 1 e 2, base polinomial deslocada ao ponto de avaliação e dois pesos: Wendland C² (padrão histórico, decisão própria) e spline quártica (Eq. 4-2 da dissertação). Veja [implementação e resultados dos testes](docs/implementation/01_mls_core.md), [proveniência](docs/implementation/CODE_PROVENANCE.md), [API](include/al_maleh/mls.hpp), [código](src/mls.cpp) e [testes](tests/test_mls.cpp).
 
@@ -67,9 +69,7 @@ e transcrever os erros publicados para TM11 e TM21 nas grades
 3×5, 4×7, 5×9 e 6×11. O autor usa **quatro células de integração
 por retângulo entre nós** e quadratura Gauss de 1×1 até 5×5.
 O programa agora suporta essas opções **sem modificar o padrão anterior**.
-Os parâmetros MLS específicos da tese não foram integralmente
-verificados, portanto esta é uma **comparação experimental**:
-não afirmamos igualdade numérica com as tabelas sem medi-la.
+A auditoria posterior da PR #20 **verificou o peso spline quártica da Eq. (4-2)**, mas inferiu o grau linear e o raio de suporte `r/h=1,5` por identificação inversa. Com esse perfil, 28/28 linhas das Tabelas 2–3 diferem menos de 0,001 pp; 20/28 ficam na precisão impressa. **A campanha histórica abaixo com Wendland C²/3,3h continua preservada e não representa o perfil inferido da fonte.**
 
 ```bash
 python3 scripts/m2_ch5_benchmark.py --binary build/tm_validation --out out/m2_ch5
@@ -99,7 +99,7 @@ o espectro no subespaço reduzido (inclusive autovalores negativos).
 
 Os **24 erros numéricos originais** das Tabelas 5 e 6 foram
 transcritos. As nossas simulações são publicadas separadamente,
-sem afirmar coincidência com os parâmetros MLS exatos do autor.
+com distinção explícita entre o peso quártico **documentado** e o grau/raio **inferidos**. A PR #20 encontrou 21/24 desvios inferiores a 0,008 pp nas Tabelas 5–6 pelo melhor curl, não igualdade na última casa impressa; F6/F7/F8 permanecem em investigação.
 
 ```bash
 python3 scripts/m5_ch6_campaign.py --binary build/rot_irrot_rect --out out/m5

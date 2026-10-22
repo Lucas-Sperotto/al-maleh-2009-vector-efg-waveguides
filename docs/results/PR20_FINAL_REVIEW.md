@@ -1,5 +1,8 @@
 # Revisão final da PR #20 — 22/10/2026
 
+> **Atualização pós-revisão — 22/10/2026:** a [PR #20](https://github.com/Lucas-Sperotto/al-maleh-2009-vector-efg-waveguides/pull/20) foi **integrada à `main`** no commit `0a728d4d293c7c3b7c8687c45e1d1f6e1421bf62`, após a aprovação das CIs [39820787944](https://github.com/Lucas-Sperotto/al-maleh-2009-vector-efg-waveguides/actions/runs/39820787944) e [39820781132](https://github.com/Lucas-Sperotto/al-maleh-2009-vector-efg-waveguides/actions/runs/39820781132) no head `4b3e6b6`. As frases abaixo sobre “PR aberta”, “sem merge” ou “CI futura” documentam o **estado histórico anterior** à integração e foram mantidas como trilha da revisão. O [roteiro científico pós-merge](../ROADMAP_POST_PR20_2026-10-22.md) define as pendências. Nenhuma issue de fidelidade/física foi encerrada automaticamente por esse merge.
+
+
 Revisão dos commits `b74932d`, `4b113bb`, `83d53b4` e `ae8de93`, na branch
 `audit/teoria-codigo-efg`. Complementa e corrige a interpretação da campanha
 histórica; não altera seus CSV, manifesto ou `REPORT.md`.
