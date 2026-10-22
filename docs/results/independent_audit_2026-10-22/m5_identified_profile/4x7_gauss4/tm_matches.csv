@@ -1,0 +1,3 @@
+m,n,lambda_exact,nearest_index,nearest_lambda,nearest_signed_error_pct,best_curl_index,best_curl_lambda,best_curl_signed_error_pct,best_curl_rho,matched_by
+1,1,12.337005501361697,27,12.301579528293798,-0.28715212183367811,28,15.237321224266923,23.509073758499198,0.89202597617005974,spectral_and_curl_reported_separately
+2,1,19.739208802178716,28,15.237321224266923,-22.806828900938005,29,24.324280471447697,23.228244430764121,0.88546629266698962,spectral_and_curl_reported_separately

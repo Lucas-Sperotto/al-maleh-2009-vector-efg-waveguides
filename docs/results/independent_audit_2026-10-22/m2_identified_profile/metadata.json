@@ -1,0 +1,20 @@
+{
+  "source": "Hussam Al Maleh (2009), Chapter 5, equations (5-1)-(5-11), Figures 9-15, Tables 2 and 3, supplied screenshots",
+  "source_reference": "docs/results/m2_author_ch5_tables_2_3.csv",
+  "source_numeric_rows": 28,
+  "experiments": 14,
+  "domain": {
+    "a_m": 2,
+    "b_m": 1
+  },
+  "node_naming": "author_nodes_y_x",
+  "current_grid_nx_is_x_not_author_first_dimension": true,
+  "subcells_per_nodal_interval": 2,
+  "integration_cells_per_node_rectangle": 4,
+  "polynomial_degree": 1,
+  "wendland_c2": false,
+  "mls_weight": "quartic_spline",
+  "support_factor": 1.5,
+  "mode_selection": "closest_lambda_and_max_curl_overlap_recorded_separately",
+  "comparison_kind": "exploratory_not_exact_replication"
+}

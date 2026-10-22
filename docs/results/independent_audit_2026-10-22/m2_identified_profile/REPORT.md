@@ -1,0 +1,59 @@
+# M2 — Capítulo 5 de Al Maleh: comparação documentada (cartesiano)
+
+**Os percentuais do autor foram transcritos das imagens fornecidas.**
+Os cálculos locais usam MLS linear com peso quartic_spline, fator de suporte
+1.5, geometria 2×1 e quatro células por retângulo nodal.
+Sem conhecimento dos parâmetros de suporte, pesos MLS e estratégias
+originais completos, diferenças NÃO significam automaticamente bugs.
+A coincidência numérica deve ser demonstrada, não assumida.
+
+O formato 3×5 do autor significa três posições no eixo y e cinco no x;
+no programa, os argumentos dessa nuvem são (nx=5, ny=3).
+Os percentuais são erros RELATIVOS ASSINADOS em λ=k²; os modos
+mais próximos espectralmente podem ser espúrios. Por isso também
+exportamos o candidato com maior correlação espacial curl(H).
+
+| Modo | Grade autor | Gauss | Autor (%) | Nosso mais próximo (%) | Nosso curl mais forte (%) | Δ pp mais próximo |
+|---|---|---:|---:|---:|---:|---:|
+| TM11 | 3×5 | 1×1 | +23.767 | +0.293 | +23.767 | 23.474 |
+| TM11 | 3×5 | 2×2 | +17.199 | -3.781 | +17.199 | 20.980 |
+| TM11 | 3×5 | 3×3 | +17.210 | -3.728 | +17.210 | 20.938 |
+| TM11 | 3×5 | 4×4 | +17.206 | -3.864 | +17.206 | 21.070 |
+| TM11 | 3×5 | 5×5 | +17.206 | -3.856 | +17.206 | 21.062 |
+| TM11 | 4×7 | 1×1 | +5.978 | -4.382 | +5.979 | 10.360 |
+| TM11 | 4×7 | 2×2 | +3.608 | +3.608 | +3.608 | 0.000 |
+| TM11 | 4×7 | 3×3 | +3.763 | +3.763 | +3.763 | 0.000 |
+| TM11 | 4×7 | 4×4 | +3.759 | +3.759 | +3.759 | 0.000 |
+| TM11 | 4×7 | 5×5 | +3.756 | +3.756 | +3.756 | 0.000 |
+| TM11 | 5×9 | 1×1 | +2.805 | +2.806 | +2.806 | 0.001 |
+| TM11 | 5×9 | 2×2 | +1.617 | +1.618 | +1.618 | 0.001 |
+| TM11 | 6×11 | 1×1 | +1.567 | +1.567 | +1.567 | 0.000 |
+| TM11 | 6×11 | 2×2 | +0.839 | +0.839 | +0.839 | 0.000 |
+| TM21 | 3×5 | 1×1 | +18.557 | +18.558 | +18.558 | 0.001 |
+| TM21 | 3×5 | 2×2 | +11.846 | +11.847 | +11.847 | 0.001 |
+| TM21 | 3×5 | 3×3 | +12.103 | +12.104 | +12.104 | 0.001 |
+| TM21 | 3×5 | 4×4 | +12.089 | +12.089 | +12.089 | 0.000 |
+| TM21 | 3×5 | 5×5 | +12.085 | +12.085 | +12.085 | 0.000 |
+| TM21 | 4×7 | 1×1 | +4.508 | +3.326 | +4.509 | 1.182 |
+| TM21 | 4×7 | 2×2 | +2.038 | +2.038 | +2.038 | 0.000 |
+| TM21 | 4×7 | 3×3 | +2.174 | +2.175 | +2.175 | 0.001 |
+| TM21 | 4×7 | 4×4 | +2.164 | -2.080 | +2.164 | 4.244 |
+| TM21 | 4×7 | 5×5 | +2.161 | -2.118 | +2.161 | 4.279 |
+| TM21 | 5×9 | 1×1 | +2.313 | +2.313 | +2.313 | 0.000 |
+| TM21 | 5×9 | 2×2 | +1.071 | +1.071 | +1.071 | 0.000 |
+| TM21 | 6×11 | 1×1 | +1.307 | +1.307 | +1.307 | 0.000 |
+| TM21 | 6×11 | 2×2 | +0.539 | +0.539 | +0.539 | 0.000 |
+
+Referências analíticas: TM11 = 1.25*pi² ≈ 12.33700550;
+TM21 = 2*pi² ≈ 19.73920880.
+Na dissertação, Tabela 2 é TM11 e Tabela 3 é TM21.
+Onde há espaços vazios nas tabelas, não se inventaram resultados.
+
+A Figura 15 mostra um candidato espúrio com k² ≈ 12.1456
+(grade 6×11, quadratura 2×2). Essa proximidade ao TM11
+não deve ser confundida com correspondência física de campo.
+
+Arquivos: comparison.csv, metadata.json e uma pasta por combinação
+com espectro completo, matrizes, diagnósticos e campos TM11/TM21
+em CSV e SVG originais, além de stdout/stderr.
+Nenhum espectro histórico M6a–M6f foi alterado.

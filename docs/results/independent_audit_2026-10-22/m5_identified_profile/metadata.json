@@ -1,0 +1,15 @@
+{
+  "reference": "Al Maleh 2009 Ch6 Eqs 6-1..6-6, Tables 5 and 6",
+  "reference_rows": 24,
+  "executed_configs": 12,
+  "alpha": "gradient MLS",
+  "beta": "z_cross_gradient MLS",
+  "prior_ch5_subdivision": 2,
+  "original_author_grid_indexing": "ny_x_nx",
+  "support_factor": 1.5,
+  "mls_weight": "quartic_spline",
+  "mls_degree": 1,
+  "mass_relative_rank_cutoff": 1e-10,
+  "negative_eigenvalues_retained_in_raw_exports": true,
+  "observed_not_an_exact_numerical_replication": true
+}
