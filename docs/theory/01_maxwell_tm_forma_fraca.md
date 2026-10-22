@@ -106,3 +106,15 @@ O campo satisfaz $\nabla_t\cdot\mathbf H_t=0$, $\mathbf n\cdot\mathbf H_t=0$ e, 
 Al Maleh, H. *A Vector Element-Free Galerkin Method for Waveguide Eigenvalue Problems*. Master of Engineering thesis, McGill University, 2009. URL: https://www.collectionscanada.gc.ca/obj/thesescanada/vol2/002/MR61527.PDF . Resumo verificado; equações internas pendentes de cotejo.
 
 Jin, J. M. *Finite Element Method for Eigenvalue Problems in Electromagnetics*. NASA TP-3485, 1994, usado como referência FEM externa e independente.
+## Auditoria de 2026-10-22: sinal e condição natural conferidos na fonte
+
+Na dissertação original (PDF McGill, p. 3 e 28), (1-1) e (5-6) aparecem
+como ∇×∇×H **+** k²H = 0. Com a convenção e^{jωt} de (5-4)–(5-5),
+∇×∇×H = jωε₀∇×E = ω²μ₀ε₀H, logo o correto é ∇×∇×H − k²H = 0, exatamente o
+que usam a forma fraca (5-7) e o sistema (5-8) [S−k²T]h=0. O código segue
+(5-7)/(5-8). Com H∈H(curl) sem condição essencial, a forma fraca não tem
+termo de contorno e a condição natural é (∇×H)×n=0 ⇔ Ez=0 (5-3). Para
+k²≠0, testar com v=∇q, q∈H¹, dá div H=0 em Ω e n·H=0 em ∂Ω no sentido
+fraco; o núcleo k²=0 é ∇H¹(Ω), de dimensão infinita. Simetria e
+semidefinitude de K e M não garantem ausência de espúrios no discreto.
+Ver [relatório da auditoria](../results/INDEPENDENT_THEORY_CODE_AUDIT.md).

@@ -1,5 +1,7 @@
 # M6b — Extremos invariantes do subespaço TM22/TM41
 
+> **Nota posterior (auditoria independente de 2026-10-22):** A falha de divergência 0,415 do dubleto 17×15 foi explicada: hibridização com o modo espúrio quase-gradiente 191 (λ=49,204, a 0,31% do dubleto), que contém ≈1,6% da energia física. A projeção L² do dubleto analítico no mesmo espaço tem div ≤ 0,0045; não é piso de aproximação. Ver [relatório da auditoria](../INDEPENDENT_THEORY_CODE_AUDIT.md). O conteúdo abaixo é preservado sem alterações como registro histórico.
+
 Resultados computados em 21/10/2026 com o executável
 `constraint_subspace` e publicados em
 [GitHub Actions run 39602371572](https://github.com/Lucas-Sperotto/al-maleh-2009-vector-efg-waveguides/actions/runs/39602371572),

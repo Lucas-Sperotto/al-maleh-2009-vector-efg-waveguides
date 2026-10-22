@@ -1,5 +1,7 @@
 # M5 — Primeira campanha medida com as bases originais do capítulo 6
 
+> **Nota posterior (auditoria independente de 2026-10-22):** As diferenças desta campanha frente às Tabelas 5–6 decorrem do perfil MLS (Wendland C², 3,3h). Com spline quártica (Eq. 4-2), base linear e r=1,5h (inferido), 21/24 entradas são reproduzidas a ≤0,008 pp; a não convergência do autor deve-se à falta de consistência de 2ª ordem da MLS linear. Ver [relatório da auditoria](INDEPENDENT_THEORY_CODE_AUDIT.md). O conteúdo abaixo é preservado sem alterações como registro histórico.
+
 **Fonte da execução:** [CI 39636316113](https://github.com/Lucas-Sperotto/al-maleh-2009-vector-efg-waveguides/actions/runs/39636316113) (commit `7c7f7d4f`): CTest aprovado, **12/12 configurações** e **24 comparações**. Valores de referência publicados foram transcritos das Tabelas 5/6 das imagens fornecidas; dados de execução provêm do código desta campanha.
 
 Todos os números abaixo são **erros percentuais assinados em lambda=k²**. Candidato por autovalor mais próximo e por máxima correlação de curl(H) são registrados separadamente; nenhum é automaticamente certificado como o campo físico correto.

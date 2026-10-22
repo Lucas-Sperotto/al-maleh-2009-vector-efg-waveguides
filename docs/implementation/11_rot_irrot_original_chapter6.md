@@ -114,3 +114,36 @@ Nas cinco nuvens do ensaio, com n nós, verificou-se empiricamente rank(M)=2n−
 Na [campanha de suporte MLS](../results/MLS_SUPPORT_SENSITIVITY_MEASURED_2026-10-21.md), TM21 M5 3×5 com Gauss 2×2 apresentou erros de +30,566%, +31,465% e −8,503% ao variar o suporte 3,0/3,3/3,6, mesmo com correlação de curl crescente. Esse resultado é um **alerta de possível troca de ramo modal**. A [issue #18](https://github.com/Lucas-Sperotto/al-maleh-2009-vector-efg-waveguides/issues/18) exige continuidade de autovetores por produto interno em grade comum, estudo das tolerâncias de posto e comparação de resíduos completos de K h−lambda M h, que são atualmente exportados, mas não bloqueados por todos os testes.
 
 Matrizes K/M montadas por quadratura positiva são semidefinidas positivas; negativos de grande magnitude não são esperados na nossa formulação. Não alterar sinais/penalizações para reproduzir os pequenos negativos do autor. Veja o [relatório científico completo](../results/POST_MERGE_SCIENTIFIC_AUDIT_2026-10-21.md) e a [issue #17](https://github.com/Lucas-Sperotto/al-maleh-2009-vector-efg-waveguides/issues/17) sobre os dados primários ausentes do capítulo 4.
+
+## Auditoria independente de 2026-10-22 — pencil singular, certificados e reprodução
+
+**Teorema (ver relatório):** todo polinômio holomorfo f=φ+iψ reproduzido
+pela MLS gera coeficientes em ker M ∩ ker K (Cauchy–Riemann; ψ harmônica).
+Grau 1: 4 vetores (1, i, z, iz); grau 2: 6. O pencil (K,M) é singular e
+precisa ser deflacionado; a projeção em range(M) é exata quando
+ker M ⊆ ker K. dim ker(K_red) ≥ n−1 (gradientes discretos) é teorema; a
+igualdade rank(M)=2n−4, dim ker(K_red)=n−1 é observação.
+
+**Certificados novos** (`RankReducedSpectrum` e `run_metadata.txt`):
+`mass_kernel_stiffness_coupling` (‖KZ‖_F/‖K‖_F), `max_full_residual`,
+`max_reduced_residual`, `mass_eigen_max_removed`. O resíduo projetado é
+~0 por construção e não certifica a redução: com limiar 1e-2 ele fica
+em 1e-16 enquanto o completo sobe a 1e-2. No padrão 1e-10 todos os casos
+medidos têm acoplamento ≤ 2e-13 e resíduo completo ≤ 1e-15.
+
+**Reprodução:** com spline quártica (Eq. 4-2), base linear e r=1,5h
+(inferido), `rot_irrot_rect` reproduz a Tabela 4 rot/irrot (14 zeros;
+5,91/12,9/15,0/15,5/16,8 e as colunas 3×3, 4×4) e 21/24 entradas das
+Tabelas 5–6 a ≤0,008 pp; das 3 restantes (todas Gauss 1×1), uma coincide
+pelo λ mais próximo, uma em módulo com sinal oposto (provável erro de sinal
+na tese) e uma difere 0,227 pp sem explicação.
+
+**Não convergência:** com integração convergida o erro de TM11 do perfil
+do autor satura em ≈+23% (até 13×25); a causa é a ausência de
+consistência de 2ª ordem da MLS linear em ∫ΔNᵢΔNⱼ, não a quadratura. Com
+base quadrática (`rot_irrot_rect ... 1e-10 2 wendland_c2`) o erro converge.
+
+Novos argumentos opcionais: `rot_irrot_rect nx ny gauss fator sub saída
+[limiar=1e-10] [grau=1] [peso=wendland_c2]`. Limite da biblioteca: 600 nós
+(o executável mantém 120 por causa do CSV denso de matrizes).
+Relatório: [INDEPENDENT_THEORY_CODE_AUDIT.md](../results/INDEPENDENT_THEORY_CODE_AUDIT.md).

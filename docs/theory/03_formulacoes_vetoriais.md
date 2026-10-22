@@ -151,3 +151,22 @@ Funções MLS não possuem, em geral, $\phi_i(\mathbf x_j)=\delta_{ij}$, portant
 ## Referência primária
 
 Al Maleh, H. 2009, *A Vector Element-Free Galerkin Method for Waveguide Eigenvalue Problems*. As formulações de funções de forma foram verificadas contra os capítulos 5 e 6, incluindo (6-1)–(6-6). Ainda faltam o cotejo dos pesos/raios MLS e a abordagem original para a matriz de massa singular. As Tabelas 5/6 originais estão transcritas, mas os resultados numéricos precisam ser confrontados separadamente.
+## Auditoria de 2026-10-22: propriedades demonstradas da formulação rotacional/irrotacional
+
+1. **Pencil singular (teorema).** Se f=φ+iψ é polinômio holomorfo
+   reproduzido pela MLS, ∇φ+ẑ×∇ψ≡0 (Cauchy–Riemann) e Δψ≡0; o vetor de
+   coeficientes pertence a ker M ∩ ker K. Grau 1: f∈{1,i,z,iz} (4 vetores);
+   grau 2: mais z², iz² (6). Logo det(K−λM)≡0 e o problema exige deflação.
+2. **Equivalência da redução (teorema).** Com Z base do núcleo descartado de
+   M: se KZ=0, os autopares de QᵀKQ são autopares de Kh=λMh com resíduo
+   completo nulo; caso contrário os autovalores finitos são os do
+   complemento de Schur e a projeção dá cotas superiores.
+3. **Núcleo de rotacional (teorema + observação).** dim ker(K_red)=dim ker K −
+   dim ker M ≥ n−1 (gradientes discretos ∇V_h); igualdade observada.
+4. **Positividade (teorema).** Com pesos de Gauss positivos, QᵀKQ é
+   semidefinida: autovalores negativos só em nível de arredondamento.
+5. **Ortogonalidade aos gradientes (teorema).** Autovetores com λ≠0 são
+   M-ortogonais a ∇V_h (divergência fraca discreta nula e n·H=0 natural).
+
+Validação numérica dessas propriedades e reprodução das Tabelas 4–6:
+[relatório](../results/INDEPENDENT_THEORY_CODE_AUDIT.md).

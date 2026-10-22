@@ -1,5 +1,7 @@
 # M2 — Resultados executados frente às Tabelas 2/3 de Al Maleh (2009)
 
+> **Nota posterior (auditoria independente de 2026-10-22):** Com o perfil do Capítulo 4 identificado (spline quártica, base linear, r=1,5h inferido), as 28 entradas das Tabelas 2–3 são reproduzidas a <0,001 pp; as diferenças abaixo refletem o perfil Wendland C²/3,3h usado nesta campanha. Ver [relatório da auditoria](INDEPENDENT_THEORY_CODE_AUDIT.md). O conteúdo abaixo é preservado sem alterações como registro histórico.
+
 **Data: 21/10/2026**. Campanha integral [GitHub Actions #39630223717](https://github.com/Lucas-Sperotto/al-maleh-2009-vector-efg-waveguides/actions/runs/39630223717), executada no commit `ad51043d` (a CI verificou o programa e os dados de fonte sem alterar o solver original de M3/M4).
 
 **Resultado:** 23/23 testes CTest aprovados; todas as **14 combinações** de nuvem e quadratura concluídas, produzindo **28 comparações** com a transcrição do capítulo 5. [Artefato integral M2](https://github.com/Lucas-Sperotto/al-maleh-2009-vector-efg-waveguides/actions/runs/39630223717/artifacts/12358927216) preserva todos os autovalores/autovetores, matrizes, diagnósticos, CSVs originais Hx/Hy, SVGs originais e logs.
