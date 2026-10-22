@@ -1,0 +1,95 @@
+{
+  "schema_version": 1,
+  "created_at": "2026-10-22T14:08:33.622562-03:00",
+  "sources": {
+    "efg": {
+      "commit": "ae8de93ee265dfa549bd37e9eedd1dbc6e614028",
+      "remote": "https://github.com/Lucas-Sperotto/al-maleh-2009-vector-efg-waveguides.git",
+      "branch": "audit/teoria-codigo-efg"
+    }
+  },
+  "cases": {},
+  "hash_policy": "SHA-256 of every campaign file except manifest.json itself",
+  "files": [
+    {
+      "path": "local_campaign_manifest.json",
+      "bytes": 21776,
+      "sha256": "d264f68b38def7b789bd08727fc24c7f17944c4de34b6ce1a88803bfa9c7e0a4"
+    },
+    {
+      "path": "local_campaign_provenance.json",
+      "bytes": 1943,
+      "sha256": "6bbc86bd810c3a13a0a89bf994bcb75ef096467e0338b322948f17fbe324a341"
+    },
+    {
+      "path": "m5_full_3x5_g1/eigenvalues.csv",
+      "bytes": 2122,
+      "sha256": "f5bc6b29b23b28e52c0cf2aac1d5f47103645eb1073d84497b57a1c09e92bc4e"
+    },
+    {
+      "path": "m5_full_3x5_g1/eigenvectors.csv",
+      "bytes": 30274,
+      "sha256": "cd971767c9584ed1fa678e68b2d664a1b4b658c1825a63b712b6d44da96a320e"
+    },
+    {
+      "path": "m5_full_3x5_g1/manifest.json",
+      "bytes": 1802,
+      "sha256": "193650a7f21e09be77a07024bdf15f19d4caf2fb1ba2867168eadd1da5b1c033"
+    },
+    {
+      "path": "m5_full_3x5_g1/matrix_elements.csv",
+      "bytes": 23919,
+      "sha256": "015ca7ed25562773e2d9bc06255bba611e68672f8a9cf41bc1e8bf2f9d6188b2"
+    },
+    {
+      "path": "m5_full_3x5_g1/run_metadata.txt",
+      "bytes": 706,
+      "sha256": "1b13d9e88cf55abdac513851ce60ad41b0f2b8fac1f1e7831de1d255e5c16d74"
+    },
+    {
+      "path": "m5_full_3x5_g1/tm11_irrot_field.csv",
+      "bytes": 36183,
+      "sha256": "97e98505a6cd486ea5819e995f55ddbb062a56ec6521237350519b0e6daf2cd3"
+    },
+    {
+      "path": "m5_full_3x5_g1/tm11_rot_field.csv",
+      "bytes": 36019,
+      "sha256": "1757da720fc390e0260aa004cbd5195ee6d88ef6342cf1635bae2df8e488065f"
+    },
+    {
+      "path": "m5_full_3x5_g1/tm11_vector_field.csv",
+      "bytes": 36100,
+      "sha256": "d4dca64474f3435bc658ad656009d73faad8576dcc5f44913767877b5db5dcb5"
+    },
+    {
+      "path": "m5_full_3x5_g1/tm21_vector_field.csv",
+      "bytes": 36124,
+      "sha256": "7f30f4199717ffc743466cf49f1cdf62ddca682183bdf62169bb7031bcd8df8b"
+    },
+    {
+      "path": "m5_full_3x5_g1/tm_matches.csv",
+      "bytes": 485,
+      "sha256": "9629c264626d734c6495329ee99ea4d22d488c18cfaf5fe24430518b44c83e1a"
+    },
+    {
+      "path": "m5_independent_check.json",
+      "bytes": 2149,
+      "sha256": "b61511d406b86feddb581cc6aa71b54eaa4dd4df64e818e9a736061d084bbe6f"
+    },
+    {
+      "path": "table4_printed_precision.csv",
+      "bytes": 3135,
+      "sha256": "f679a0ac4771a8d2b3479c5c09f5818b74e48c91fdef5b70cd755ac18760080b"
+    },
+    {
+      "path": "tables_2_3_5_6_identified_profile.csv",
+      "bytes": 6648,
+      "sha256": "f6fbdf82dff111bcce99e1df7b6828a19cbafa3e746875bb93b39c9415f65233"
+    },
+    {
+      "path": "validation_summary.json",
+      "bytes": 1112,
+      "sha256": "21c0e8ac12ae16dbe16efe115a6c91010ce8f7f8b4eed0bf9df611fc1b85e57e"
+    }
+  ]
+}

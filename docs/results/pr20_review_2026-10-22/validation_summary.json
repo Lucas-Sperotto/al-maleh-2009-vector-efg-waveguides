@@ -1,0 +1,47 @@
+{
+  "local_ctest": {
+    "main_passed": 33,
+    "clean_passed": 33,
+    "failed": 0
+  },
+  "campaign_files": 121,
+  "historical_manifests": {
+    "independent_audit_files": 120,
+    "m6a_files": 168
+  },
+  "source_transcription": {
+    "tables_2_3_5_6_verified": 52,
+    "pdf_sha256": "ba356899e516894301a907f5ead06392a2132dd15e5c7b3811733dbae06cc506"
+  },
+  "table4_rounding": {
+    "cartesian": {
+      "inside": 45,
+      "total": 45
+    },
+    "rot_irrot": {
+      "inside": 12,
+      "total": 15
+    }
+  },
+  "table_comparison": {
+    "M2": {
+      "classifications": {
+        "match_best_curl": 28
+      },
+      "inside_printed_rounding": 20
+    },
+    "M5": {
+      "classifications": {
+        "match_nearest_lambda_only": 1,
+        "match_best_curl": 21,
+        "unexplained_difference": 1,
+        "magnitude_match_opposite_sign": 1
+      },
+      "inside_printed_rounding": 3
+    }
+  },
+  "max_KZ": 2.122071568073056e-13,
+  "max_full_residual": 1.3068109150837948e-15,
+  "historical_data_modified": false,
+  "mls_probe_sha256": "75984091a49f31755bb5b7d5cac4ebd855dc1ed1e98efdbf623b53427a48c684"
+}

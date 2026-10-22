@@ -1,8 +1,11 @@
 # Auditoria científica e técnica independente — teoria × código (2026-10-22)
 
 Branch `audit/teoria-codigo-efg`, criada a partir de `main` em
-`c217aa5b57e92fd9c5be54db06d4458f4d2d0dbc`. Todas as alterações estão sem
-commit. Campanha nova e verificável:
+`c217aa5b57e92fd9c5be54db06d4458f4d2d0dbc`. A auditoria original foi
+publicada nos commits `b74932d`, `4b113bb`, `83d53b4` e `ae8de93`, na
+[PR #20](https://github.com/Lucas-Sperotto/al-maleh-2009-vector-efg-waveguides/pull/20).
+A revisão final e suas ressalvas estão em
+[PR20_FINAL_REVIEW.md](PR20_FINAL_REVIEW.md). Campanha original preservada e verificável:
 [`independent_audit_2026-10-22/`](independent_audit_2026-10-22/REPORT.md)
 (manifesto SHA-256 de 120 arquivos; `python3 scripts/validation_manifest.py --verify --campaign docs/results/independent_audit_2026-10-22`).
 
@@ -90,8 +93,8 @@ semidefinitude de K e M não excluem modos espúrios do problema discreto.
 | F3 | Cap. 6 cita as matrizes como "(5-10) e (5-11)"; devem ser (5-9) e (5-10) | PDF p. 36 | [FONTE] numeração |
 | F4 | Texto: "Fifteen of these are exact zeros"; Tabela 4: "14 zeros" | O problema reduzido tem exatamente n−1=14 zeros (§5.2); não é possível obter 15 sem contar a parte singular do pencil | [INFERÊNCIA] inconsistência interna não resolvível |
 | F5 | "In the 2×2 integration scheme, some negative eigenvalues appear" | Teorema §5.3: autovalores materialmente negativos são impossíveis no problema deflacionado com pesos de Gauss positivos | [HIPÓTESE] artefato do solver do autor (ex.: pencil singular não deflacionado) |
-| F6 | Tabela 6, TM21 3×5, Gauss 1×1: −1,509% | Com o perfil identificado o espectro tem +1,5086% e +0,948% perto de TM21, nenhum valor em −1,509% | [INFERÊNCIA] provável erro de sinal |
-| F7 | Tabela 5, TM11 3×5, Gauss 1×1: −3,572% | É exatamente nosso candidato pelo λ mais próximo (−3,5715%); o candidato de maior correlação de curl (ρ=0,742) é outro autovetor (−25,447%) | critério de seleção diferente ("por inspeção") |
+| F6 | Tabela 6, TM21 3×5, Gauss 1×1: −1,509% | Com o perfil identificado o espectro tem +1,5086% e +0,948% perto de TM21, nenhum valor em −1,509% | [HIPÓTESE] possível erro de sinal, não comprovado |
+| F7 | Tabela 5, TM11 3×5, Gauss 1×1: −3,572% | É exatamente nosso candidato pelo λ mais próximo (−3,5715%); o candidato de maior correlação de curl (ρ=0,742) é outro autovetor (−25,447%) | [INFERÊNCIA] compatível com critério de seleção diferente |
 | F8 | Tabela 5, TM11 4×7, Gauss 1×1: −13,716% | Nosso −13,943% (Δ=0,227 pp), mesmo autovetor por curl e por λ | **não explicado** |
 | F9 | Cap. 4 não informa o raio r | — | lacuna da fonte; inferido em §9 |
 
@@ -111,12 +114,18 @@ relativos < 1e-13, graus 1 e 2).
 
 ### 5.2 Correspondência entre problema reduzido e original [TEOREMA]
 
-Seja Z base ortonormal dos autovetores descartados de M e Q base
-M-ortonormal do restante. Se KZ = 0 (ker M ⊆ ker K), então
+Seja Z uma base ortonormal do **núcleo verdadeiro** de M e Q uma base
+M-ortonormal de seu complemento. Se KZ = 0 (ker M ⊆ ker K), então
 range K ⊆ range M e todo autopar de QᵀKQ y=λy é autopar de Kh=λMh com
-**resíduo completo nulo**. Se KZ ≠ 0, os autovalores finitos do pencil
-são os do complemento de Schur QᵀKQ − QᵀKZ(ZᵀKZ)⁺ZᵀKQ, e a projeção dá
-apenas cotas superiores de Rayleigh–Ritz. O resíduo projetado
+**resíduo completo nulo**, h=Qy, com liberdade de adicionar o núcleo comum.
+Trata-se do espectro no quociente pelo núcleo comum: det(K−λM)≡0 não
+define, por si só, um espectro regular. Se KZ ≠ 0 e ZᵀKZ é inversível,
+o complemento de Schur é QᵀKQ − QᵀKZ(ZᵀKZ)⁻¹ZᵀKQ. Para K semidefinida
+positiva, a pseudoinversa também pode ser usada com a compatibilidade do
+bloco cruzado. Isso não é uma fórmula geral para todo pencil simétrico.
+Quando o corte remove direções de massa positiva, essas hipóteses deixam
+de valer: KZ pequeno e resíduos pequenos, sozinhos, não certificam a
+completude do espectro. O resíduo projetado
 Qᵀ(Kh−λMh) é ~0 **por construção** e não distingue os dois casos.
 
 Implementado: `mass_kernel_stiffness_coupling = ‖KZ‖_F/‖K‖_F`,
@@ -128,8 +137,9 @@ projetado continua ≤ 1e-15 enquanto o completo sobe a 1e-4…3e-2
 
 Dimensões: dim ker(K_red) = dim ker K − dim ker M quando ker M ⊆ ker K.
 Com grau 1, dim ker K = n + d_Δ, d_Δ = dim{b : Σbᵢ ΔNᵢ(x_q)=0 ∀q} ≥ 3
-(1, x, y). Logo dim ker(K_red) ≥ n−1 **[TEOREMA]**; estes zeros são
-exatamente os gradientes discretos ∇V_h. A igualdade rank(M)=2n−4 e
+(1, x, y). **Se dim ker M=4**, segue dim ker(K_red) ≥ n−1.
+A igualdade n−1 requer também d_Δ=3; subintegração pode criar dependências
+adicionais. Os gradientes de V_h pertencem ao núcleo de curl por construção. A igualdade rank(M)=2n−4 e
 dim ker(K_red)=n−1 é **observação** [PROGRAMA] em todas as nuvens
 testadas (3×5 a 13×25, perfis Wendland e spline quártica), não teorema.
 
@@ -175,7 +185,7 @@ finitas com estudo de passo) nem na quadratura.
 | C3 | JSON grava o peso real e a nova descrição da base | `src/spectral_export.cpp` |
 | C4 | `MLSWeight::QuarticSpline` (Eq. 4-2) com derivadas até 2ª ordem; padrão continua Wendland C² | `src/mls.cpp`, `include/al_maleh/mls.hpp` |
 | C5 | Limite M5 da biblioteca 600 nós; argumentos opcionais `degree` e `weight` em `rot_irrot_rect` e `weight` em `tm_validation`; `--weight` em `m2_ch5_benchmark.py` e `m5_ch6_campaign.py`. Padrões inalterados | `apps/*.cpp`, `scripts/*.py` |
-| M7 | Rastreamento modal por sobreposição L² em regra espacial comum, ângulos principais e atribuição Hungarian | `include/al_maleh/mode_tracking.hpp`, `src/mode_tracking.cpp`, `apps/mode_tracking.cpp` |
+| M7 | Rastreamento modal por sobreposição L² em regra espacial comum, diagnóstico de ângulos principais e atribuição Hungarian; clusters degenerados são sinalizados como ambíguos, sem rastreamento automático de subespaços | `include/al_maleh/mode_tracking.hpp`, `src/mode_tracking.cpp`, `apps/mode_tracking.cpp` |
 | — | Estudos reprodutíveis e campanha | `apps/independent_audit.cpp`, `scripts/independent_audit_campaign.py` |
 
 C6–C10 **não** foram alterados (mudariam critérios de classificação
@@ -231,9 +241,12 @@ Varredura de r/h com o peso da Eq. (4-2) contra os 15 autovalores não
 nulos cartesianos e os 5 rotacionais/irrotacionais da Tabela 4 (três
 quadraturas, 60 valores): mínimo único em **r = 1,5 × espaçamento
 nodal, base linear**, com erro relativo máximo 0,46% (cartesiano) e
-0,38% (rot/irrot), compatível com o arredondamento de 3 algarismos;
+0,38% (rot/irrot). A conferência individual da última casa impressa
+aprova 45/45 entradas cartesianas e 12/15 M5; os três primeiros
+autovalores não nulos M5 ficam fora do intervalo de arredondamento.
+A Tabela 4 é, portanto, reprodução **aproximada**, não identidade numérica;
 f=1,49 ou 1,51 já pioram ~20×. Wendland C² e base quadrática não
-reproduzem a tabela em nenhum raio. O raio **não está escrito na
+reproduzem a tabela na faixa de raios e passo pesquisados. O raio **não está escrito na
 dissertação**: é uma identificação inversa, registrada como tal.
 
 ### 9.2 Reprodução das Tabelas 2, 3, 5 e 6 [PROGRAMA]
@@ -243,16 +256,24 @@ Com esse perfil e **o nosso código** (M2 e M5 com redução de posto):
 - M2: **28/28** entradas reproduzidas com |Δ| < 0,001 pp.
 - M5: **21/24** com |Δ| ≤ 0,008 pp pelo critério de maior correlação de
   curl; 1 coincide pelo λ mais próximo (F7); 1 coincide em módulo com
-  sinal oposto (F6); 1 diferença de 0,227 pp sem explicação (F8).
+  sinal oposto (F6, hipótese de erro de sinal, não comprovada); 1 diferença
+  de 0,227 pp sem explicação (F8).
+
+A classificação operacional usa 0,01 pp, que é mais larga que meia unidade
+da última casa publicada (0,0005 pp). Os limites <0,001 pp e ≤0,008 pp
+descrevem proximidade, não igualdade na precisão impressa. O perfil foi
+fixado com a Tabela 4 antes de conferir as demais tabelas, constituindo
+validação cruzada parcial; não identifica unicamente todos os parâmetros
+ou o solver do autor.
 
 Consequências: (i) as equações (5-1)–(5-11) e (6-1)–(6-6) estão
-implementadas como na fonte; (ii) a redução de posto da massa reproduz o
-espectro não nulo do autor, inclusive os 14 zeros; (iii) **as grandes
+implementadas como na fonte; (ii) a redução de posto da massa aproxima o
+espectro não nulo e recupera os 14 zeros M5 da Tabela 4; (iii) **as grandes
 discrepâncias das campanhas M2/M5 de 21/10 (até 34 pp) eram devidas ao
 perfil MLS (Wendland C², 3,3h), não a erros de formulação**. Os números
 históricos permanecem válidos para o perfil em que foram calculados.
 
-### 9.3 Por que o M5 do autor não converge [PROGRAMA + TEOREMA parcial]
+### 9.3 Evidência de não convergência M5 no perfil inferido [PROGRAMA + TEOREMA parcial]
 
 A rigidez do M5 usa ∫ΔNᵢΔNⱼ: requer consistência de **segunda ordem**.
 A MLS linear reproduz só polinômios de grau 1, e o defeito
@@ -262,22 +283,27 @@ Laplaciano não depende de h]. [PROGRAMA] RMS interior: 1,81 (45% de 4)
 para spline quártica 1,5h; 0,49 para 2,5h; ~0,09 para 3,3h; ~0,07 para
 Wendland 3,3h; ~1e-12 com base quadrática.
 
-Com integração convergida (16 subcélulas × Gauss 5×5), o erro de TM11 do
+Com a quadratura de referência mais fina (16 subcélulas × Gauss 5×5), o erro de TM11 do
 perfil do autor **satura em ≈ +23%** (26,4 / 24,0 / 23,8 / 23,6 / 23,3%
 de 3×5 a 13×25), com ρ de curl estagnado ≈ 0,90; com Gauss 2×2 satura em
-≈ +34% e com 1×1 em ≈ −13%. Logo a não convergência das Tabelas 5–6
-**não é artefato de quadratura**: é falta de consistência de 2ª ordem,
-agravada por suporte pequeno. Com base linear e suporte maior o patamar
-cai (≈1,7% em 2,5h; ≈0,1% em 3,3h), e com **base quadrática o erro
-converge** (Wendland 3,3h: 0,634 → 0,302 → 0,186 → 0,093%).
+≈ +34% e com 1×1 em ≈ −13%. A persistência com quadratura mais fina apoia a hipótese de defeito
+de consistência de 2ª ordem, agravado por suporte pequeno. A regra
+16 subcélulas × Gauss 5 é a referência mais fina testada, não uma prova
+de convergência da quadratura. O defeito pontual, isoladamente, não prova
+não convergência espectral; os dados mostram estagnação nesta família. Com base linear e suporte maior os erros
+medidos caem (≈1,7% em 2,5h; ≈0,05% em 3,3h na malha mais fina);
+a queda ainda observada em 3,3h não estabelece um patamar assintótico.
+Com **base quadrática o erro
+decresce sistematicamente no refino medido** (Wendland 3,3h: 0,634 → 0,302 → 0,186 → 0,093%).
 O mecanismo é coerente com os dados, mas a afirmação geral "base linear
 nunca converge" não foi demonstrada para qualquer perfil (só medida).
 
 ### 9.4 Modos espúrios
 
-- **Cartesiano [TEOREMA + PROGRAMA]:** o espaço nodal contém apenas 5
-  campos de rotacional nulo (afins com reprodução linear) — os "five modes
-  very close to zero" da fonte. Os demais gradientes discretos não estão
+- **Cartesiano:** a reprodução linear garante **ao menos** 5
+  campos afins de rotacional nulo. O corte absoluto 1e-9 identifica 5
+  autovalores quase nulos nas famílias testadas; isso não prova dimensão
+  exatamente 5 para toda nuvem. Os demais gradientes discretos não estão
   no espaço, gerando dezenas de autovalores positivos pequenos (14 abaixo
   de TM11 em 3×5; 49/95/148 em 9×7/13×11/17×15, somando os rotulados
   `near_zero` pelo corte relativo, achado C6).
@@ -296,12 +322,15 @@ nunca converge" não foi demonstrada para qualquer perfil (só medida).
 subespaço analítico, div 0,0075); o 193 tem div 0,415 e fração gradiente
 0,016. O vizinho **espúrio 191** (λ=49,204, fração gradiente 0,96, gap
 relativo 3,1e-3) contém cosseno 0,128 (≈1,6% de energia) do dubleto
-físico: há **hibridização por quase-degenerescência** entre um modo
+físico: os dados apoiam a **hipótese de hibridização por quase-degenerescência** entre um modo
 quase-gradiente e o dubleto. A melhor aproximação L² do dubleto analítico
 no mesmo espaço MLS tem div ≤ 0,0045, e o melhor subespaço 2D de
 {190,…,193} recupera o dubleto com cossenos (1,00000; 0,99999) e
-div ≤ 0,0145. Logo a falha **não é piso de aproximação** e explica por
-que 13×11 (espúrio a 1,1% de distância, sem mistura) passa e 17×15 falha.
+div ≤ 0,0145. O espaço MLS tem capacidade de aproximação melhor que
+a dos autopares selecionados; isso é compatível com a diferença entre
+13×11 e 17×15, mas não demonstra sua causa. As combinações da janela
+com λ distintos e as projeções L² são aproximações geométricas; não
+são novas soluções exatas do autoproblema nem corrigem os autopares.
 
 Invariante à base do subespaço {192,193}: autovalores, ângulos principais
 com o analítico, extremos de div (0,0075–0,4153) e de fração gradiente.
@@ -367,15 +396,26 @@ EFG é amostra pontual. A documentação já declara M6f como exploratório
 6. Avaliar a hipótese F5 resolvendo o pencil singular completo com QZ
    (LAPACK `dggev`) e comparando os 4 autovalores indeterminados.
 
+## Arquivo compacto e validação da revisão
+
+A pasta histórica arquiva espectros, diagnósticos, correlações, varreduras
+comprimidas, logs e proveniência, conforme seu manifesto. Matrizes K/M,
+coeficientes e campos completos M2/M5 foram removidos pela compactação
+e são regeneráveis pelos drivers. Os relatórios internos M2/M5 descrevem
+a saída completa antes dessa remoção. A revisão final e a nova execução
+CI/local são registradas separadamente em [PR20_FINAL_REVIEW.md](PR20_FINAL_REVIEW.md);
+o REPORT.md histórico mantém o texto original, inclusive a interpretação
+de arredondamento corrigida acima.
+
 ## Reprodução
 
 ```bash
 cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
 cmake --build build --parallel 2
 /usr/bin/ctest --test-dir build --output-on-failure
-PYTHONNOUSERSITE=1 python3 scripts/independent_audit_campaign.py --out out/independent_audit
-python3 scripts/validation_manifest.py --verify --campaign docs/results/independent_audit_2026-10-22
+PYTHONNOUSERSITE=1 OPENBLAS_NUM_THREADS=1 python3 scripts/independent_audit_campaign.py --out build/independent_audit_results
+python3 scripts/validation_manifest.py --verify --campaign build/independent_audit_results
 ```
 
 A campanha leva ~1,5 min em 2 núcleos. Ela recusa diretórios de saída
-não vazios para nunca sobrescrever resultados.
+não vazios e caminhos que são arquivos para nunca sobrescrever resultados.
