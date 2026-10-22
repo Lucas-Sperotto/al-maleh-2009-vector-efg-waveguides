@@ -23,11 +23,19 @@ struct RankReducedSpectrum {
   std::vector<double> reduced_residuals, full_residuals;
   int retained_rank=0, removed_mass_nullity=0, numerical_curl_kernel=0;
   double mass_eigen_max=0, mass_eigen_min_retained=0, mass_rank_cutoff=0;
+  double mass_eigen_max_removed=0;  // largest discarded mass eigenvalue (signed)
   double eigenvalue_zero_cutoff=0, M_orthogonality_error=0;
+  // ||K Z||_F/||K||_F for the orthonormal discarded mass directions Z.
+  // ~eps certifies ker(M_removed) in ker(K): the projected pencil then has
+  // exactly the finite spectrum of the original singular pencil (K,M).
+  double mass_kernel_stiffness_coupling=0;
+  double max_reduced_residual=0, max_full_residual=0;
 };
 // A singular M is intrinsic to gradient/J-gradient MLS bases. Project onto
 // the positive-mass subspace with an explicit spectral cutoff; report removed
 // dimensions, never synthesize mass eigenvalues or drop negative λ silently.
+// The projected residual Q^T(Kh-λMh) is ~0 by construction and does NOT
+// certify the reduction: use max_full_residual and the coupling above.
 RankReducedSpectrum solve_rot_irrot_rank_reduced(
     const RotIrrotAssembly& forms,
     double relative_mass_rank_cutoff=1e-10,

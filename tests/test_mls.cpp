@@ -1,5 +1,6 @@
 #include "al_maleh/mls.hpp"
 
+#include <algorithm>
 #include <cmath>
 #include <functional>
 #include <iostream>
@@ -33,9 +34,10 @@ std::vector<Node> regular_cloud() {
   return nodes;
 }
 
-void check_reproduction(int degree, Point2 x) {
+void check_reproduction(int degree, Point2 x,
+                        al_maleh::MLSWeight weight = al_maleh::MLSWeight::WendlandC2) {
   const auto cloud = regular_cloud();
-  const MLSEvaluator evaluator(cloud, degree);
+  const MLSEvaluator evaluator(cloud, degree, 1e12, weight);
   const auto s = evaluator.evaluate(x);
   if (s.active_nodes.size() != cloud.size())
     throw std::runtime_error("Unexpected support for polynomial patch");
@@ -74,8 +76,9 @@ void check_reproduction(int degree, Point2 x) {
   check(dyy, degree == 1 ? 0 : 2.2, 5e-9, "polynomial dyy");
 }
 
-void check_finite_differences(int degree) {
-  const MLSEvaluator e(regular_cloud(), degree);
+void check_finite_differences(int degree,
+                              al_maleh::MLSWeight weight = al_maleh::MLSWeight::WendlandC2) {
+  const MLSEvaluator e(regular_cloud(), degree, 1e12, weight);
   const Point2 p{0.17, -0.13};
   const double h = 1.0e-5;
   const auto s = e.evaluate(p), xp = e.evaluate({p.x+h,p.y}),
@@ -109,6 +112,147 @@ void check_invalid_clouds() {
     if (!std::isfinite(x)) throw std::runtime_error("Hessian undefined at node");
 }
 
+// Al Maleh (2009) Eq. (4-2): exact profile values and C2 contact at q=1.
+void check_quartic_spline_profile() {
+  const std::vector<Node> one{{{0, 0}, 2.0}, {{5, 0}, 1.0}, {{0, 5}, 1.0}};
+  const MLSEvaluator e(one, 1, 1e12, al_maleh::MLSWeight::QuarticSpline);
+  if (std::string(al_maleh::mls_weight_name(e.weight())) != "quartic_spline" ||
+      al_maleh::parse_mls_weight("wendland_c2") != al_maleh::MLSWeight::WendlandC2)
+    throw std::runtime_error("weight names do not round-trip");
+  reject([] { (void)al_maleh::parse_mls_weight("gaussian"); }, "unknown weight name");
+  // Shape-independent check of w through a 1-node partition is impossible
+  // (MLS normalizes), so verify w, w' and w'' of the profile directly from
+  // the polynomial via the FD-free closed forms at several q.
+  for (double q : {0.0, 0.25, 0.5, 0.9, 0.999}) {
+    const double w = 1 - 6 * q * q + 8 * q * q * q - 3 * q * q * q * q;
+    const double dw = -12 * q * (1 - q) * (1 - q);
+    const double d2w = -12 * (1 - q) * (1 - 3 * q);
+    const double h = 1e-6, h2 = 1e-4;  // h2 balances truncation and round-off
+    auto f = [](double s) { return 1 - 6 * s * s + 8 * s * s * s - 3 * s * s * s * s; };
+    check((f(q + h) - f(q - h)) / (2 * h), dw, 1e-8, "quartic dw/dq");
+    check((f(q + h2) - 2 * w + f(q - h2)) / (h2 * h2), d2w, 1e-5, "quartic d2w/dq2");
+  }
+  // Value, slope and curvature vanish at the support boundary (C2 contact).
+  check(1 - 6 + 8 - 3, 0, 0, "w(1)");
+  for (int degree : {1, 2}) {
+    for (Point2 p : {Point2{0.20, -0.15}, Point2{-0.35, 0.30}, Point2{0, 0}})
+      check_reproduction(degree, p, al_maleh::MLSWeight::QuarticSpline);
+    check_finite_differences(degree, al_maleh::MLSWeight::QuarticSpline);
+  }
+}
+
+// Central differences: the error must first fall like h^2 (truncation) and
+// then rise again (round-off). Both regimes are asserted, not just one h.
+void check_fd_step_study() {
+  const MLSEvaluator e(regular_cloud(), 2);
+  const Point2 p{0.17, -0.13};
+  const auto s = e.evaluate(p);
+  std::vector<double> err;
+  for (double h : {1e-2, 1e-3, 1e-4, 1e-5, 1e-6, 1e-7, 1e-8}) {
+    const auto xp = e.evaluate({p.x + h, p.y}), xm = e.evaluate({p.x - h, p.y});
+    if (xp.active_nodes != s.active_nodes || xm.active_nodes != s.active_nodes)
+      throw std::runtime_error("FD step changed the MLS support");
+    double worst = 0;
+    for (std::size_t i = 0; i < s.active_nodes.size(); ++i) {
+      worst = std::max(worst, std::abs((xp.phi[i] - xm.phi[i]) / (2 * h) - s.dx[i]));
+      worst = std::max(worst, std::abs((xp.dx[i] - xm.dx[i]) / (2 * h) - s.dxx[i]));
+    }
+    err.push_back(worst);
+  }
+  // Truncation regime: one decade in h gives ~two decades in error.
+  const double rate = std::log10(err[0] / err[1]);
+  if (!(rate > 1.7 && rate < 2.3))
+    throw std::runtime_error("FD truncation rate is not second order: " + std::to_string(rate));
+  const double best = *std::min_element(err.begin(), err.end());
+  if (!(best < 1e-8)) throw std::runtime_error("FD never reaches 1e-8 agreement");
+  if (!(err.back() > 10 * best))
+    throw std::runtime_error("FD round-off regime not observed at h=1e-8");
+}
+
+// Corner, edge and interior points of the rectangular 5x3 cloud used by the
+// thesis (support factor 1.5 and 3.3): reproduction must hold up to the wall.
+void check_rectangular_boundary_reproduction() {
+  for (auto weight : {al_maleh::MLSWeight::WendlandC2, al_maleh::MLSWeight::QuarticSpline})
+    for (int degree : {1, 2})
+      for (double factor : {1.5, 3.3}) {
+        if (degree == 2 && factor < 2.0) continue;  // < 6 neighbours at corners
+        std::vector<Node> nodes;
+        for (int j = 0; j < 3; ++j)
+          for (int i = 0; i < 5; ++i) nodes.push_back({{0.5 * i, 0.5 * j}, 0.5 * factor});
+        const MLSEvaluator e(nodes, degree, 1e12, weight);
+        for (Point2 x : {Point2{0, 0}, Point2{2, 1}, Point2{1, 0}, Point2{0, 0.5},
+                         Point2{1.37, 0.81}, Point2{0.05, 0.97}}) {
+          const auto s = e.evaluate(x);
+          double v = 0, gx = 0, gy = 0, lap = 0, pu = 0;
+          for (std::size_t a = 0; a < s.active_nodes.size(); ++a) {
+            const Point2 n = nodes[s.active_nodes[a]].position;
+            const double u = degree == 1 ? 0.3 - 1.1 * n.x + 0.7 * n.y
+                                         : 0.3 - 1.1 * n.x + 0.7 * n.y + n.x * n.x + n.y * n.y;
+            pu += s.phi[a]; v += s.phi[a] * u; gx += s.dx[a] * u; gy += s.dy[a] * u;
+            lap += (s.dxx[a] + s.dyy[a]) * u;
+          }
+          const double exact = degree == 1 ? 0.3 - 1.1 * x.x + 0.7 * x.y
+                                           : 0.3 - 1.1 * x.x + 0.7 * x.y + x.x * x.x + x.y * x.y;
+          check(pu, 1, 1e-12, "boundary partition of unity");
+          check(v, exact, 1e-11, "boundary reproduction");
+          check(gx, -1.1 + (degree == 2 ? 2 * x.x : 0), 1e-9, "boundary dx");
+          check(gy, 0.7 + (degree == 2 ? 2 * x.y : 0), 1e-9, "boundary dy");
+          check(lap, degree == 2 ? 4.0 : 0.0, 1e-8, "boundary Laplacian of reproduced field");
+        }
+      }
+}
+
+// Regression for the basis-centering defect: with a basis centered on the
+// cloud and scaled by its size, cond(A) grew like (L/h)^(2 degree) (3.9e3,
+// 8.0e4, 1.5e6 for 5x3, 9x5, 17x9 degree-2 clouds). With the query-point
+// shifted basis it must be refinement-independent.
+void check_conditioning_independent_of_refinement() {
+  double smallest = 1e300, largest = 0;
+  for (int k : {1, 2, 4, 8}) {
+    const int nx = 4 * k + 1, ny = 2 * k + 1;
+    std::vector<Node> nodes;
+    const double h = 2.0 / (nx - 1);
+    for (int j = 0; j < ny; ++j)
+      for (int i = 0; i < nx; ++i) nodes.push_back({{h * i, h * j}, 3.3 * h});
+    const MLSEvaluator e(nodes, 2);
+    double worst = 0;
+    for (Point2 x : {Point2{0, 0}, Point2{1, 0.5}, Point2{0.3 * h, 1 - 0.2 * h},
+                     Point2{2 - 0.5 * h, 0.5 * h}})
+      worst = std::max(worst, e.evaluate(x).condition_number);
+    smallest = std::min(smallest, worst);
+    largest = std::max(largest, worst);
+  }
+  if (!(largest < 1e4) || !(largest / smallest < 1.5))
+    throw std::runtime_error("MLS moment conditioning depends on refinement: " +
+                             std::to_string(smallest) + " .. " + std::to_string(largest));
+}
+
+// Second-order consistency: degree 2 reproduces lap(x^2+y^2)=4; degree 1 does
+// NOT (defect independent of h). The latter is a characterization test: it
+// keeps visible the mechanism behind the non-convergent M5 (Ch.6) results.
+void check_laplacian_consistency() {
+  double defect_coarse = 0, defect_fine = 0;
+  for (int k : {1, 4}) {
+    const int nx = 4 * k + 1, ny = 2 * k + 1;
+    const double h = 2.0 / (nx - 1);
+    std::vector<Node> nodes;
+    for (int j = 0; j < ny; ++j)
+      for (int i = 0; i < nx; ++i) nodes.push_back({{h * i, h * j}, 1.5 * h});
+    const MLSEvaluator linear(nodes, 1, 1e12, al_maleh::MLSWeight::QuarticSpline);
+    // Same relative position inside a central nodal cell at both resolutions.
+    const Point2 x{1.0 + 0.3 * h, 0.5 + 0.2 * h};
+    const auto s = linear.evaluate(x);
+    double lap = 0;
+    for (std::size_t a = 0; a < s.active_nodes.size(); ++a) {
+      const Point2 n = nodes[s.active_nodes[a]].position;
+      lap += (n.x * n.x + n.y * n.y) * (s.dxx[a] + s.dyy[a]);
+    }
+    (k == 1 ? defect_coarse : defect_fine) = std::abs(lap - 4.0);
+  }
+  if (!(defect_coarse > 0.1) || std::abs(defect_coarse - defect_fine) > 1e-6)
+    throw std::runtime_error("degree-1 Laplacian defect should be O(1) and h-independent");
+}
+
 } // namespace
 
 int main() {
@@ -119,7 +263,14 @@ int main() {
       check_finite_differences(degree);
     }
     check_invalid_clouds();
-    std::cout << "PASS: MLS partition, linear/quadratic patches, gradient, Hessian, FD and failure cases\n";
+    check_quartic_spline_profile();
+    check_fd_step_study();
+    check_rectangular_boundary_reproduction();
+    check_conditioning_independent_of_refinement();
+    check_laplacian_consistency();
+    std::cout << "PASS: MLS partition, linear/quadratic patches, gradient, Hessian, FD and failure cases; "
+                 "quartic spline Eq.(4-2), FD step study, rectangular corners, refinement-independent "
+                 "conditioning, second-order consistency\n";
   } catch (const std::exception& e) {
     std::cerr << "FAIL: " << e.what() << '\n';
     return 1;

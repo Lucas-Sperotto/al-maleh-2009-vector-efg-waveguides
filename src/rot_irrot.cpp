@@ -9,8 +9,8 @@ namespace al_maleh {
 RotIrrotAssembly assemble_rot_irrot(const MLSEvaluator& mls,
                                     const BackgroundQuadrature& rule) {
   const auto n=static_cast<Eigen::Index>(mls.nodes().size());
-  if(n<3 || n>120)
-    throw std::invalid_argument("M5 dense prototype requires 3..120 nodes");
+  if(n<3 || n>600)
+    throw std::invalid_argument("M5 dense prototype requires 3..600 nodes");
   RotIrrotAssembly a;
   a.stiffness=Eigen::MatrixXd::Zero(2*n,2*n);
   a.mass=Eigen::MatrixXd::Zero(2*n,2*n);
@@ -112,6 +112,13 @@ RankReducedSpectrum solve_rot_irrot_rank_reduced(
   for(int i=0;i<out.retained_rank;++i)
     Q.col(i)=se.eigenvectors().col(indices[static_cast<std::size_t>(i)])/
       std::sqrt(se.eigenvalues()[indices[static_cast<std::size_t>(i)]]);
+  // Eigenvalues are ascending, so the discarded directions are the leading
+  // columns. Measure whether they also annihilate K (singular-pencil part).
+  if(out.removed_mass_nullity>0) {
+    const Eigen::MatrixXd Z=se.eigenvectors().leftCols(out.removed_mass_nullity);
+    out.mass_eigen_max_removed=se.eigenvalues()[out.removed_mass_nullity-1];
+    out.mass_kernel_stiffness_coupling=(A*Z).norm()/std::max(1e-300,A.norm());
+  }
   const Eigen::MatrixXd reduced=(Q.transpose()*A*Q).eval();
   const Eigen::MatrixXd sym=(0.5*(reduced+reduced.transpose())).eval();
   Eigen::SelfAdjointEigenSolver<Eigen::MatrixXd> eigen(sym);
@@ -137,6 +144,9 @@ RankReducedSpectrum solve_rot_irrot_rank_reduced(
         (Kn+std::abs(lambda)*Mn)*v.norm());
     out.full_residuals.push_back(residue.norm()/denominator);
     out.reduced_residuals.push_back((Q.transpose()*residue).norm()/denominator);
+    out.max_full_residual=std::max(out.max_full_residual,out.full_residuals.back());
+    out.max_reduced_residual=
+        std::max(out.max_reduced_residual,out.reduced_residuals.back());
     if(std::abs(lambda)<=out.eigenvalue_zero_cutoff)
       ++out.numerical_curl_kernel;
   }

@@ -42,21 +42,24 @@ void field_samples(const MLSEvaluator& mls,const RankReducedSpectrum& sp,
 }
 int main(int argc,char** argv) {
   try {
-    if(argc!=7&&argc!=8)
+    if(argc<7||argc>10)
       throw std::invalid_argument(
-        "Usage: rot_irrot_rect nx ny gauss_order support_factor subdivision output_dir [mass_rank_rel_cutoff=1e-10]");
+        "Usage: rot_irrot_rect nx ny gauss_order support_factor subdivision output_dir "
+        "[mass_rank_rel_cutoff=1e-10] [degree=1] [weight=wendland_c2|quartic_spline]");
     const int nx=std::stoi(argv[1]),ny=std::stoi(argv[2]),gauss=std::stoi(argv[3]);
     const double factor=std::stod(argv[4]);
     const int sub=std::stoi(argv[5]);
     const std::filesystem::path outdir=argv[6];
-    const double tolerance=argc==8?std::stod(argv[7]):1e-10;
+    const double tolerance=argc>=8?std::stod(argv[7]):1e-10;
+    const int degree=argc>=9?std::stoi(argv[8]):1;
+    const MLSWeight weight=argc==10?parse_mls_weight(argv[9]):MLSWeight::WendlandC2;
     if(nx<3||ny<3||nx>13||ny>13||nx*ny>120||
-       gauss<1||gauss>5||sub<1||sub>4||
+       gauss<1||gauss>5||sub<1||sub>4||(degree!=1&&degree!=2)||
        !std::isfinite(factor)||factor<=0)
       throw std::invalid_argument("Invalid M5 experiment parameters");
     const Rectangle rect{0,2,0,1};
     const double radius=factor*std::max(2.0/(nx-1),1.0/(ny-1));
-    const MLSEvaluator mls(make_regular_cloud(rect,nx,ny,radius),1);
+    const MLSEvaluator mls(make_regular_cloud(rect,nx,ny,radius),degree,1e12,weight);
     const BackgroundQuadrature quad{rect,(nx-1)*sub,(ny-1)*sub,gauss};
     const auto form=assemble_rot_irrot(mls,quad);
     const auto sol=solve_rot_irrot_rank_reduced(form,tolerance);
@@ -197,7 +200,14 @@ int main(int argc,char** argv) {
           <<"nx="<<nx<<"\nny="<<ny<<"\nnodes="<<n
           <<"\ndofs="<<2*n<<"\nquad_order="<<gauss
           <<"\nsubdivision="<<sub
+          <<"\nmls_degree="<<degree
+          <<"\nmls_weight="<<mls_weight_name(weight)
           <<"\nsupport_factor="<<factor
+          <<"\nmass_rank_relative_cutoff="<<tolerance
+          <<"\nmass_eigen_max_removed="<<sol.mass_eigen_max_removed
+          <<"\nmass_kernel_stiffness_coupling="<<sol.mass_kernel_stiffness_coupling
+          <<"\nmax_reduced_residual="<<sol.max_reduced_residual
+          <<"\nmax_full_residual="<<sol.max_full_residual
           <<"\nintegration_points="<<form.quadrature_points
           <<"\nremoved_mass_nullity="<<sol.removed_mass_nullity
           <<"\nretained_rank="<<sol.retained_rank

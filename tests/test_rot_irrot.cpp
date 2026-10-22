@@ -4,6 +4,7 @@
 #include <iostream>
 #include <stdexcept>
 #include <string>
+#include <vector>
 
 using namespace al_maleh;
 namespace {
@@ -103,11 +104,97 @@ void patch(int degree) {
            <<" mass_nullity="<<s.removed_mass_nullity
            <<" zero="<<s.numerical_curl_kernel<<"\n";
 }
+
+// Theorem (exact, any cloud/quadrature with polynomial reproduction): if
+// f=phi+i psi is a holomorphic polynomial reproduced by the MLS space, then
+// H=grad(phi)+z x grad(psi)=0 identically (Cauchy-Riemann) and psi is
+// harmonic, so the coefficient vector lies in ker(M) AND ker(K): the pencil
+// (K,M) is singular. Degree 1: f=1,i,z,iz (4 vectors); degree 2 adds z^2, iz^2.
+void singular_pencil_theorem(int degree) {
+  const Rectangle domain{0,2,0,1};
+  const auto nodes=make_regular_cloud(domain,5,3,1.65);
+  const MLSEvaluator mls(nodes,degree);
+  const auto a=assemble_rot_irrot(mls,{domain,8,4,3});
+  const auto n=static_cast<Eigen::Index>(nodes.size());
+  std::vector<Eigen::VectorXd> kernel;
+  auto add=[&](auto phi,auto psi){
+    Eigen::VectorXd z(2*n);
+    for(Eigen::Index i=0;i<n;++i){
+      const auto p=nodes[static_cast<std::size_t>(i)].position;
+      z[i]=phi(p.x,p.y); z[n+i]=psi(p.x,p.y);
+    }
+    kernel.push_back(z);
+  };
+  add([](double,double){return 1.0;},[](double,double){return 0.0;});
+  add([](double,double){return 0.0;},[](double,double){return 1.0;});
+  add([](double x,double){return x;},[](double,double y){return y;});        // z
+  add([](double,double y){return -y;},[](double x,double){return x;});       // i z
+  if(degree==2){
+    add([](double x,double y){return x*x-y*y;},[](double x,double y){return 2*x*y;});  // z^2
+    add([](double x,double y){return -2*x*y;},[](double x,double y){return x*x-y*y;}); // i z^2
+  }
+  for(const auto& z:kernel){
+    near((a.mass*z).norm()/(a.mass.norm()*z.norm()),0,1e-13,"holomorphic vector not mass-null");
+    near((a.stiffness*z).norm()/(a.stiffness.norm()*z.norm()),0,1e-13,
+         "holomorphic vector not stiffness-null (pencil would not be singular)");
+  }
+  const auto s=solve_rot_irrot_rank_reduced(a);
+  demand(s.removed_mass_nullity==static_cast<int>(kernel.size()),
+         "mass nullity differs from the holomorphic count for this cloud");
+  // ker(M) inside ker(K) => projected and original finite spectra coincide.
+  demand(s.mass_kernel_stiffness_coupling<1e-12,"||KZ||/||K|| certificate failed");
+  demand(s.max_full_residual<1e-12,"full residual K h - lambda M h not certified");
+  demand(s.max_reduced_residual<1e-12,"projected residual not small");
+}
+
+// The projected residual Q^T(Kh-lambda Mh) is ~0 BY CONSTRUCTION. Discarding
+// genuine mass directions (cutoff 1e-2) changes the problem: only the full
+// residual and the coupling ||KZ|| reveal it.
+void projected_residual_is_not_a_certificate() {
+  const Rectangle domain{0,2,0,1};
+  const MLSEvaluator mls(make_regular_cloud(domain,5,3,1.65),1);
+  const auto a=assemble_rot_irrot(mls,{domain,8,4,2});
+  const auto bad=solve_rot_irrot_rank_reduced(a,1e-2,0.0);
+  demand(bad.max_reduced_residual<1e-12,"projected residual should stay tiny");
+  demand(bad.max_full_residual>1e-4,"full residual should expose the over-reduction");
+  demand(bad.mass_kernel_stiffness_coupling>1e-3,"coupling should expose the over-reduction");
+  // The default cutoff sits on the plateau [1e-15, mu_min/mu_max ~ 1e-4].
+  const auto good=solve_rot_irrot_rank_reduced(a);
+  const auto tight=solve_rot_irrot_rank_reduced(a,1e-14,0.0);
+  demand(good.retained_rank==tight.retained_rank,"rank changes inside the plateau");
+  near((good.eigenvalues-tight.eigenvalues).cwiseAbs().maxCoeff(),0,1e-10,
+       "spectrum changes inside the rank plateau");
+}
+
+// Al Maleh (2009) Table 4, 3x5 grid, rotational/irrotational, 2x2 Gauss per
+// cell, four cells per nodal rectangle: "14 zeros", 5.91, 12.9, 15.0, 15.5,
+// 16.8 (TM11, bold). The thesis gives Eq. (4-2) but no radius: r=1.5h is an
+// inference of this audit (unique minimum of an r/h scan against Table 4).
+void author_profile_table4() {
+  const Rectangle domain{0,2,0,1};
+  const MLSEvaluator mls(make_regular_cloud(domain,5,3,0.75),1,1e12,
+                         MLSWeight::QuarticSpline);
+  const auto s=solve_rot_irrot_rank_reduced(assemble_rot_irrot(mls,{domain,8,4,2}));
+  demand(s.numerical_curl_kernel==14,"author profile should give 14 zeros");
+  const double table4[]={5.91,12.9,15.0,15.5,16.8};
+  for(int k=0;k<5;++k){
+    const double v=s.eigenvalues[14+k];
+    if(std::abs(v/table4[k]-1)>0.005)
+      throw std::runtime_error("Table 4 rot/irrot value "+std::to_string(k+2)+
+                               " not reproduced: "+std::to_string(v));
+  }
+  const double pi=std::acos(-1.0);
+  near(100*(s.eigenvalues[18]/(1.25*pi*pi)-1),36.183,0.002,"Table 5 TM11 3x5 2x2 error");
+}
 }
 int main(){
   try{patch(1);patch(2);
+    singular_pencil_theorem(1);singular_pencil_theorem(2);
+    projected_residual_is_not_a_certificate();
+    author_profile_table4();
     std::cout<<"PASS: original Al Maleh Ch6 gradient, Jgrad, Laplacian, "
-                "mass singularity, rank reduction, exact vector patches\n";
+                "mass singularity, rank reduction, exact vector patches; singular "
+                "pencil theorem (deg 1/2), full-residual certificate, Table 4 profile\n";
   }catch(const std::exception& e){
     std::cerr<<"M5 FAIL: "<<e.what()<<"\n";return 1;
   }
