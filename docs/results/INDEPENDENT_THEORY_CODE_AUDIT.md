@@ -147,7 +147,8 @@ testadas (3×5 a 13×25, perfis Wendland e spline quártica), não teorema.
 
 K = Σ_q w_q c_q c_qᵀ com w_q > 0 é semidefinida; QᵀKQ também. Todo
 autovalor do problema reduzido é ≥ 0; valores negativos só podem ter
-magnitude de arredondamento, ~ε‖K‖/μ_min (observado: |λ| ≤ 7e-15).
+magnitude de arredondamento, ~ε‖K‖/μ_min (na campanha de reprodução
+M5 arquivada, |λ negativo| ≤ 1,5e-13; o máximo depende da família).
 Nada foi filtrado: os sinais brutos continuam nos CSV.
 
 ### 5.4 Limiar de posto [PROGRAMA]
