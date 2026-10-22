@@ -35,7 +35,7 @@ const char* mls_weight_name(MLSWeight weight) noexcept;
 MLSWeight parse_mls_weight(const std::string& name);
 
 // Polynomial basis of degree 1 or 2, shifted to each query point and scaled
-// by the largest support radius (affine-invariant; condition_number is then
+// by the largest active support radius (affine-invariant; condition_number is then
 // a geometric measure of the local node distribution, not of cloud size).
 // Compact radial supports with per-node radii; no nodal interpolation claim.
 class MLSEvaluator {
@@ -53,7 +53,6 @@ class MLSEvaluator {
  private:
   std::vector<Node> nodes_;
   int degree_ = 1;
-  double scale_ = 1.0;  // largest nodal support radius
   double max_condition_ = 1.0e12;
   MLSWeight weight_ = MLSWeight::WendlandC2;
 };

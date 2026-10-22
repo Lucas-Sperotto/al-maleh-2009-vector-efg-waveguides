@@ -11,7 +11,7 @@ Studies:
      there and is inferred here, explicitly labelled as an inference).
   2. Tables 2/3/5/6 with the identified profile (M2 and M5 drivers).
   3. Laplacian (second-order) consistency defect of the MLS shapes.
-  4. M5 convergence with production and converged quadrature.
+  4. M5 refinement with production and finer reference quadrature.
   5. M5 singular-mass rank-threshold sweep with full/projected residuals.
   6. Cartesian TM22/TM41 doublet: invariant subspace analysis.
   7. M7 mode tracking of the M5 TM21 3x5 support-factor sweep.
@@ -28,6 +28,7 @@ import shutil
 import subprocess
 import sys
 from datetime import datetime, timezone
+from decimal import Decimal
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -124,6 +125,39 @@ def score_scan(scan_rows, table):
     return summary
 
 
+def within_printed_rounding(value, printed):
+    """Half a unit of the last printed decimal, including scientific notation."""
+    reference = Decimal(printed)
+    half_unit = Decimal(10) ** reference.as_tuple().exponent / 2
+    return abs(Decimal(str(value)) - reference) <= half_unit
+
+
+def table4_precision(out):
+    """Check each nonzero Table-4 entry at the inferred profile, without fitting."""
+    with gzip.open(out / "scan_quartic_spline_deg1.csv.gz", "rt", encoding="utf-8") as f:
+        scan = [r for r in csv.DictReader(f)
+                if r["status"] == "ok" and float(r["factor"]) == 1.5]
+    rows = []
+    for formulation in ("cartesian", "rot_irrot"):
+        for gauss in (2, 3, 4):
+            values = {int(r["position"]): float(r["lambda"]) for r in scan
+                      if r["formulation"] == formulation and int(r["gauss"]) == gauss}
+            zeros = sum(abs(v) < 1e-8 for v in values.values())
+            for r in read_csv(TABLE4):
+                if (r["method"] != formulation or int(r["gauss_points_per_axis"]) != gauss
+                        or not r["value"] or (formulation == "cartesian" and int(r["row"]) <= 5)):
+                    continue
+                position = int(r["row"]) if formulation == "cartesian" else zeros + int(r["row"]) - 1
+                value = values[position]
+                printed = r["value_as_printed"]
+                rows.append(dict(formulation=formulation, gauss=gauss, author_row=r["row"],
+                                 computed_position=position, value_as_printed=printed,
+                                 computed_lambda=value,
+                                 within_printed_rounding=within_printed_rounding(value, printed)))
+    write_csv(out / "table4_printed_precision.csv", rows)
+    return rows
+
+
 def study_ch4(exe, out):
     table = author_table4()
     scans = [("quartic_spline", 1, 1.20, 3.50), ("wendland_c2", 1, 1.20, 3.50),
@@ -160,6 +194,7 @@ def study_ch4(exe, out):
                          worst_abs_log10_ratio=max(x["max_abs_log10_ratio"] for x in rs),
                          worst_relative_error_pct=100 * (10 ** max(x["max_abs_log10_ratio"] for x in rs) - 1)))
     write_csv(out / "ch4_identification_best.csv", best)
+    table4_precision(out)
     return best
 
 
@@ -193,8 +228,15 @@ def study_tables(build, out):
     rows = []
     for name, folder, curl_key in (("M2", m2, "current_strongest_curl_signed_error_percent"),
                                    ("M5", m5, "current_best_curl_signed_error_percent")):
+        reference = ROOT / "docs/results" / ("m2_author_ch5_tables_2_3.csv" if name == "M2"
+                                             else "m5_author_ch6_tables_5_6.csv")
+        printed_errors = {(r["mode"], r["nodes_y"], r["nodes_x"], r["gauss_points_per_axis"]):
+                          r["author_signed_error_percent"] for r in read_csv(reference)}
         for r in read_csv(folder / "comparison.csv"):
+            printed_error = printed_errors[(r["mode"], r["nodes_y"], r["nodes_x"], r["gauss_points_per_axis"])]
             author = float(r["author_signed_error_percent"])
+            if author != float(printed_error):
+                raise ValueError("Campaign changed a published reference value")
             curl = float(r[curl_key])
             nearest = float(r["current_nearest_signed_error_percent"])
             rows.append(dict(formulation=name, mode=r["mode"], nodes_y=r["nodes_y"],
@@ -204,6 +246,8 @@ def study_tables(build, out):
                              nearest_lambda_signed_error_pct=nearest,
                              best_curl_minus_author_pp=curl - author,
                              nearest_minus_author_pp=nearest - author,
+                             best_curl_within_printed_rounding=within_printed_rounding(
+                                 curl, printed_error),
                              classification=classify(author, curl, nearest)))
     write_csv(out / "tables_2_3_5_6_identified_profile.csv", rows)
     # Keep compact, reviewable outputs; matrices and fields stay reproducible.
@@ -303,13 +347,21 @@ def report(out, best, tables, track, regression):
                  f"{b['mean_abs_log10_ratio_gauss4']:.4f} | "
                  + (f"{b['worst_relative_error_pct']:.2f}% |" if b['worst_relative_error_pct'] < 1000
                     else ">1000% (sem correspondência) |"))
-    L += ["", "Os valores do autor têm 3 algarismos (arredondamento ≤0,5%, |log10| ≤ 0,0022).",
+    precision = read_csv(out / "table4_printed_precision.csv")
+    L += ["", "A conferência usa meia unidade da última casa de cada valor impresso, não um corte relativo uniforme.",
+          f"Tabela 4: {sum(r['within_printed_rounding'] == 'True' for r in precision)}/{len(precision)} valores não nulos dentro do intervalo de arredondamento; ver table4_printed_precision.csv.",
+          "As entradas fora do intervalo são listadas no CSV: a reprodução pode ser apenas aproximada.",
           "Melhor r/h no limite da faixa varrida indica ausência de mínimo interno, não identificação.",
           "", "## 2. Tabelas 2, 3, 5 e 6 com o perfil identificado", "",
           "| Formulação | Classificação | Linhas |", "|---|---|---:|"]
     for f in sorted(counts):
         for c in sorted(counts[f]):
             L.append(f"| {f} | {c} | {counts[f][c]} |")
+    L += ["", "Classificação match: tolerância operacional de 0,01 ponto percentual; não significa igualdade na precisão impressa (0,001 pp).",
+          "O perfil r/h=1,5 e grau 1 foi fixado pela Tabela 4 antes das comparações das Tabelas 2/3/5/6; não há novo ajuste nessas tabelas.",
+          "F6 permanece hipótese de sinal; F8 permanece discrepância não explicada.",
+          "Arquivo compacto: espectros, correlações, CSV de diagnósticos e logs; matrizes, coeficientes e campos completos dos drivers M2/M5 são regeneráveis e foram removidos desta campanha compacta.",
+          "Os relatórios internos dos drivers descrevem a saída completa anterior à compactação; o manifesto de nível superior inventaria os arquivos realmente presentes."]
     L += ["", "| Form. | Modo | Malha | Gauss | Autor % | Melhor curl % | λ próximo % | Δ curl (pp) | Classe |",
           "|---|---|---|---:|---:|---:|---:|---:|---|"]
     for r in tables:
@@ -325,8 +377,8 @@ def report(out, best, tables, track, regression):
             interior = f"{float(r['interior_laplacian_defect_rms']):.3e}" if r["interior_laplacian_defect_rms"] else "—"
             L.append(f"| {r['weight']} | {r['degree']} | {float(r['factor']):.2f} | {r['nodes_y']}×{r['nodes_x']} | "
                      f"{float(r['max_moment_condition']):.1f} | {float(r['laplacian_defect_max']):.3e} | {interior} |")
-    L += ["", "## 4. Convergência M5 (TM11, melhor curl; quadratura de produção G2 e convergida 16 subcélulas×G5)", "",
-          "| Peso | Grau | r/h | Malha | erro G2 (%) | erro convergido (%) | ρ curl | ‖KZ‖/‖K‖ | resíduo completo |",
+    L += ["", "## 4. Convergência M5 (TM11, melhor curl; quadratura de produção G2 e referência 16 subcélulas×G5)", "",
+          "| Peso | Grau | r/h | Malha | erro G2 (%) | erro referência (%) | ρ curl | ‖KZ‖/‖K‖ | resíduo completo |",
           "|---|---:|---:|---|---:|---:|---:|---:|---:|"]
     index = {(r["weight"], r["degree"], r["factor"], r["nodes_y"], r["nodes_x"], r["subdivision"], r["gauss"], r["mode"]): r
              for r in conv}
@@ -351,6 +403,7 @@ def report(out, best, tables, track, regression):
                  f"{float(r['max_reduced_residual']):.1e} | {float(r['max_full_residual']):.1e} | "
                  f"{float(r['mass_kernel_stiffness_coupling']):.1e} |")
     L += ["", "## 6. Dubleto TM22/TM41 cartesiano (grandezas invariantes de subespaço)", "",
+          "Projeções L² e combinações da janela com autovalores distintos são aproximações geométricas, não novos autopares exatos. A hibridização é uma hipótese apoiada pelas correlações, sem prova causal.", "",
           "| Nuvem | Objeto | Índices | cos. principais c/ analítico | div mín–máx | fração gradiente máx |",
           "|---|---|---|---|---|---:|"]
     for g, rows in doubl.items():
@@ -385,6 +438,16 @@ def inventory(root):
             for p in sorted(root.rglob("*")) if p.is_file() and p != root / "manifest.json"]
 
 
+def prepare_output(out):
+    """Create an empty campaign directory, preserving every existing file."""
+    if out.exists():
+        if not out.is_dir():
+            raise ValueError(f"Output path {out} is not a directory; never overwrite a file")
+        if any(out.iterdir()):
+            raise ValueError(f"Output directory {out} is not empty; never overwrite a campaign")
+    out.mkdir(parents=True, exist_ok=True)
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__,
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
@@ -397,9 +460,10 @@ def main():
         if not (build / tool).is_file():
             ap.error(f"Missing executable {build / tool}; build the project first")
     out = a.out.resolve()
-    if out.exists() and any(out.iterdir()):
-        ap.error(f"Output directory {out} is not empty; never overwrite a campaign")
-    out.mkdir(parents=True, exist_ok=True)
+    try:
+        prepare_output(out)
+    except (ValueError, OSError) as error:
+        ap.error(str(error))
     best = study_ch4(exe, out)
     tables = study_tables(build, out)
     study_numerics(exe, out)
@@ -410,6 +474,12 @@ def main():
         created_utc=datetime.now(timezone.utc).isoformat(timespec="seconds"),
         base_commit=git("rev-parse", "HEAD"), branch=git("branch", "--show-current"),
         working_tree_dirty=bool(git("status", "--porcelain")),
+        tracked_diff_sha256=hashlib.sha256(git("diff", "HEAD", "--").encode()).hexdigest(),
+        executable_sha256={name: hashlib.sha256((build / name).read_bytes()).hexdigest()
+                           for name in ("independent_audit", "tm_validation", "rot_irrot_rect", "mode_tracking")},
+        reference_csv_sha256={path.name: hashlib.sha256(path.read_bytes()).hexdigest()
+                              for path in (TABLE4, ROOT / "docs/results/m2_author_ch5_tables_2_3.csv",
+                                           ROOT / "docs/results/m5_author_ch6_tables_5_6.csv")},
         python=sys.version.split()[0], platform=platform.platform(),
         thesis_pdf="https://mcgill.scholaris.ca/bitstreams/4d79b125-540f-4b38-8c06-722d14eb60bb/download",
         thesis_pdf_sha256=THESIS_SHA256,

@@ -166,6 +166,61 @@ void projected_residual_is_not_a_certificate() {
        "spectrum changes inside the rank plateau");
 }
 
+// Independent closed-form pencils: these checks do not use MLS assembly or
+// compare two calls to the same eigensolver as their mathematical reference.
+void exact_pencil_certificates() {
+  // A dense change of orthonormal coordinates must preserve the quotient
+  // spectrum {3,5} and a common two-dimensional nullspace.
+  Eigen::Vector4d u(1,2,3,4);
+  u.normalize();
+  const Eigen::Matrix4d U=Eigen::Matrix4d::Identity()-2*u*u.transpose();
+  RotIrrotAssembly compatible;
+  compatible.mass=U*Eigen::Vector4d(1,2,0,0).asDiagonal()*U.transpose();
+  compatible.stiffness=U*Eigen::Vector4d(3,10,0,0).asDiagonal()*U.transpose();
+  const auto good=solve_rot_irrot_rank_reduced(compatible);
+  demand(good.retained_rank==2&&good.removed_mass_nullity==2,
+         "Closed-form common-kernel rank is wrong");
+  near(good.eigenvalues[0],3,2e-13,"Common-kernel first finite eigenvalue");
+  near(good.eigenvalues[1],5,2e-13,"Common-kernel second finite eigenvalue");
+  demand(good.mass_kernel_stiffness_coupling<1e-14&&good.max_full_residual<1e-14,
+         "Common-kernel pencil certificates failed");
+
+  // M=diag(1,1,0), K positive definite with K_13=1. Eliminating the third
+  // row gives v3=-v1/2, hence finite eigenvalues {3/2,3}. Orthogonal mass
+  // projection instead gives {2,3}: it cannot enforce that third equation.
+  RotIrrotAssembly coupled;
+  coupled.mass=Eigen::Vector3d(1,1,0).asDiagonal();
+  coupled.stiffness.resize(3,3);
+  coupled.stiffness<<2,0,1, 0,3,0, 1,0,2;
+  const auto bad=solve_rot_irrot_rank_reduced(coupled);
+  near(bad.eigenvalues[0],2,1e-14,"Coupled projection eigenvalue");
+  near(bad.eigenvalues[1],3,1e-14,"Uncoupled projection eigenvalue");
+  demand(bad.max_reduced_residual<1e-14,"Coupled projected residual");
+  near(bad.max_full_residual,1/(std::sqrt(19.0)+2*std::sqrt(2.0)),1e-14,
+       "Full residual must retain discarded-row equation");
+  near(bad.mass_kernel_stiffness_coupling,std::sqrt(5.0/19.0),1e-14,
+       "Closed-form stiffness/kernel coupling");
+  const Eigen::Vector3d exact_vector(1,0,-0.5);
+  near((coupled.stiffness*exact_vector-1.5*coupled.mass*exact_vector).norm(),
+       0,1e-14,"Schur-complement eigenpair of original pencil");
+
+  // Even zero coupling AND zero full residual cannot establish completeness:
+  // an excessive mass cutoff may silently remove a genuine finite zero mode.
+  RotIrrotAssembly truncated;
+  truncated.mass=Eigen::Vector3d(1,1,1e-4).asDiagonal();
+  truncated.stiffness=Eigen::Vector3d(2,3,0).asDiagonal();
+  const auto full=solve_rot_irrot_rank_reduced(truncated);
+  const auto cut=solve_rot_irrot_rank_reduced(truncated,1e-3,0);
+  demand(full.retained_rank==3&&full.numerical_curl_kernel==1,
+         "Positive-mass zero mode must be retained at default cutoff");
+  demand(cut.retained_rank==2&&cut.numerical_curl_kernel==0,
+         "Excessive cutoff should expose lost finite zero mode");
+  near(cut.mass_kernel_stiffness_coupling,0,1e-15,"Truncated zero mode has KZ=0");
+  near(cut.max_full_residual,0,1e-15,"Remaining eigenpairs still solve full pencil");
+  near(cut.mass_eigen_max_removed,1e-4,1e-15,
+       "Mass diagnostic must reveal discarded positive direction");
+}
+
 // Al Maleh (2009) Table 4, 3x5 grid, rotational/irrotational, 2x2 Gauss per
 // cell, four cells per nodal rectangle: "14 zeros", 5.91, 12.9, 15.0, 15.5,
 // 16.8 (TM11, bold). The thesis gives Eq. (4-2) but no radius: r=1.5h is an
@@ -191,6 +246,7 @@ int main(){
   try{patch(1);patch(2);
     singular_pencil_theorem(1);singular_pencil_theorem(2);
     projected_residual_is_not_a_certificate();
+    exact_pencil_certificates();
     author_profile_table4();
     std::cout<<"PASS: original Al Maleh Ch6 gradient, Jgrad, Laplacian, "
                 "mass singularity, rank reduction, exact vector patches; singular "

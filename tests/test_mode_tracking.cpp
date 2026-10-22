@@ -4,6 +4,7 @@
 #include "al_maleh/mode_tracking.hpp"
 
 #include <Eigen/QR>
+#include <algorithm>
 #include <cmath>
 #include <functional>
 #include <iostream>
@@ -66,6 +67,33 @@ void test_weights_are_used() {
   near(normalized_overlaps(a, b, w)(0, 0), 0, 1e-14, "weighted orthogonality");
   near(normalized_overlaps(a, b, Eigen::VectorXd::Ones(rows))(0, 0),
        2.0 / std::sqrt(10.0 * 2.0), 1e-14, "unweighted overlap differs");
+}
+
+void test_extreme_column_scales() {
+  const Eigen::MatrixXd A = fields(2);
+  const Eigen::VectorXd w = weights(A.rows());
+  Eigen::MatrixXd scaled = A;
+  scaled.col(0) *= 1e200;
+  scaled.col(1) *= -1e-200;
+  near((normalized_overlaps(A, scaled, w) - normalized_overlaps(A, A, w))
+           .cwiseAbs().maxCoeff(), 0, 1e-12, "extreme finite column scales");
+  for (double weight_scale : {1e-200, 1e200})
+    near((normalized_overlaps(A, scaled, (w * weight_scale).eval()) -
+          normalized_overlaps(A, A, w)).cwiseAbs().maxCoeff(),
+         0, 1e-12, "extreme common weight scales");
+  const Eigen::VectorXd cosines = principal_cosines(A, scaled, w);
+  if (cosines.size() != 2)
+    throw std::runtime_error("independent direction dropped solely for column scale");
+  near(cosines.minCoeff(), 1, 1e-12, "principal angles with extreme column scales");
+  Eigen::MatrixXd mixed(2, 1), first(2, 1);
+  Eigen::VectorXd mixed_weights(2);
+  mixed << 1e300, 1;
+  first << 1, 0;
+  mixed_weights << 1e-300, 1e300;
+  // Both weighted components of mixed are 1e150; this analytic value also
+  // tests weights spanning 600 orders of magnitude without squaring 1e300.
+  near(normalized_overlaps(mixed, first, mixed_weights)(0, 0),
+       1 / std::sqrt(2.0), 1e-12, "mixed extreme weights and amplitudes");
 }
 
 void test_principal_angles() {
@@ -135,6 +163,60 @@ void test_assignment() {
   const auto r = max_overlap_assignment(Rr);
   if (r[0] != 1 || r[1] != -1 || r[2] != 0)
     throw std::runtime_error("rectangular assignment wrong");
+
+  // Independent exhaustive oracle: all injections, including either orientation
+  // of rectangular matrices. This does not use the Hungarian recurrence.
+  for (int rows = 1; rows <= 5; ++rows)
+    for (int cols = 1; cols <= 5; ++cols) {
+      Eigen::MatrixXd scores(rows, cols);
+      for (int i = 0; i < rows; ++i)
+        for (int j = 0; j < cols; ++j)
+          scores(i, j) = 0.5 + 0.5 * std::sin(7.1 * i + 3.3 * j + rows * cols);
+      const Eigen::MatrixXd rectangular = rows <= cols ? scores : Eigen::MatrixXd(scores.transpose());
+      std::vector<int> permutation(static_cast<std::size_t>(rectangular.cols()));
+      for (std::size_t i = 0; i < permutation.size(); ++i) permutation[i] = static_cast<int>(i);
+      double oracle = -1;
+      do {
+        double total = 0;
+        for (Eigen::Index i = 0; i < rectangular.rows(); ++i)
+          total += rectangular(i, permutation[static_cast<std::size_t>(i)]);
+        oracle = std::max(oracle, total);
+      } while (std::next_permutation(permutation.begin(), permutation.end()));
+      const auto match = max_overlap_assignment(scores);
+      std::vector<bool> used(static_cast<std::size_t>(cols), false);
+      double actual = 0;
+      int matched = 0;
+      for (int i = 0; i < rows; ++i) {
+        const int j = match[static_cast<std::size_t>(i)];
+        if (j < 0) continue;
+        if (j >= cols || used[static_cast<std::size_t>(j)])
+          throw std::runtime_error("assignment repeats or exceeds a column");
+        used[static_cast<std::size_t>(j)] = true;
+        actual += scores(i, j);
+        ++matched;
+      }
+      if (matched != std::min(rows, cols))
+        throw std::runtime_error("assignment cardinality wrong");
+      near(actual, oracle, 1e-12, "assignment against exhaustive oracle");
+    }
+}
+
+void test_assignment_ambiguity() {
+  Eigen::MatrixXd O(2, 2);
+  O << 0.95, 0.1,
+       0.94, 0.7;
+  const auto match = max_overlap_assignment(O);
+  if (match[0] != 0 || match[1] != 1)
+    throw std::runtime_error("unexpected assignment in competition example");
+  // Row 0 has overlap .95 and row margin .85, yet its destination is almost
+  // equally similar to row 1. It must not be labelled confidently tracked.
+  near(overlap_assignment_margin(O, 0, match[0]), 0.01, 1e-14,
+       "destination competition prevents confident identity");
+  near(overlap_assignment_margin(O, 1, match[1]), -0.24, 1e-14,
+       "forced suboptimal row match remains ambiguous");
+  Eigen::MatrixXd unique = Eigen::MatrixXd::Identity(2, 2);
+  near(overlap_assignment_margin(unique, 1, 1), 1, 1e-14,
+       "unique permutation match confidence");
 }
 
 void test_clusters() {
@@ -145,6 +227,7 @@ void test_clusters() {
   if (c != expected) throw std::runtime_error("eigenvalue clusters wrong");
   Eigen::VectorXd unsorted(2); unsorted << 2.0, 1.0;
   reject([&] { (void)eigenvalue_clusters(unsorted, 1e-6); }, "unsorted eigenvalues");
+  reject([&] { (void)eigenvalue_clusters(v, INFINITY); }, "nonfinite cluster tolerance");
 }
 
 } // namespace
@@ -153,8 +236,10 @@ int main() {
   try {
     test_sign_and_scale_invariance();
     test_weights_are_used();
+    test_extreme_column_scales();
     test_principal_angles();
     test_assignment();
+    test_assignment_ambiguity();
     test_clusters();
     std::cout << "PASS: M7 overlap sign/scale invariance, weighted product, "
                  "principal-angle basis invariance, Hungarian assignment, clusters\n";

@@ -9,17 +9,79 @@ import csv
 import hashlib
 import json
 import math
+import importlib.util
+import tempfile
+import shutil
 import unittest
+from unittest.mock import patch
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 CAMPAIGN = ROOT / "docs/results/independent_audit_2026-10-22"
 TABLE4 = ROOT / "docs/results/author_ch6_table4_spectra.csv"
+spec = importlib.util.spec_from_file_location(
+    "independent_audit_campaign", ROOT / "scripts/independent_audit_campaign.py")
+campaign = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(campaign)
 
 
 def rows(path):
     with Path(path).open(newline="", encoding="utf-8") as f:
         return list(csv.DictReader(f))
+
+
+class OutputDirectory(unittest.TestCase):
+    def test_table_rounding_preserves_source_trailing_zeros(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            out = Path(tmp)
+            for name in ("m2_identified_profile", "m5_identified_profile"):
+                (out / name).mkdir()
+                shutil.copyfile(CAMPAIGN / name / "comparison.csv", out / name / "comparison.csv")
+            # Reuse measured values; do not execute solvers or mutate archives.
+            with patch.object(campaign, "run"):
+                result = campaign.study_tables(Path("unused-build"), out)
+            keyed = {(r["formulation"], r["mode"], r["nodes_y"], r["gauss"]): r for r in result}
+            self.assertFalse(keyed[("M5", "TM11", "5", "2")]["best_curl_within_printed_rounding"])
+            self.assertFalse(keyed[("M5", "TM21", "3", "4")]["best_curl_within_printed_rounding"])
+
+    def test_precision_uses_each_printed_last_digit(self):
+        self.assertTrue(campaign.within_printed_rounding(14.54, "1.45E+01"))
+        self.assertFalse(campaign.within_printed_rounding(14.56, "1.45E+01"))
+        # A 0.38% discrepancy is below 0.5%, yet exceeds the printed interval.
+        self.assertFalse(campaign.within_printed_rounding(6.01255, "5.99E+00"))
+        self.assertTrue(campaign.within_printed_rounding(23.7674, "+23.767"))
+        self.assertFalse(campaign.within_printed_rounding(23.7676, "+23.767"))
+        # Keep significant trailing zeros from the source CSV, not float exports.
+        self.assertFalse(campaign.within_printed_rounding(34.361557, "+34.360"))
+        self.assertFalse(campaign.within_printed_rounding(27.491134, "+27.490"))
+
+    def test_existing_file_is_rejected_and_preserved(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            out = Path(tmp) / "independent_audit"
+            out.write_bytes(b"executable sentinel\x00")
+            out.chmod(0o755)
+            with self.assertRaisesRegex(ValueError, "not a directory"):
+                campaign.prepare_output(out)
+            self.assertEqual(out.read_bytes(), b"executable sentinel\x00")
+            self.assertEqual(out.stat().st_mode & 0o777, 0o755)
+
+    def test_nonempty_directory_is_rejected_and_preserved(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            out = Path(tmp)
+            (out / "data.csv").write_text("historical data")
+            with self.assertRaisesRegex(ValueError, "not empty"):
+                campaign.prepare_output(out)
+            self.assertEqual((out / "data.csv").read_text(), "historical data")
+
+    def test_missing_and_empty_directories_are_accepted(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            for out in (Path(tmp) / "missing" / "campaign", Path(tmp) / "empty"):
+                with self.subTest(out=out):
+                    if out.name == "empty":
+                        out.mkdir()
+                    campaign.prepare_output(out)
+                    self.assertTrue(out.is_dir())
+                    self.assertEqual(list(out.iterdir()), [])
 
 
 class IndependentAuditCampaign(unittest.TestCase):
@@ -50,7 +112,7 @@ class IndependentAuditCampaign(unittest.TestCase):
         for formulation in ("cartesian", "rot_irrot"):
             r = best[("quartic_spline", "1", formulation)]
             self.assertEqual(r["best_factor"], "1.5000")
-            # within the 3-significant-digit rounding of the printed table
+            # Historical operational bound; not a per-entry rounding interval.
             self.assertLess(float(r["worst_relative_error_pct"]), 0.5)
         # The project's historical Wendland profile cannot reproduce Table 4.
         self.assertGreater(float(best[("wendland_c2", "1", "cartesian")]["worst_relative_error_pct"]), 10)

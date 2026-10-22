@@ -1,9 +1,13 @@
 #include "al_maleh/mls.hpp"
 
+#include <Eigen/QR>
+
 #include <algorithm>
 #include <cmath>
 #include <functional>
+#include <iomanip>
 #include <iostream>
+#include <sstream>
 #include <stdexcept>
 #include <string>
 #include <vector>
@@ -16,9 +20,12 @@ using al_maleh::Point2;
 namespace {
 
 void check(double actual, double expected, double tol, const std::string& name) {
-  if (!std::isfinite(actual) || std::abs(actual - expected) > tol)
-    throw std::runtime_error(name + " differs: got=" + std::to_string(actual) +
-                             " expected=" + std::to_string(expected));
+  if (!std::isfinite(actual) || std::abs(actual - expected) > tol) {
+    std::ostringstream error;
+    error << std::setprecision(17) << name << " differs: got=" << actual
+          << " expected=" << expected << " tolerance=" << tol;
+    throw std::runtime_error(error.str());
+  }
 }
 
 void reject(const std::function<void()>& operation, const std::string& name) {
@@ -112,7 +119,39 @@ void check_invalid_clouds() {
     if (!std::isfinite(x)) throw std::runtime_error("Hessian undefined at node");
 }
 
-// Al Maleh (2009) Eq. (4-2): exact profile values and C2 contact at q=1.
+// Independent linear-MLS solution on a square: reproduction constraints give
+// phi=b+t*z, b=(1-x-y,x,y,0), z=(1,-1,-1,1). Minimizing sum(phi_i^2/w_i)
+// determines t without assembling or solving the production moment matrix.
+// This exercises the implemented weight, including its small positive tail.
+void check_quartic_weight_through_shapes() {
+  const Point2 x{0.2, 0.3};
+  for (double target_q : {0.25, 0.5, 0.9, 0.999, 1.0 - 1e-5,
+                          1.0 - 1e-6, 1.0 - 1e-8, 1.0, 1.1}) {
+    const double radius = std::hypot(1.0 - x.x, 1.0 - x.y) / target_q;
+    const std::vector<Node> nodes{{{0,0},3}, {{1,0},3}, {{0,1},3}, {{1,1},radius}};
+    double weights[4];
+    for (int i = 0; i < 4; ++i) {
+      const double q = std::hypot(x.x - nodes[i].position.x,
+                                  x.y - nodes[i].position.y) / nodes[i].support_radius;
+      const double t = 1 - q;
+      weights[i] = q < 1 ? t * t * t * (1 + 3 * q) : 0;
+    }
+    const double t = weights[3] == 0 ? 0 :
+      -(0.5 / weights[0] - x.x / weights[1] - x.y / weights[2]) * weights[3] /
+       (1 + weights[3] / weights[0] + weights[3] / weights[1] + weights[3] / weights[2]);
+    const auto s = MLSEvaluator(nodes, 1, 1e12, al_maleh::MLSWeight::QuarticSpline).evaluate(x);
+    double phi[4] = {};
+    for (std::size_t a = 0; a < s.active_nodes.size(); ++a) phi[s.active_nodes[a]] = s.phi[a];
+    check(phi[0], 0.5 + t, 2e-13, "quartic square phi0");
+    check(phi[1], x.x - t, 2e-13, "quartic square phi1");
+    check(phi[2], x.y - t, 2e-13, "quartic square phi2");
+    check(phi[3], t, std::abs(t) * 2e-11, "quartic square small-tail phi3");
+    if ((weights[3] > 0) != (std::find(s.active_nodes.begin(), s.active_nodes.end(), 3) != s.active_nodes.end()))
+      throw std::runtime_error("quartic support lost a positive weight");
+  }
+}
+
+// Al Maleh (2009) Eq. (4-2), checked through the actual MLS evaluator.
 void check_quartic_spline_profile() {
   const std::vector<Node> one{{{0, 0}, 2.0}, {{5, 0}, 1.0}, {{0, 5}, 1.0}};
   const MLSEvaluator e(one, 1, 1e12, al_maleh::MLSWeight::QuarticSpline);
@@ -120,25 +159,154 @@ void check_quartic_spline_profile() {
       al_maleh::parse_mls_weight("wendland_c2") != al_maleh::MLSWeight::WendlandC2)
     throw std::runtime_error("weight names do not round-trip");
   reject([] { (void)al_maleh::parse_mls_weight("gaussian"); }, "unknown weight name");
-  // Shape-independent check of w through a 1-node partition is impossible
-  // (MLS normalizes), so verify w, w' and w'' of the profile directly from
-  // the polynomial via the FD-free closed forms at several q.
-  for (double q : {0.0, 0.25, 0.5, 0.9, 0.999}) {
-    const double w = 1 - 6 * q * q + 8 * q * q * q - 3 * q * q * q * q;
-    const double dw = -12 * q * (1 - q) * (1 - q);
-    const double d2w = -12 * (1 - q) * (1 - 3 * q);
-    const double h = 1e-6, h2 = 1e-4;  // h2 balances truncation and round-off
-    auto f = [](double s) { return 1 - 6 * s * s + 8 * s * s * s - 3 * s * s * s * s; };
-    check((f(q + h) - f(q - h)) / (2 * h), dw, 1e-8, "quartic dw/dq");
-    check((f(q + h2) - 2 * w + f(q - h2)) / (h2 * h2), d2w, 1e-5, "quartic d2w/dq2");
-  }
-  // Value, slope and curvature vanish at the support boundary (C2 contact).
-  check(1 - 6 + 8 - 3, 0, 0, "w(1)");
+  check_quartic_weight_through_shapes();
   for (int degree : {1, 2}) {
     for (Point2 p : {Point2{0.20, -0.15}, Point2{-0.35, 0.30}, Point2{0, 0}})
       check_reproduction(degree, p, al_maleh::MLSWeight::QuarticSpline);
     check_finite_differences(degree, al_maleh::MLSWeight::QuarticSpline);
   }
+}
+
+// Reference uses a fixed physical-coordinate Vandermonde matrix and weighted
+// least-squares QR in extended precision, without forming A or using any of
+// the production derivative formulas.
+std::vector<long double> qr_reference(const std::vector<Node>& nodes, int degree,
+                                     al_maleh::MLSWeight weight, Point2 x) {
+  using Matrix = Eigen::Matrix<long double, Eigen::Dynamic, Eigen::Dynamic>;
+  using Vector = Eigen::Matrix<long double, Eigen::Dynamic, 1>;
+  const int m = degree == 1 ? 3 : 6;
+  auto basis = [m](Point2 p) {
+    Vector b(m);
+    const long double u = p.x, v = p.y;
+    b.head(3) << 1, u, v;
+    if (m == 6) b.tail(3) << u * u, u * v, v * v;
+    return b;
+  };
+  Matrix design(nodes.size(), m);
+  Vector root_weight(nodes.size());
+  for (std::size_t i = 0; i < nodes.size(); ++i) {
+    const long double q = std::hypot(static_cast<long double>(x.x) - nodes[i].position.x,
+                                     static_cast<long double>(x.y) - nodes[i].position.y) /
+                          nodes[i].support_radius;
+    const long double t = 1 - q;
+    const long double w = q >= 1 ? 0 : weight == al_maleh::MLSWeight::QuarticSpline
+      ? t * t * t * (1 + 3 * q) : t * t * t * t * (1 + 4 * q);
+    root_weight(i) = std::sqrt(w);
+    design.row(i) = root_weight(i) * basis(nodes[i].position).transpose();
+  }
+  const Matrix rhs = root_weight.asDiagonal();
+  const Matrix coefficients = design.colPivHouseholderQr().solve(rhs);
+  const Vector shapes = coefficients.transpose() * basis(x);
+  return {shapes.data(), shapes.data() + shapes.size()};
+}
+
+std::vector<Node> asymmetric_cloud() {
+  auto nodes = regular_cloud();
+  for (std::size_t i = 0; i < nodes.size(); ++i) {
+    nodes[i].position.x += 0.07 * std::sin(1.3 * i);
+    nodes[i].position.y += 0.05 * std::cos(0.9 * i);
+    nodes[i].support_radius = 2.1 + 0.01 * i;
+  }
+  return nodes;
+}
+
+void check_fixed_basis_qr_reference() {
+  const auto nodes = asymmetric_cloud();
+  const Point2 x{0.17, -0.13};
+  const double h = 1e-3;
+  for (auto weight : {al_maleh::MLSWeight::WendlandC2, al_maleh::MLSWeight::QuarticSpline})
+    for (int degree : {1, 2}) {
+      const auto s = MLSEvaluator(nodes, degree, 1e12, weight).evaluate(x);
+      const auto v = qr_reference(nodes, degree, weight, x);
+      const auto xp = qr_reference(nodes, degree, weight, {x.x + h, x.y});
+      const auto xm = qr_reference(nodes, degree, weight, {x.x - h, x.y});
+      const auto xpp = qr_reference(nodes, degree, weight, {x.x + 2*h, x.y});
+      const auto xmm = qr_reference(nodes, degree, weight, {x.x - 2*h, x.y});
+      const auto yp = qr_reference(nodes, degree, weight, {x.x, x.y + h});
+      const auto ym = qr_reference(nodes, degree, weight, {x.x, x.y - h});
+      const auto ypp = qr_reference(nodes, degree, weight, {x.x, x.y + 2*h});
+      const auto ymm = qr_reference(nodes, degree, weight, {x.x, x.y - 2*h});
+      const int offsets[] = {-2, -1, 1, 2};
+      const int factors[] = {1, -8, 8, -1};
+      std::vector<long double> mixed(nodes.size(), 0);
+      for (int i = 0; i < 4; ++i)
+        for (int j = 0; j < 4; ++j) {
+          const auto ij = qr_reference(nodes, degree, weight,
+                                       {x.x + offsets[i]*h, x.y + offsets[j]*h});
+          for (std::size_t a = 0; a < nodes.size(); ++a)
+            mixed[a] += factors[i] * factors[j] * ij[a] / (144*h*h);
+        }
+      for (std::size_t a = 0; a < s.active_nodes.size(); ++a) {
+        const auto i = s.active_nodes[a];
+        check(s.phi[a], v[i], 2e-12, "fixed-basis QR value");
+        check(s.dx[a], (xmm[i] - 8*xm[i] + 8*xp[i] - xpp[i]) / (12*h), 2e-8,
+              "fixed-basis QR dx");
+        check(s.dy[a], (ymm[i] - 8*ym[i] + 8*yp[i] - ypp[i]) / (12*h), 2e-8,
+              "fixed-basis QR dy");
+        check(s.dxx[a], (-xpp[i] + 16*xp[i] - 30*v[i] + 16*xm[i] - xmm[i]) / (12*h*h),
+              5e-7, "fixed-basis QR dxx");
+        check(s.dxy[a], mixed[i], 5e-7, "fixed-basis QR dxy");
+        check(s.dyy[a], (-ypp[i] + 16*yp[i] - 30*v[i] + 16*ym[i] - ymm[i]) / (12*h*h),
+              5e-7, "fixed-basis QR dyy");
+      }
+    }
+}
+
+void check_rigid_motion_and_unit_invariance() {
+  const auto nodes = asymmetric_cloud();
+  const Point2 x{0.17, -0.13};
+  const double c = 0.6, d = 0.8;
+  for (auto weight : {al_maleh::MLSWeight::WendlandC2, al_maleh::MLSWeight::QuarticSpline})
+    for (int degree : {1, 2}) {
+      const auto s = MLSEvaluator(nodes, degree, 1e12, weight).evaluate(x);
+      for (double scale : {0.125, 8.0}) {
+        auto transform = [scale, c, d](Point2 p) {
+          return Point2{13.0 + scale * (c*p.x - d*p.y),
+                        -9.0 + scale * (d*p.x + c*p.y)};
+        };
+        auto transformed = nodes;
+        for (auto& n : transformed) {
+          n.position = transform(n.position);
+          n.support_radius *= scale;
+        }
+        const auto t = MLSEvaluator(transformed, degree, 1e12, weight).evaluate(transform(x));
+        if (s.active_nodes != t.active_nodes) throw std::runtime_error("geometric transform changed support");
+        for (std::size_t i = 0; i < s.active_nodes.size(); ++i) {
+          check(t.phi[i], s.phi[i], 2e-12, "translation/rotation/unit invariant value");
+          check(scale * t.dx[i], c*s.dx[i] - d*s.dy[i], 2e-11, "transformed dx");
+          check(scale * t.dy[i], d*s.dx[i] + c*s.dy[i], 2e-11, "transformed dy");
+          check(scale*scale * t.dxx[i], c*c*s.dxx[i] - 2*c*d*s.dxy[i] + d*d*s.dyy[i],
+                5e-10, "transformed dxx");
+          check(scale*scale * t.dxy[i], c*d*(s.dxx[i] - s.dyy[i]) + (c*c - d*d)*s.dxy[i],
+                5e-10, "transformed dxy");
+          check(scale*scale * t.dyy[i], d*d*s.dxx[i] + 2*c*d*s.dxy[i] + c*c*s.dyy[i],
+                5e-10, "transformed dyy");
+        }
+      }
+    }
+}
+
+void check_inactive_nodes_do_not_change_conditioning() {
+  auto nodes = regular_cloud();
+  const Point2 x{0.17, -0.13};
+  for (auto weight : {al_maleh::MLSWeight::WendlandC2, al_maleh::MLSWeight::QuarticSpline})
+    for (int degree : {1, 2}) {
+      const auto local = MLSEvaluator(nodes, degree, 1e12, weight).evaluate(x);
+      auto extended = nodes;
+      extended.push_back({{1e6, 1e6}, 1000});
+      const auto remote = MLSEvaluator(extended, degree, 1e12, weight).evaluate(x);
+      if (local.active_nodes != remote.active_nodes)
+        throw std::runtime_error("inactive remote node changed support");
+      check(remote.condition_number, local.condition_number, 0, "local moment conditioning");
+      for (std::size_t i = 0; i < local.active_nodes.size(); ++i) {
+        check(remote.phi[i], local.phi[i], 0, "local value");
+        check(remote.dx[i], local.dx[i], 0, "local dx");
+        check(remote.dy[i], local.dy[i], 0, "local dy");
+        check(remote.dxx[i], local.dxx[i], 0, "local dxx");
+        check(remote.dxy[i], local.dxy[i], 0, "local dxy");
+        check(remote.dyy[i], local.dyy[i], 0, "local dyy");
+      }
+    }
 }
 
 // Central differences: the error must first fall like h^2 (truncation) and
@@ -264,13 +432,17 @@ int main() {
     }
     check_invalid_clouds();
     check_quartic_spline_profile();
+    check_fixed_basis_qr_reference();
+    check_rigid_motion_and_unit_invariance();
+    check_inactive_nodes_do_not_change_conditioning();
     check_fd_step_study();
     check_rectangular_boundary_reproduction();
     check_conditioning_independent_of_refinement();
     check_laplacian_consistency();
     std::cout << "PASS: MLS partition, linear/quadratic patches, gradient, Hessian, FD and failure cases; "
                  "quartic spline Eq.(4-2), FD step study, rectangular corners, refinement-independent "
-                 "conditioning, second-order consistency\n";
+                 "conditioning, second-order consistency, independent fixed-basis QR, "
+                 "rigid-motion/unit invariance, local support normalization\n";
   } catch (const std::exception& e) {
     std::cerr << "FAIL: " << e.what() << '\n';
     return 1;

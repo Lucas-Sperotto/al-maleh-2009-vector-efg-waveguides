@@ -85,7 +85,9 @@ Weight quartic_spline(Point2 x, const Node& node) {
   const double t = 1.0 - q;
   const double factor = -12.0 * t * t / (h * h);
   const double radial = r == 0.0 ? 0.0 : 24.0 * t / (h * h * h * r);
-  return {1.0 - q * q * (6.0 - q * (8.0 - 3.0 * q)),
+  // Factorization avoids cancellation (and spurious negative weights) near
+  // q=1, where the expanded polynomial subtracts numbers of order one.
+  return {t * t * t * (1.0 + 3.0 * q),
           factor * dx, factor * dy,
           factor + radial * dx * dx,
           radial * dx * dy,
@@ -130,7 +132,6 @@ MLSEvaluator::MLSEvaluator(std::vector<Node> nodes, int degree,
   double ymin = xmin;
   double xmax = -xmin;
   double ymax = -xmin;
-  scale_ = 0.0;
   for (const Node& n : nodes_) {
     if (!finite_point(n.position) || !std::isfinite(n.support_radius) ||
         n.support_radius <= 0.0)
@@ -139,7 +140,6 @@ MLSEvaluator::MLSEvaluator(std::vector<Node> nodes, int degree,
     xmax = std::max(xmax, n.position.x);
     ymin = std::min(ymin, n.position.y);
     ymax = std::max(ymax, n.position.y);
-    scale_ = std::max(scale_, n.support_radius);
   }
   if (!(std::max(xmax - xmin, ymax - ymin) > 0.0))
     throw std::invalid_argument("Degenerate MLS cloud bounding box");
@@ -154,17 +154,32 @@ MLSResult MLSEvaluator::evaluate(Point2 x) const {
   std::vector<Active> active;
   active.reserve(nodes_.size());
 
-  // The basis is shifted to the query point and scaled by the largest
-  // support radius. MLS shapes are invariant under this affine change of a
-  // fixed polynomial basis, so values and derivatives are unchanged in exact
-  // arithmetic, while cond(A) no longer grows like (cloud size/h)^(2*degree).
+  // Gather supports first: an inactive node must not affect normalization or
+  // conditioning of the local fit, even if it has a much larger radius.
+  double scale = 0.0;
   for (std::size_t i = 0; i < nodes_.size(); ++i) {
     const Weight w = weight_ == MLSWeight::QuarticSpline
                          ? quartic_spline(x, nodes_[i])
                          : wendland_c2(x, nodes_[i]);
     if (w.w <= 0.0) continue;
-    const Eigen::VectorXd pi =
-        polynomial(nodes_[i].position, degree_, x.x, x.y, scale_).p;
+    scale = std::max(scale, nodes_[i].support_radius);
+    active.push_back({i, {}, w});
+  }
+  if (active.size() < static_cast<std::size_t>(m))
+    throw std::runtime_error("MLS support has fewer active nodes than basis dimension");
+
+  // The basis is shifted to the query point and scaled by the largest active
+  // support radius. MLS shapes are invariant under this affine change of a
+  // fixed polynomial basis, so values and derivatives are unchanged in exact
+  // arithmetic, while cond(A) no longer grows like (cloud size/h)^(2*degree).
+  // Freeze this coordinate transformation at the current query while taking
+  // derivatives: pi is then constant, and b below has the derivatives of the
+  // evaluation polynomial in that fixed basis. Re-centering at the next query
+  // is an equivalent change of basis, not a term to add to Ax or Axx.
+  for (Active& a : active) {
+    a.p = polynomial(nodes_[a.index].position, degree_, x.x, x.y, scale).p;
+    const Eigen::VectorXd& pi = a.p;
+    const Weight& w = a.w;
     const Matrix outer = pi * pi.transpose();
     A.noalias() += w.w * outer;
     Ax.noalias() += w.wx * outer;
@@ -172,10 +187,7 @@ MLSResult MLSEvaluator::evaluate(Point2 x) const {
     Axx.noalias() += w.wxx * outer;
     Axy.noalias() += w.wxy * outer;
     Ayy.noalias() += w.wyy * outer;
-    active.push_back({i, pi, w});
   }
-  if (active.size() < static_cast<std::size_t>(m))
-    throw std::runtime_error("MLS support has fewer active nodes than basis dimension");
 
   Eigen::SelfAdjointEigenSolver<Matrix> spectrum(A, Eigen::EigenvaluesOnly);
   if (spectrum.info() != Eigen::Success)
@@ -191,7 +203,7 @@ MLSResult MLSEvaluator::evaluate(Point2 x) const {
   Eigen::LLT<Matrix> factor(A);
   if (factor.info() != Eigen::Success)
     throw std::runtime_error("MLS Cholesky factorization failed");
-  const Basis b = polynomial(x, degree_, x.x, x.y, scale_);
+  const Basis b = polynomial(x, degree_, x.x, x.y, scale);
   // Solve A gamma = p, then differentiate A gamma = p twice.
   const Eigen::VectorXd g = factor.solve(b.p);
   const Eigen::VectorXd gx = factor.solve(b.px - Ax * g);

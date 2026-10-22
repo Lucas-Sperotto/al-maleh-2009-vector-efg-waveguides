@@ -21,9 +21,11 @@ namespace {
 struct Target { int m, n; };
 const Target kTargets[] = {{1,1},{2,1},{3,1},{1,2},{2,2},{4,1}};
 constexpr int kTargetCount = 6;
+constexpr double kClusterRelativeTolerance = 1e-6;
 
 struct Sampled {
   std::vector<Eigen::Index> indices;  // positions in the solver's spectrum
+  std::vector<Eigen::Index> cluster_sizes;
   Eigen::VectorXd lambda;
   Eigen::MatrixXd field;   // rows: hx at P points, then hy at P points
   Eigen::MatrixXd curl;    // rows: P points
@@ -51,15 +53,23 @@ Sampled solve_and_sample(const std::string& formulation, const MLSEvaluator& mls
     out.zero_cutoff = s.zero_cutoff;
     out.max_full_residual = *std::max_element(s.residuals.begin(), s.residuals.end());
   }
+  const auto clusters = eigenvalue_clusters(values, kClusterRelativeTolerance);
+  std::vector<Eigen::Index> full_cluster_sizes(static_cast<std::size_t>(values.size()));
+  for (std::size_t c = 0; c + 1 < clusters.size(); ++c)
+    for (Eigen::Index j = clusters[c]; j < clusters[c + 1]; ++j)
+      full_cluster_sizes[static_cast<std::size_t>(j)] = clusters[c + 1] - clusters[c];
   for (Eigen::Index j = 0; j < values.size(); ++j)
     if (values[j] > out.zero_cutoff && values[j] <= lambda_max) out.indices.push_back(j);
   const auto k = static_cast<Eigen::Index>(out.indices.size());
   if (k < 1) throw std::runtime_error("No positive mode below lambda_max");
   Eigen::MatrixXd V(vectors.rows(), k);
   out.lambda.resize(k);
+  out.cluster_sizes.resize(static_cast<std::size_t>(k));
   for (Eigen::Index c = 0; c < k; ++c) {
     V.col(c) = vectors.col(out.indices[static_cast<std::size_t>(c)]);
     out.lambda[c] = values[out.indices[static_cast<std::size_t>(c)]];
+    out.cluster_sizes[static_cast<std::size_t>(c)] =
+        full_cluster_sizes[static_cast<std::size_t>(out.indices[static_cast<std::size_t>(c)])];
   }
   const auto P = static_cast<Eigen::Index>(points.size());
   out.field = Eigen::MatrixXd::Zero(2 * P, k);
@@ -104,7 +114,7 @@ int main(int argc, char** argv) {
     std::vector<double> factors;
     for (int k = 10; k < argc; ++k) factors.push_back(std::stod(argv[k]));
     if ((formulation != "m2" && formulation != "m5") || nx < 3 || ny < 3 ||
-        nx * ny > 600 || gauss < 1 || gauss > 5 || sub < 1 || sub > 4 ||
+        static_cast<long long>(nx) * ny > 600 || gauss < 1 || gauss > 5 || sub < 1 || sub > 4 ||
         (degree != 1 && degree != 2) || !std::isfinite(lambda_max) || lambda_max <= 0)
       throw std::invalid_argument("Invalid mode-tracking parameters");
     for (double f : factors)
@@ -152,11 +162,13 @@ int main(int argc, char** argv) {
       spectrum << ",h_overlap_TM" << t.m << t.n << ",curl_rho_TM" << t.m << t.n;
     spectrum << "\n";
     tracking << "factor_from,factor_to,index_from,lambda_from,index_to,lambda_to,"
-                "h_overlap,runner_up_overlap,status\n";
+                "h_overlap,runner_up_overlap,status,competing_source_overlap,"
+                "assignment_margin,eigenvalue_cluster_from_size,eigenvalue_cluster_to_size\n";
     selection << "factor,target,lambda_exact,best_curl_index,best_curl_lambda,"
                  "best_curl_signed_error_pct,best_curl_rho,nearest_index,nearest_lambda,"
                  "nearest_signed_error_pct,best_curl_from_tracked_previous_best,"
-                 "two_best_curl_span_cosine_with_reference_H,max_full_residual\n";
+                 "two_best_curl_span_cosine_with_reference_H,max_full_residual,"
+                 "previous_best_assignment_status\n";
 
     Sampled previous;
     std::vector<int> previous_best(kTargetCount, -1);
@@ -173,24 +185,36 @@ int main(int argc, char** argv) {
         spectrum << "\n";
       }
       std::vector<int> map_from_previous;
+      std::vector<std::string> assignment_status;
       if (step > 0) {
         const Eigen::MatrixXd O = normalized_overlaps(previous.field, cur.field, w_field);
         map_from_previous = max_overlap_assignment(O);
+        assignment_status.resize(static_cast<std::size_t>(O.rows()));
         for (Eigen::Index r = 0; r < O.rows(); ++r) {
           const int to = map_from_previous[static_cast<std::size_t>(r)];
           double runner = 0;
           for (Eigen::Index c = 0; c < O.cols(); ++c)
             if (c != to) runner = std::max(runner, O(r, c));
           const double ov = to >= 0 ? O(r, to) : 0.0;
+          double competing_source = 0;
+          if (to >= 0)
+            for (Eigen::Index i = 0; i < O.rows(); ++i)
+              if (i != r) competing_source = std::max(competing_source, O(i, to));
+          const double margin = to >= 0 ? overlap_assignment_margin(O, r, to) : 0.0;
+          const auto cluster_from = previous.cluster_sizes[static_cast<std::size_t>(r)];
+          const auto cluster_to = to >= 0 ? cur.cluster_sizes[static_cast<std::size_t>(to)] : 0;
           const char* status = to < 0 ? "unmatched"
-                              : (ov >= 0.9 && ov - runner >= 0.2 ? "tracked" : "ambiguous");
+                              : (ov >= 0.9 && margin >= 0.2 &&
+                                 cluster_from == 1 && cluster_to == 1 ? "tracked" : "ambiguous");
+          assignment_status[static_cast<std::size_t>(r)] = status;
           tracking << factors[step - 1] << ',' << f << ','
                    << previous.indices[static_cast<std::size_t>(r)] << ',' << previous.lambda[r] << ',';
           if (to >= 0)
             tracking << cur.indices[static_cast<std::size_t>(to)] << ',' << cur.lambda[to];
           else
             tracking << ',';
-          tracking << ',' << ov << ',' << runner << ',' << status << "\n";
+          tracking << ',' << ov << ',' << runner << ',' << status << ','
+                   << competing_source << ',' << margin << ',' << cluster_from << ',' << cluster_to << "\n";
         }
       }
       for (int t = 0; t < kTargetCount; ++t) {
@@ -209,15 +233,18 @@ int main(int argc, char** argv) {
           span_cos = principal_cosines(ref_field.col(t), pair, w_field)[0];
         }
         std::string tracked = "";
-        if (step > 0 && previous_best[static_cast<std::size_t>(t)] >= 0)
-          tracked = map_from_previous[static_cast<std::size_t>(
-                        previous_best[static_cast<std::size_t>(t)])] == best ? "1" : "0";
+        std::string previous_status;
+        if (step > 0 && previous_best[static_cast<std::size_t>(t)] >= 0) {
+          const auto previous_index = static_cast<std::size_t>(previous_best[static_cast<std::size_t>(t)]);
+          tracked = map_from_previous[previous_index] == best ? "1" : "0";
+          previous_status = assignment_status[previous_index];
+        }
         selection << f << ",TM" << kTargets[t].m << kTargets[t].n << ',' << ref_lambda[t] << ','
                   << cur.indices[static_cast<std::size_t>(best)] << ',' << cur.lambda[best] << ','
                   << 100 * (cur.lambda[best] / ref_lambda[t] - 1) << ',' << crho(best, t) << ','
                   << cur.indices[static_cast<std::size_t>(nearest)] << ',' << cur.lambda[nearest] << ','
                   << 100 * (cur.lambda[nearest] / ref_lambda[t] - 1) << ',' << tracked << ','
-                  << span_cos << ',' << cur.max_full_residual << "\n";
+                  << span_cos << ',' << cur.max_full_residual << ',' << previous_status << "\n";
         previous_best[static_cast<std::size_t>(t)] = static_cast<int>(best);
       }
       previous = cur;
@@ -232,7 +259,13 @@ int main(int argc, char** argv) {
          << "\ncommon_rule=rectangle_2x1_cells_32x16_gauss3_points=" << P
          << "\ntracking_norm=L2_of_H_on_common_rule"
          << "\nassignment=Hungarian_max_total_overlap"
-         << "\nstatus_rule=tracked_if_overlap>=0.9_and_margin>=0.2_else_ambiguous\n";
+         << "\nstatus_rule=tracked_if_overlap>=0.9_and_row_and_column_margin>=0.2_and_both_clusters_singleton_else_ambiguous"
+         << "\neigenvalue_cluster_relative_tolerance=" << kClusterRelativeTolerance
+         << "\ndegenerate_subspaces=individual_assignments_ambiguous_no_automatic_subspace_tracking"
+         << "\nselection_previous_best_flag=Hungarian_assignment_agreement_only_consult_previous_best_assignment_status"
+         << "\nspan_diagnostic=projection_onto_two_best_curl_fields_not_an_eigenvector_at_a_new_eigenvalue"
+         << "\nsweep_scope=support_factor_only_fixed_cloud_assembly_quadrature_and_solver_rank_tolerance"
+         << "\nindex_convention=zero_based_original_solver_spectrum\n";
   } catch (const std::exception& e) {
     std::cerr << "M7 ERROR: " << e.what() << "\n";
     return 1;

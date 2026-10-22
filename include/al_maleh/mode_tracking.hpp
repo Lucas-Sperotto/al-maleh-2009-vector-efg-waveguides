@@ -20,7 +20,9 @@ Eigen::MatrixXd normalized_overlaps(const Eigen::MatrixXd& A,
 // weighted L2 inner product, in descending order (min(rank A, rank B)
 // values). Invariant under A->A R and B->B S for nonsingular R and S, so
 // it is the correct comparison for (near-)degenerate eigenspaces.
-// Columns that are numerically dependent (relative tolerance) are dropped.
+// Columns are equilibrated before the numerical rank test; dependent columns
+// (relative tolerance) are dropped. Ill-conditioned changes of basis can still
+// change the numerical rank at the requested tolerance.
 Eigen::VectorXd principal_cosines(const Eigen::MatrixXd& A,
                                   const Eigen::MatrixXd& B,
                                   const Eigen::VectorXd& w,
@@ -29,6 +31,13 @@ Eigen::VectorXd principal_cosines(const Eigen::MatrixXd& A,
 // Maximum-total-overlap one-to-one assignment (Hungarian algorithm).
 // result[i] = matched column of row i, or -1 when rows exceed columns.
 std::vector<int> max_overlap_assignment(const Eigen::MatrixXd& overlaps);
+
+// Assigned overlap minus the largest competing entry in its row OR column.
+// A large row-only margin cannot establish identity when another source mode
+// competes for the same destination. This margin is a confidence diagnostic,
+// not the difference between the two best global assignment objectives.
+double overlap_assignment_margin(const Eigen::MatrixXd& overlaps,
+                                Eigen::Index row, Eigen::Index col);
 
 // Groups ascending eigenvalues into clusters whose consecutive relative
 // gaps are <= relative_tolerance; returns the first index of each cluster

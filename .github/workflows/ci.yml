@@ -152,13 +152,23 @@ jobs:
             build/mls_support_sensitivity/
           if-no-files-found: warn
           retention-days: 30
+      - name: Independently check quartic M5 matrices and curl selection with SciPy and finite differences
+        run: |
+          build/rot_irrot_rect 5 3 1 1.5 2 build/m5_quartic_review 1e-10 1 quartic_spline
+          PYTHONNOUSERSITE=1 OPENBLAS_NUM_THREADS=1 python3 scripts/verify_m5_quartic_independent.py build/m5_quartic_review --out build/m5_quartic_review/independent_check.json
+          python3 scripts/validation_manifest.py --campaign build/m5_quartic_review
+          python3 scripts/validation_manifest.py --verify --campaign build/m5_quartic_review
       - name: Independent theory/code audit campaign (Ch.4 profile, M5 certificates, M7 tracking)
-        run: PYTHONNOUSERSITE=1 OPENBLAS_NUM_THREADS=1 python3 scripts/independent_audit_campaign.py --out build/independent_audit
+        run: PYTHONNOUSERSITE=1 OPENBLAS_NUM_THREADS=1 python3 scripts/independent_audit_campaign.py --out build/independent_audit_results
+      - name: Verify independent audit SHA-256 manifest
+        run: python3 scripts/validation_manifest.py --verify --campaign build/independent_audit_results
       - name: Publish independent theory/code audit campaign
         if: always()
         uses: actions/upload-artifact@v6
         with:
           name: independent-theory-code-audit
-          path: build/independent_audit/
+          path: |
+            build/independent_audit_results/
+            build/m5_quartic_review/
           if-no-files-found: warn
           retention-days: 30
